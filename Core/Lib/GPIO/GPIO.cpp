@@ -7,52 +7,26 @@
  */
 GPIO::GPIO(GPIO_TypeDef *GPIOx, uint8_t PinNumber)
 {
-    this->GPIOx = GPIOx;
+    this->GPIOx     = GPIOx;
     this->PinNumber = PinNumber;
 }
 
 /**
  * @brief   Запуск тактирования
  * @note    Знаю, что рассчитать смещение можно по адресу GPIO,
- *          но что-то мне похуй.
+ *          но что-то мне (не)похуй.
  */
 bool GPIO::clock_enable(bool clock_status)
 {
-    uint32_t apb_bus_shift = 0;
-
-    if (GPIOx == GPIOA)
-    {
-        apb_bus_shift = RCC_APB2ENR_IOPAEN_Msk;
-    }
-    else if (GPIOx == GPIOB)
-    {
-        apb_bus_shift = RCC_APB2ENR_IOPBEN_Msk;
-    }
-    else if (GPIOx == GPIOC)
-    {
-        apb_bus_shift = RCC_APB2ENR_IOPCEN_Msk;
-    }
-    else if (GPIOx == GPIOD)
-    {
-        apb_bus_shift = RCC_APB2ENR_IOPDEN_Msk;
-    }
-    else if (GPIOx == GPIOE)
-    {
-        apb_bus_shift = RCC_APB2ENR_IOPEEN_Msk;
-    }
-    else
-    {
-        return 0;
-    }
+    uint32_t gpio_position = ((uint32_t)GPIOx - (uint32_t)GPIOA) / ((uint32_t)GPIOB - (uint32_t)GPIOA);
+    uint32_t apb_bus_shift = (gpio_position + RCC_APB2ENR_IOPAEN_Pos);
+    uint32_t apb_bus_mask  = (0b01 << apb_bus_shift);
 
     if (clock_status)
-    {
-        RCC->APB2ENR |= apb_bus_shift;
-    }
+        RCC->APB2ENR |= (apb_bus_mask);
     else
-    {
-        RCC->APB2ENR &= ~apb_bus_shift;
-    }
+        RCC->APB2ENR &= ~(apb_bus_mask);
 
-    return 1;
+    asm("NOP");
+    return (((RCC->APB2ENR & apb_bus_mask) >> apb_bus_shift) == clock_status);
 }
