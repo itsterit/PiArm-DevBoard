@@ -9,12 +9,15 @@ GPIO gen_freq(GPIOB, 5U);
 int main(void)
 {
   gen_freq.clock_enable(true);
-  gen_freq.set_config(GPIO::output_open_drain);
-  GPIOB->ODR &= ~(0b01 << GPIO_ODR_ODR5_Pos);
+  gen_freq.set_config(GPIO::input_pull_up);
+  // GPIOB->ODR &= ~(0b01 << GPIO_ODR_ODR5_Pos);
 
   led_pin.clock_enable(true);
-  led_pin.set_config(GPIO::output_push_pull);
-  GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
+  if(led_pin.set_config(GPIO::input_pull_up))
+  {
+	  asm("NOP");
+  }
+  // GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
 
   while (true)
   {

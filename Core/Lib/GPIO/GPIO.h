@@ -17,16 +17,16 @@ public:
 
     typedef enum
     {
-        alternate_push_pull,
-        alternate_open_drain,
+        alternate_push_pull  = 0b10,
+        alternate_open_drain = 0b11,
     } PIN_ALTERNATE_Type;
 
     typedef enum
     {
-        input_analog = 0,
-        input_floating,
-        input_pull_down,
-        input_pull_up,
+        input_analog    = 0b00000,
+        input_floating  = 0b01000,
+        input_pull_down = 0b10000,
+        input_pull_up   = 0b10001,
     } PIN_INPUT_Type;
 
     GPIO(GPIO_TypeDef *GPIOx, uint8_t pin_number);
