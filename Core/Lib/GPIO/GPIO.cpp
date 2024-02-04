@@ -58,11 +58,19 @@ bool GPIO::set_config(PIN_ALTERNATE_Type pin_alternate_config)
  */
 bool GPIO::set_config(PIN_OUTPUT_Type pin_output_config)
 {
-    volatile uint32_t *configuration_register  = ((pin_number > 7) ? &(GPIOx->CRH) : &(GPIOx->CRL));
+    if (pin_number <= 15)
+    {
+        volatile uint32_t *configuration_register = ((pin_number > 7) ? &(GPIOx->CRH) : &(GPIOx->CRL));
+        volatile uint8_t mode_shift = ((pin_number > 7) ? ((pin_number - 8) * 4) : ((pin_number) * 4));
+        volatile uint8_t cnfg_shift = mode_shift + 2;
 
-    *configuration_register &= ~GPIO_CRH_CNF11_1;
-    *configuration_register &= ~GPIO_CRH_CNF11_0;
-    *configuration_register |= (0b11 << GPIO_CRH_MODE11_Pos);
+        *configuration_register &= ~(0b11 << cnfg_shift);
+        *configuration_register |= (pin_output_config << cnfg_shift);
+        *configuration_register |= (0b11 << mode_shift);
 
+        asm("NOP");
+        return ((((*configuration_register & (0b11 << cnfg_shift)) >> cnfg_shift) == pin_output_config) &&
+                (((*configuration_register & (0b11 << mode_shift)) >> mode_shift) == 0b11));
+    }
     return 0;
 }

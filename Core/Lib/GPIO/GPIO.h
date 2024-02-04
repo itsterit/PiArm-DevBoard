@@ -11,8 +11,8 @@ private:
 public:
     typedef enum
     {
-        output_push_pull,
-        output_open_drain,
+        output_push_pull  = 0b00,
+        output_open_drain = 0b01,
     } PIN_OUTPUT_Type;
 
     typedef enum
@@ -23,7 +23,7 @@ public:
 
     typedef enum
     {
-        input_analog,
+        input_analog = 0,
         input_floating,
         input_pull_down,
         input_pull_up,

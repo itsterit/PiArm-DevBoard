@@ -9,9 +9,8 @@ int main(void)
 {
 
   led_pin.clock_enable(true);
-  led_pin.set_config(GPIO::output_push_pull);
-
-  GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
+  if (led_pin.set_config(GPIO::output_push_pull))
+    GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
 
   while (true)
   {
