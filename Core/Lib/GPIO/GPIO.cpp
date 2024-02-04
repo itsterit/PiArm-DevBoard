@@ -52,9 +52,10 @@ bool GPIO::set_config(PIN_ALTERNATE_Type pin_alternate_config)
 }
 
 /**
- * @brief     -
- * @details   -
- * @param[in] -
+ * @brief     Настройка пина как выход
+ * 
+ * @details   Устанавливает push_pull или open_drain
+ * @param[in] pin_output_config PIN_OUTPUT_Type
  */
 bool GPIO::set_config(PIN_OUTPUT_Type pin_output_config)
 {
