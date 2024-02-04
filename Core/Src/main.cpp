@@ -8,12 +8,10 @@ GPIO led_pin(GPIOB, 11);
 int main(void)
 {
 
-  if (led_pin.clock_enable(true))
-  {
-    GPIOB->CRH &= ~(GPIO_CRH_CNF11_Msk);
-    GPIOB->CRH |= (0b11 << GPIO_CRH_MODE11_Pos);
-    GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
-  }
+  led_pin.clock_enable(true);
+  led_pin.set_config(GPIO::output_push_pull);
+
+  GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
 
   while (true)
   {
