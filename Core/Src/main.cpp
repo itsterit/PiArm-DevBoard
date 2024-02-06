@@ -4,23 +4,29 @@
 #include "GPIO/GPIO.h"
 
 GPIO led_pin(GPIOB, 11U);
-GPIO gen_freq(GPIOB, 5U);
+GPIO btn_3(GPIOB, 15U);
 
 int main(void)
 {
-  gen_freq.clock_enable(true);
-  gen_freq.set_config(GPIO::input_pull_up);
-  // GPIOB->ODR &= ~(0b01 << GPIO_ODR_ODR5_Pos);
-
   led_pin.clock_enable(true);
-  if(led_pin.set_config(GPIO::input_pull_up))
-  {
-	  asm("NOP");
-  }
-  // GPIOB->ODR |= (0b01 << GPIO_ODR_ODR11_Pos);
+  led_pin.set_config(GPIO::output_push_pull);
+
+  btn_3.clock_enable(true);
+  btn_3.set_config(GPIO::input_floating);
+  
+  led_pin.set();
+  for(uint32_t StartDelay = 0; StartDelay < 0xFFFFF; StartDelay++)
+      asm("NOP");
+  led_pin.reset();
 
   while (true)
   {
+    if( !btn_3.get_level() )
+      led_pin.set();
+    else
+      led_pin.reset();
+
+
     asm("NOP");
   }
 }
