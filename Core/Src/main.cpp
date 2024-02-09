@@ -2,6 +2,7 @@
 #include <main.h>
 #include <stm32f103xb.h>
 #include "GPIO/GPIO.h"
+#include "clock_control/clock_control.h"
 
 GPIO led_pin(GPIOB, 11U);
 GPIO btn_3(GPIOB, 15U);
@@ -30,16 +31,28 @@ int main(void)
   clk_out.set_config(GPIO::alternate_push_pull);
   RCC->CFGR |= RCC_CFGR_MCOSEL_SYSCLK;
 
+  clock_control::hse::enable(true);
+  clock_control::hse::clock_ready();
+  if (clock_control::clock_switch(clock_control::HSE_SELECTED_AS_SYSTEM_CLOCK))
+  {
+    clock_control::hse::enable_security_system(true);
+    led_pin.set();
+  }
+
   while (true)
   {
-    if (!btn_3.get_level() || !btn_2.get_level() || !btn_1.get_level())
-      led_pin.set();
-    else
-      led_pin.reset();
 
-    clk_out.set();
-    clk_out.set();
-    clk_out.set();
-    clk_out.reset();
+    if (led_pin.get_level())
+      led_pin.reset();
+    else
+      led_pin.set();
+
+    for (uint32_t StartDelay = 0; StartDelay < 0xFFFF; StartDelay++)
+      asm("NOP");
   }
+}
+
+extern "C" void RCC_IRQHandler(void)
+{
+  led_pin.set();
 }
