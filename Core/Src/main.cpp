@@ -22,37 +22,39 @@ int main(void)
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
 
-  led_pin.set();
-  for (uint32_t StartDelay = 0; StartDelay < 0xFFFFF; StartDelay++)
-    asm("NOP");
-  led_pin.reset();
+  clock_control::hsi::enable(true);
+  clock_control::hse::enable(true);
+  clock_control::pll::enable(false);
+  if (clock_control::hse::ready())
+  {
+    clock_control::pll::hse_clock_divided(false);
+    clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
+
+    clock_control::set_ahb_prescaler(2);
+    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X4);
+    clock_control::pll::enable(true);
+    if (clock_control::pll::ready())
+      if (clock_control::clock_switch(clock_control::PLL_SELECTED_AS_SYSTEM_CLOCK))
+        led_pin.set_config(GPIO::input_pull_up);
+  }
+  else
+  {
+    led_pin.set_config(GPIO::output_push_pull);
+    led_pin.set();
+    NVIC_SystemReset();
+  }
 
   clk_out.clock_enable(true);
   clk_out.set_config(GPIO::alternate_push_pull);
-  RCC->CFGR |= RCC_CFGR_MCOSEL_SYSCLK;
-
-  clock_control::hse::enable(true);
-  clock_control::hse::clock_ready();
-  if (clock_control::clock_switch(clock_control::HSE_SELECTED_AS_SYSTEM_CLOCK))
-  {
-    clock_control::hse::enable_security_system(true);
-    led_pin.set();
-  }
+  RCC->CFGR |= RCC_CFGR_MCOSEL_PLL_DIV2;
 
   while (true)
   {
-
-    if (led_pin.get_level())
-      led_pin.reset();
-    else
-      led_pin.set();
-
-    for (uint32_t StartDelay = 0; StartDelay < 0xFFFF; StartDelay++)
-      asm("NOP");
   }
 }
 
 extern "C" void RCC_IRQHandler(void)
 {
+  led_pin.set_config(GPIO::output_push_pull);
   led_pin.set();
 }
