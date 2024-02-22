@@ -22,26 +22,27 @@ int main(void)
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
 
-  clock_control::hsi::enable(true);
-  clock_control::hse::enable(true);
-  clock_control::pll::enable(false);
-  if (clock_control::hsi::ready)
-  {
-    clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSI_oscillator_divided_by_2);
-    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X9);
-    clock_control::pll::enable(true);
-    if (clock_control::pll::ready())
-    {
-      if (clock_control::clock_switch(clock_control::PLL_SELECTED_AS_SYSTEM_CLOCK))
-      {
-        led_pin.set();
-      }
-    }
-  }
-  else
-  {
-    NVIC_SystemReset();
-  }
+  RCC->CR = 0x00;
+  RCC->CR |= (0b00 << RCC_CR_PLLRDY_Pos);
+  RCC->CR |= (0b00 << RCC_CR_PLLON_Pos);
+  RCC->CR |= (0b00 << RCC_CR_CSSON_Pos);
+  RCC->CR |= (0b00 << RCC_CR_HSEBYP_Pos);
+  RCC->CR |= (0b00 << RCC_CR_HSERDY_Pos);
+  RCC->CR |= (0b00 << RCC_CR_HSEON_Pos);
+  RCC->CR |= (0b00 << RCC_CR_HSITRIM_Msk);
+  RCC->CR |= (0b00 << RCC_CR_HSIRDY_Pos);
+  RCC->CR |= (0b00 << RCC_CR_HSION_Pos);
+
+  RCC->CFGR = 0x00;
+  RCC->CFGR |= (0b00 << RCC_CFGR_USBPRE_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_PLLMULL_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_PLLXTPRE_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_PLLSRC_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_ADCPRE_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_PPRE2_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_PPRE1_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_HPRE_Pos);
+  RCC->CFGR |= (0b00 << RCC_CFGR_SW_Pos);
 
   clk_out.clock_enable(true);
   clk_out.set_config(GPIO::alternate_push_pull);
@@ -50,10 +51,4 @@ int main(void)
   while (true)
   {
   }
-}
-
-extern "C" void RCC_IRQHandler(void)
-{
-  led_pin.set_config(GPIO::output_push_pull);
-  led_pin.set();
 }
