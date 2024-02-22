@@ -14,6 +14,9 @@ public:
     static bool clock_switch(SYSTEM_CLOCK_SOURCE_Type system_clock_source);
 
     static bool set_ahb_prescaler(uint16_t prescaler_value);
+    static bool set_apb1_prescaler(uint16_t prescaler_value);
+    static bool set_apb2_prescaler(uint16_t prescaler_value);
+    static bool set_adc_prescaler(uint16_t prescaler_value);
 
     class hse
     {

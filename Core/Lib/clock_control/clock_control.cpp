@@ -95,6 +95,8 @@ bool clock_control::hsi::ready()
  */
 bool clock_control::pll::hse_clock_divided(bool status)
 {
+    RCC->CR &= ~RCC_CR_PLLON_Msk;
+
     if (status)
         RCC->CFGR |= RCC_CFGR_PLLXTPRE_Msk;
     else
@@ -106,6 +108,8 @@ bool clock_control::pll::hse_clock_divided(bool status)
 
 bool clock_control::pll::pll_clock_source(PLL_CLOCK_SOURCE_Type clock_source)
 {
+    RCC->CR &= ~RCC_CR_PLLON_Msk;
+
     RCC->CFGR &= ~RCC_CFGR_PLLSRC_Msk;
     RCC->CFGR |= (clock_source << RCC_CFGR_PLLSRC_Pos);
 
@@ -139,7 +143,9 @@ bool clock_control::pll::ready()
 
 bool clock_control::pll::multiplication_factor(MULTIPLICATION_FACTOR_Type pll_multiplication)
 {
-    RCC->CFGR &= RCC_CFGR_PLLMULL_Msk;
+    RCC->CR &= ~RCC_CR_PLLON_Msk;
+
+    RCC->CFGR &= ~RCC_CFGR_PLLMULL_Msk;
     RCC->CFGR |= (pll_multiplication << RCC_CFGR_PLLMULL_Pos);
 
     asm("NOP");
@@ -176,6 +182,81 @@ bool clock_control::set_ahb_prescaler(uint16_t prescaler_value)
         break;
     default:
         RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
+        return 0;
+    }
+    return 1;
+}
+
+bool clock_control::set_apb1_prescaler(uint16_t prescaler_value)
+{
+    switch (prescaler_value)
+    {
+    case 1:
+        RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;
+        break;
+    case 2:
+        RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;
+        break;
+    case 4:
+        RCC->CFGR |= RCC_CFGR_PPRE1_DIV4;
+        break;
+    case 8:
+        RCC->CFGR |= RCC_CFGR_PPRE1_DIV8;
+        break;
+    case 16:
+        RCC->CFGR |= RCC_CFGR_PPRE1_DIV16;
+        break;
+    default:
+        RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;
+        return 0;
+    }
+    return 1;
+}
+
+bool clock_control::set_apb2_prescaler(uint16_t prescaler_value)
+{
+    switch (prescaler_value)
+    {
+    case 1:
+        RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;
+        break;
+    case 2:
+        RCC->CFGR |= RCC_CFGR_PPRE2_DIV2;
+        break;
+    case 4:
+        RCC->CFGR |= RCC_CFGR_PPRE2_DIV4;
+        break;
+    case 8:
+        RCC->CFGR |= RCC_CFGR_PPRE2_DIV8;
+        break;
+    case 16:
+        RCC->CFGR |= RCC_CFGR_PPRE2_DIV16;
+        break;
+    default:
+        RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;
+        return 0;
+    }
+    return 1;
+}
+
+bool clock_control::set_adc_prescaler(uint16_t prescaler_value)
+{
+    switch (prescaler_value)
+    {
+    case 2:
+        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
+        break;
+    case 4:
+        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV4;
+        break;
+    case 6:
+        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
+        break;
+    case 8:
+        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV8;
+        break;
+    default:
+        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
         return 0;
     }
     return 1;

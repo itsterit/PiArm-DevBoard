@@ -22,31 +22,28 @@ int main(void)
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
 
-  RCC->CR = 0x00;
-  RCC->CR |= (0b00 << RCC_CR_PLLRDY_Pos);
-  RCC->CR |= (0b00 << RCC_CR_PLLON_Pos);
-  RCC->CR |= (0b00 << RCC_CR_CSSON_Pos);
-  RCC->CR |= (0b00 << RCC_CR_HSEBYP_Pos);
-  RCC->CR |= (0b00 << RCC_CR_HSERDY_Pos);
-  RCC->CR |= (0b00 << RCC_CR_HSEON_Pos);
-  RCC->CR |= (0b00 << RCC_CR_HSITRIM_Msk);
-  RCC->CR |= (0b00 << RCC_CR_HSIRDY_Pos);
-  RCC->CR |= (0b00 << RCC_CR_HSION_Pos);
+  clock_control::hse::enable(true);
+  if (clock_control::hse::ready())
+  {
+    clock_control::pll::hse_clock_divided(false);
+    clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
+    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X9);
+    clock_control::pll::enable(true);
+    if (clock_control::pll::ready())
+    {
+      clock_control::set_apb1_prescaler(2);
+      clock_control::set_apb2_prescaler(1);
+      clock_control::set_adc_prescaler(6);
 
-  RCC->CFGR = 0x00;
-  RCC->CFGR |= (0b00 << RCC_CFGR_USBPRE_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_PLLMULL_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_PLLXTPRE_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_PLLSRC_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_ADCPRE_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_PPRE2_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_PPRE1_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_HPRE_Pos);
-  RCC->CFGR |= (0b00 << RCC_CFGR_SW_Pos);
+      if (clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK))
+      {
 
-  clk_out.clock_enable(true);
-  clk_out.set_config(GPIO::alternate_push_pull);
-  RCC->CFGR |= RCC_CFGR_MCOSEL_PLL_DIV2;
+        clk_out.clock_enable(true);
+        clk_out.set_config(GPIO::alternate_push_pull);
+        RCC->CFGR |= RCC_CFGR_MCOSEL_PLL_DIV2;
+      }
+    }
+  }
 
   while (true)
   {
