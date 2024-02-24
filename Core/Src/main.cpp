@@ -55,22 +55,23 @@ int main(void)
    *  set PB5 as TIM3_CH2
    *  use apb1(72MHz) as timer clock
    */
+  RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
   AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
-  AFIO->MAPR |= AFIO_MAPR_TIM3_REMAP_PARTIALREMAP;
+  AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
-  TIM3->CCR3 = 50; // TIMx capture/compare register
+  TIM3->CCR2 = 20; // TIMx capture/compare register
 
   TIM3->ARR = 100; // auto-reload register
 
-  TIM3->PSC = 71; // Prescaler value
+  TIM3->PSC = 0; // Prescaler value
 
-  TIM3->CCMR2 = 0x00;
-  TIM3->CCMR2 |= (0b00 << TIM_CCMR2_CC3S_Pos);  // Capture/Compare 3 selection(CC3 channel is configured as output)
-  TIM3->CCMR2 |= (0b01 << TIM_CCMR2_OC3CE_Pos); // Output compare 3 clear enable
-  TIM3->CCMR2 |= (0b01 << TIM_CCMR2_OC3PE_Pos); // Output compare 3 preload enable
-  TIM3->CCMR2 |= (0b01 << TIM_CCMR2_OC3FE_Pos); // Output compare 3 fast enable
-  TIM3->CCMR2 |= (0b01 << TIM_CCMR2_OC3M_Pos);  // Output compare 3 mode
+  TIM3->CCMR1 = 0x00;
+  TIM3->CCMR1 |= (0b000 << TIM_CCMR1_CC2S_Pos);  // Capture/Compare selection(CC3 channel is configured as output)
+  TIM3->CCMR1 |= (0b000 << TIM_CCMR1_OC2CE_Pos); // Output compare clear enable
+  TIM3->CCMR1 |= (0b001 << TIM_CCMR1_OC2PE_Pos); // Output compare preload enable
+  TIM3->CCMR1 |= (0b001 << TIM_CCMR1_OC2FE_Pos); // Output compare fast enable
+  TIM3->CCMR1 |= (0b110 << TIM_CCMR1_OC2M_Pos);  // Output compare mode
 
   TIM3->EGR = 0x00;
   TIM3->EGR |= (0b00 << TIM_EGR_TG_Pos);   // Trigger generation
@@ -113,10 +114,10 @@ int main(void)
   TIM3->CCER = 0x00;
   TIM3->CCER |= (0b00 << TIM_CCER_CC4P_Pos); //
   TIM3->CCER |= (0b00 << TIM_CCER_CC4E_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC3P_Pos); // Capture/Compare 3 output polarity
-  TIM3->CCER |= (0b01 << TIM_CCER_CC3E_Pos); // Capture/Compare 3 output enable
-  TIM3->CCER |= (0b00 << TIM_CCER_CC2P_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC2E_Pos); //
+  TIM3->CCER |= (0b00 << TIM_CCER_CC3P_Pos); //
+  TIM3->CCER |= (0b00 << TIM_CCER_CC3E_Pos); //
+  TIM3->CCER |= (0b00 << TIM_CCER_CC2P_Pos); // Capture/Compare output polarity
+  TIM3->CCER |= (0b01 << TIM_CCER_CC2E_Pos); // Capture/Compare output enable
   TIM3->CCER |= (0b00 << TIM_CCER_CC1P_Pos); //
   TIM3->CCER |= (0b00 << TIM_CCER_CC1E_Pos); //
 
