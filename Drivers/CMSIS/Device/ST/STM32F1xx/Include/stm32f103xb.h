@@ -3920,6 +3920,7 @@ typedef struct
 #define TIM_SMCR_ECE_Pos                    (14U)                              
 #define TIM_SMCR_ECE_Msk                    (0x1UL << TIM_SMCR_ECE_Pos)         /*!< 0x00004000 */
 #define TIM_SMCR_ECE                        TIM_SMCR_ECE_Msk                   /*!<External clock enable */
+
 #define TIM_SMCR_ETP_Pos                    (15U)                              
 #define TIM_SMCR_ETP_Msk                    (0x1UL << TIM_SMCR_ETP_Pos)         /*!< 0x00008000 */
 #define TIM_SMCR_ETP                        TIM_SMCR_ETP_Msk                   /*!<External trigger polarity */

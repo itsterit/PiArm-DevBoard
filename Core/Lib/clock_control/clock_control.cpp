@@ -6,14 +6,14 @@ bool clock_control::clock_switch(SYSTEM_CLOCK_SOURCE_Type system_clock_source)
     RCC->CFGR &= ~RCC_CFGR_SW_Msk;
     RCC->CFGR |= (system_clock_source << RCC_CFGR_SW_Pos);
 
-    // do
-    // {
-    //     if (((RCC->CFGR & RCC_CFGR_SWS_Msk) >> RCC_CFGR_SWS_Pos) == system_clock_source)
-    //     {
+    do
+    {
+        if (((RCC->CFGR & RCC_CFGR_SWS_Msk) >> RCC_CFGR_SWS_Pos) == system_clock_source)
+        {
             return 1;
-    //     }
-    // } while (start_counter++ < 0xFFF);
-    // return 0;
+        }
+    } while (start_counter++ < 0xFFF);
+    return 0;
 }
 
 bool clock_control::hse::enable(bool status)
