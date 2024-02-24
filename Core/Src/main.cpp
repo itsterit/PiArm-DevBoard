@@ -8,7 +8,6 @@ GPIO led_pin(GPIOB, 11U);
 GPIO btn_3(GPIOB, 15U);
 GPIO btn_2(GPIOB, 14U);
 GPIO btn_1(GPIOB, 13U);
-GPIO clk_out(GPIOA, 8U);
 GPIO gen_freq(GPIOB, 5U);
 
 int main(void)
@@ -31,22 +30,15 @@ int main(void)
   {
     clock_control::pll::hse_clock_divided(false);
     clock_control::pll::pll_clock_source(HSE_oscillator);
-    clock_control::pll::multiplication_factor(PLL_INPUT_CLOCK_X9);
+    clock_control::pll::multiplication_factor(PLL_INPUT_CLOCK_X2);
     clock_control::pll::enable(true);
     if (clock_control::pll::ready())
     {
-      clock_control::set_apb1_prescaler(2);
-      clock_control::set_apb2_prescaler(1);
-      clock_control::set_adc_prescaler(6);
-
       FLASH->ACR |= (0x02 << FLASH_ACR_LATENCY_Pos);
       clock_control::clock_switch(PLL_SELECTED_AS_SYSTEM_CLOCK);
       if (clock_control::clock_switch(PLL_SELECTED_AS_SYSTEM_CLOCK))
       {
         led_pin.set();
-        clk_out.clock_enable(true);
-        clk_out.set_config(GPIO::alternate_push_pull);
-        RCC->CFGR |= RCC_CFGR_MCOSEL_HSE;
       }
     }
   }
@@ -60,11 +52,11 @@ int main(void)
   AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
-  TIM3->CCR2 = 20; // TIMx capture/compare register
+  TIM3->CCR2 = 500; // TIMx capture/compare register
 
-  TIM3->ARR = 100; // auto-reload register
+  TIM3->ARR = 1000; // auto-reload register
 
-  TIM3->PSC = 0; // Prescaler value
+  TIM3->PSC = 160; // Prescaler value
 
   TIM3->CCMR1 = 0x00;
   TIM3->CCMR1 |= (0b000 << TIM_CCMR1_CC2S_Pos);  // Capture/Compare selection(CC3 channel is configured as output)
