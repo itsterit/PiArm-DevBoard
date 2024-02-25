@@ -42,7 +42,6 @@ int main(void)
         clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
         clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
         clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_6);
-        led_pin.set();
       }
     }
   }
@@ -60,7 +59,7 @@ int main(void)
 
   TIM3->ARR = 1000; // auto-reload register
 
-  // TIM3->PSC = 160; // Prescaler value
+  TIM3->PSC = 71; // Prescaler value
 
   TIM3->CCMR1 = 0x00;
   TIM3->CCMR1 |= (0b000 << TIM_CCMR1_CC2S_Pos);  // Capture/Compare selection(CC3 channel is configured as output)
@@ -89,7 +88,7 @@ int main(void)
   TIM3->DIER |= (0b00 << TIM_DIER_TIE_Pos);   // Trigger interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC4IE_Pos); // Capture/Compare 4 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_UIE_Pos);   // Update interrupt enable
 
@@ -127,7 +126,25 @@ int main(void)
   TIM3->CR1 |= (0b00 << TIM_CR1_UDIS_Pos); // Обновление включено - для обновления теневого регистра
   TIM3->CR1 |= (0b01 << TIM_CR1_CEN_Pos);  // Запустить счетчик
 
+  NVIC_EnableIRQ(TIM3_IRQn);
+
   while (true)
   {
   }
+}
+
+extern "C" void TIM3_IRQHandler(void)
+{
+  TIM3->SR = ~TIM3->SR;
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BRR = (0b01 << 11U);
 }
