@@ -152,112 +152,42 @@ bool clock_control::pll::multiplication_factor(MULTIPLICATION_FACTOR_Type pll_mu
     return (((RCC->CFGR & RCC_CFGR_PLLMULL_Msk) >> RCC_CFGR_PLLMULL_Pos) == pll_multiplication);
 }
 
-bool clock_control::set_ahb_prescaler(uint16_t prescaler_value)
+bool clock_control::set_ahb_prescaler(AHB_PRESCALER_Type prescaler_value)
 {
-    switch (prescaler_value)
-    {
-    case 2:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV2;
-        break;
-    case 4:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV4;
-        break;
-    case 8:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV8;
-        break;
-    case 16:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV16;
-        break;
-    case 64:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV64;
-        break;
-    case 128:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV128;
-        break;
-    case 256:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV256;
-        break;
-    case 512:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV512;
-        break;
-    default:
-        RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
-        return 0;
-    }
-    return 1;
+    RCC->CFGR &= ~RCC_CFGR_HPRE_Msk;
+    RCC->CFGR |= (prescaler_value << RCC_CFGR_HPRE_Pos);
+
+    FLASH->ACR &= ~FLASH_ACR_PRFTBE_Msk;
+    if (prescaler_value > 0)
+        FLASH->ACR |= FLASH_ACR_PRFTBE_Msk;
+
+    asm("NOP");
+    return ((RCC->CFGR & RCC_CFGR_HPRE_Msk) >> RCC_CFGR_HPRE_Pos == prescaler_value);
 }
 
-bool clock_control::set_apb1_prescaler(uint16_t prescaler_value)
+bool clock_control::set_apb1_prescaler(APB1_PRESCALER_Type prescaler_value)
 {
-    switch (prescaler_value)
-    {
-    case 1:
-        RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;
-        break;
-    case 2:
-        RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;
-        break;
-    case 4:
-        RCC->CFGR |= RCC_CFGR_PPRE1_DIV4;
-        break;
-    case 8:
-        RCC->CFGR |= RCC_CFGR_PPRE1_DIV8;
-        break;
-    case 16:
-        RCC->CFGR |= RCC_CFGR_PPRE1_DIV16;
-        break;
-    default:
-        RCC->CFGR |= RCC_CFGR_PPRE1_DIV1;
-        return 0;
-    }
-    return 1;
+    RCC->CFGR &= ~RCC_CFGR_PPRE1_Msk;
+    RCC->CFGR |= (prescaler_value << RCC_CFGR_PPRE1_Pos);
+
+    asm("NOP");
+    return (((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos) == prescaler_value);
 }
 
-bool clock_control::set_apb2_prescaler(uint16_t prescaler_value)
+bool clock_control::set_apb2_prescaler(APB2_PRESCALER_Type prescaler_value)
 {
-    switch (prescaler_value)
-    {
-    case 1:
-        RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;
-        break;
-    case 2:
-        RCC->CFGR |= RCC_CFGR_PPRE2_DIV2;
-        break;
-    case 4:
-        RCC->CFGR |= RCC_CFGR_PPRE2_DIV4;
-        break;
-    case 8:
-        RCC->CFGR |= RCC_CFGR_PPRE2_DIV8;
-        break;
-    case 16:
-        RCC->CFGR |= RCC_CFGR_PPRE2_DIV16;
-        break;
-    default:
-        RCC->CFGR |= RCC_CFGR_PPRE2_DIV1;
-        return 0;
-    }
-    return 1;
+    RCC->CFGR &= ~RCC_CFGR_PPRE2_Msk;
+    RCC->CFGR |= (prescaler_value << RCC_CFGR_PPRE2_Pos);
+
+    asm("NOP");
+    return (((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos) == prescaler_value);
 }
 
-bool clock_control::set_adc_prescaler(uint16_t prescaler_value)
+bool clock_control::set_adc_prescaler(ADC_PRESCALER_Type prescaler_value)
 {
-    switch (prescaler_value)
-    {
-    case 2:
-        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
-        break;
-    case 4:
-        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV4;
-        break;
-    case 6:
-        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
-        break;
-    case 8:
-        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV8;
-        break;
-    default:
-        RCC->CFGR |= RCC_CFGR_ADCPRE_DIV2;
-        return 0;
-    }
-    return 1;
+    RCC->CFGR &= ~RCC_CFGR_ADCPRE_Msk;
+    RCC->CFGR |= (prescaler_value << RCC_CFGR_ADCPRE_Pos);
+
+    asm("NOP");
+    return (((RCC->CFGR & RCC_CFGR_ADCPRE_Msk) >> RCC_CFGR_ADCPRE_Pos) == prescaler_value);
 }

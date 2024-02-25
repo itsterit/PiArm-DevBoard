@@ -29,15 +29,19 @@ int main(void)
   if (clock_control::hse::ready())
   {
     clock_control::pll::hse_clock_divided(false);
-    clock_control::pll::pll_clock_source(HSE_oscillator);
-    clock_control::pll::multiplication_factor(PLL_INPUT_CLOCK_X2);
+    clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
+    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X9);
     clock_control::pll::enable(true);
     if (clock_control::pll::ready())
     {
       FLASH->ACR |= (0x02 << FLASH_ACR_LATENCY_Pos);
-      clock_control::clock_switch(PLL_SELECTED_AS_SYSTEM_CLOCK);
-      if (clock_control::clock_switch(PLL_SELECTED_AS_SYSTEM_CLOCK))
+      clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK);
+      if (clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK))
       {
+        clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_NOT_DIVIDED);
+        clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
+        clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
+        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_6);
         led_pin.set();
       }
     }
@@ -56,7 +60,7 @@ int main(void)
 
   TIM3->ARR = 1000; // auto-reload register
 
-  TIM3->PSC = 160; // Prescaler value
+  // TIM3->PSC = 160; // Prescaler value
 
   TIM3->CCMR1 = 0x00;
   TIM3->CCMR1 |= (0b000 << TIM_CCMR1_CC2S_Pos);  // Capture/Compare selection(CC3 channel is configured as output)
