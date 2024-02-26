@@ -49,10 +49,10 @@ int main(void)
     }
   }
 
+  set_tmr1_cfg();
+  NVIC_EnableIRQ(TIM1_UP_IRQn);
   set_tmr3_cfg();
   NVIC_EnableIRQ(TIM3_IRQn);
-  // set_tmr1_cfg();
-  // NVIC_EnableIRQ(TIM1_UP_IRQn);
 
   while (true)
   {
@@ -62,12 +62,7 @@ int main(void)
 extern "C" void TIM1_UP_IRQHandler(void)
 {
   TIM1->SR = ~TIM1->SR;
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
+
   GPIOB->BSRR = (0b01 << 11U);
   GPIOB->BSRR = (0b01 << 11U);
   GPIOB->BSRR = (0b01 << 11U);
@@ -77,16 +72,9 @@ extern "C" void TIM1_UP_IRQHandler(void)
 
 extern "C" void TIM3_IRQHandler(void)
 {
-  if (TIM3->SR & TIM_SR_CC1IF_Msk)
-  {
-    GPIOB->BSRR = (0b01 << 11U);
-  }
-  else
-  {
-    GPIOB->BRR = (0b01 << 11U);
-  }
-
   TIM3->SR = ~TIM3->SR;
+
+  TIM1->CR1 &= ~(0b01 << TIM_CR1_CEN_Pos); 
 }
 
 void set_tmr1_cfg(void)
@@ -157,7 +145,7 @@ void set_tmr1_cfg(void)
 
   TIM1->PSC = 72;
 
-  TIM1->ARR = 10;
+  TIM1->ARR = 5;
 
   TIM1->CR1 = 0x00;
   TIM1->CR1 |= (0b00 << TIM_CR1_CKD_Pos);  // Clock division
@@ -217,8 +205,8 @@ void set_tmr3_cfg(void)
   TIM3->DIER |= (0b00 << TIM_DIER_CC4IE_Pos); // Capture/Compare 4 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos);   // Update interrupt enable
+  // TIM3->DIER |= (0b01 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos); // Update interrupt enable
 
   TIM3->SMCR = 0x00;
   TIM3->SMCR |= (0b00 << TIM_SMCR_ETP_Pos);  // External trigger polarity
