@@ -51,8 +51,8 @@ int main(void)
 
   set_tmr3_cfg();
   NVIC_EnableIRQ(TIM3_IRQn);
-  set_tmr1_cfg();
-  NVIC_EnableIRQ(TIM1_UP_IRQn);
+  // set_tmr1_cfg();
+  // NVIC_EnableIRQ(TIM1_UP_IRQn);
 
   while (true)
   {
@@ -77,10 +77,9 @@ extern "C" void TIM1_UP_IRQHandler(void)
 
 extern "C" void TIM3_IRQHandler(void)
 {
-  if (TIM3->SR & TIM_SR_CC2IF_Msk)
+  if (TIM3->SR & TIM_SR_CC1IF_Msk)
   {
-    // GPIOB->BSRR = (0b01 << 11U);
-    TIM1->CR1 &= ~(0b01 << TIM_CR1_CEN_Pos); // Counter enable
+    GPIOB->BSRR = (0b01 << 11U);
   }
   else
   {
@@ -183,6 +182,7 @@ void set_tmr3_cfg(void)
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
   TIM3->CCR2 = 500; // TIMx capture/compare register
+  TIM3->CCR1 = 500; // TIMx capture/compare register
 
   TIM3->ARR = 1000; // auto-reload register
 
@@ -203,7 +203,7 @@ void set_tmr3_cfg(void)
   TIM3->EGR |= (0b00 << TIM_EGR_CC1G_Pos); // Capture/compare 1 generation
   TIM3->EGR |= (0b00 << TIM_EGR_UG_Pos);   // Update generation
 
-  TIM3->SR = TIM3->SR;
+  TIM3->SR = ~TIM3->SR;
 
   TIM3->DIER = 0x00;
   TIM3->DIER |= (0b00 << TIM_DIER_TDE_Pos);   // Trigger DMA request enable
@@ -215,9 +215,9 @@ void set_tmr3_cfg(void)
   TIM3->DIER |= (0b00 << TIM_DIER_TIE_Pos);   // Trigger interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC4IE_Pos); // Capture/Compare 4 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos);   // Update interrupt enable
+  TIM3->DIER |= (0b00 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
+  TIM3->DIER |= (0b00 << TIM_DIER_UIE_Pos);   // Update interrupt enable
 
   TIM3->SMCR = 0x00;
   TIM3->SMCR |= (0b00 << TIM_SMCR_ETP_Pos);  // External trigger polarity
@@ -230,7 +230,7 @@ void set_tmr3_cfg(void)
 
   TIM3->CR2 = 0x00;
   TIM3->CR2 |= (0b00 << TIM_CR2_TI1S_Pos); // настройка входа канал 1 или XOR каналов
-  TIM3->CR2 |= (0b010 << TIM_CR2_MMS_Pos); // режим триггера таймера
+  TIM3->CR2 |= (0b011 << TIM_CR2_MMS_Pos); // режим триггера таймера
   TIM3->CR2 |= (0b00 << TIM_CR2_CCDS_Pos); // Настройка запроса ДМА
 
   TIM3->CCER = 0x00;
