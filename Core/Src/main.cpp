@@ -77,18 +77,15 @@ extern "C" void TIM1_UP_IRQHandler(void)
 
 extern "C" void TIM3_IRQHandler(void)
 {
+  if (TIM3->SR & TIM_SR_CC2IF_Msk)
+  {
+    GPIOB->BSRR = (0b01 << 11U);
+  }
+  else
+  {
+    GPIOB->BRR = (0b01 << 11U);
+  }
   TIM3->SR = ~TIM3->SR;
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BRR = (0b01 << 11U);
 }
 
 void set_tmr1_cfg(void)
@@ -169,7 +166,7 @@ void set_tmr1_cfg(void)
   TIM1->CR1 |= (0b00 << TIM_CR1_OPM_Pos);  // One pulse mode
   TIM1->CR1 |= (0b00 << TIM_CR1_URS_Pos);  // Update request source
   TIM1->CR1 |= (0b00 << TIM_CR1_UDIS_Pos); // Update disable
-  TIM1->CR1 |= (0b01 << TIM_CR1_CEN_Pos);  // Counter enable
+  // TIM1->CR1 |= (0b01 << TIM_CR1_CEN_Pos);  // Counter enable
 }
 
 void set_tmr3_cfg(void)
