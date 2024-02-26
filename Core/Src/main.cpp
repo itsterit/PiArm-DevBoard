@@ -72,9 +72,16 @@ extern "C" void TIM1_UP_IRQHandler(void)
 
 extern "C" void TIM3_IRQHandler(void)
 {
-  TIM3->SR = ~TIM3->SR;
+  if (TIM3->SR & TIM_SR_CC3IF_Msk)
+  {
+    TIM1->CR1 |= (0b01 << TIM_CR1_CEN_Pos);
+  }
+  else
+  {
+    TIM1->CR1 &= ~(0b01 << TIM_CR1_CEN_Pos);
+  }
 
-  TIM1->CR1 &= ~(0b01 << TIM_CR1_CEN_Pos); 
+  TIM3->SR = ~TIM3->SR;
 }
 
 void set_tmr1_cfg(void)
@@ -170,8 +177,9 @@ void set_tmr3_cfg(void)
   AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
-  TIM3->CCR2 = 500; // TIMx capture/compare register
-  TIM3->CCR1 = 600; // TIMx capture/compare register
+  TIM3->CCR1 = 600; // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
+  TIM3->CCR2 = 500; // TIMx capture/compare register - шим
+  TIM3->CCR3 = 100; // TIMx capture/compare register - таймер 1 + смещение на замер тока
 
   TIM3->ARR = 1000; // auto-reload register
 
@@ -203,10 +211,10 @@ void set_tmr3_cfg(void)
   TIM3->DIER |= (0b00 << TIM_DIER_UDE_Pos);   // Update DMA request enable
   TIM3->DIER |= (0b00 << TIM_DIER_TIE_Pos);   // Trigger interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC4IE_Pos); // Capture/Compare 4 interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
-  // TIM3->DIER |= (0b01 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos); // Update interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
+  TIM3->DIER |= (0b00 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos);   // Update interrupt enable
 
   TIM3->SMCR = 0x00;
   TIM3->SMCR |= (0b00 << TIM_SMCR_ETP_Pos);  // External trigger polarity
