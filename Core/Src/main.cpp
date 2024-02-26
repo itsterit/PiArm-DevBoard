@@ -79,7 +79,8 @@ extern "C" void TIM3_IRQHandler(void)
 {
   if (TIM3->SR & TIM_SR_CC2IF_Msk)
   {
-    GPIOB->BSRR = (0b01 << 11U);
+    // GPIOB->BSRR = (0b01 << 11U);
+    TIM1->CR1 &= ~(0b01 << TIM_CR1_CEN_Pos); // Counter enable
   }
   else
   {
@@ -116,8 +117,8 @@ void set_tmr1_cfg(void)
   TIM1->SMCR |= (0b00 << TIM_SMCR_ETPS_Pos); // External trigger prescaler
   TIM1->SMCR |= (0b00 << TIM_SMCR_ETF_Pos);  // External trigger filter
   TIM1->SMCR |= (0b00 << TIM_SMCR_MSM_Pos);  // !Master/slave mode
-  TIM1->SMCR |= (0b00 << TIM_SMCR_TS_Pos);   // Trigger selection
-  TIM1->SMCR |= (0b00 << TIM_SMCR_SMS_Pos);  // !Slave mode selection
+  TIM1->SMCR |= (0b010 << TIM_SMCR_TS_Pos);  // Trigger selection( Internal Trigger 2 (ITR2) = TIM3_TRGO)
+  TIM1->SMCR |= (0b110 << TIM_SMCR_SMS_Pos); // !Slave mode selection
 
   TIM1->DIER = 0x00;
   TIM1->DIER |= (0b00 << TIM_DIER_TDE_Pos);   // Trigger DMA request enable
@@ -156,7 +157,7 @@ void set_tmr1_cfg(void)
 
   TIM1->PSC = 72;
 
-  TIM1->ARR = 1000;
+  TIM1->ARR = 10;
 
   TIM1->CR1 = 0x00;
   TIM1->CR1 |= (0b00 << TIM_CR1_CKD_Pos);  // Clock division
@@ -229,7 +230,7 @@ void set_tmr3_cfg(void)
 
   TIM3->CR2 = 0x00;
   TIM3->CR2 |= (0b00 << TIM_CR2_TI1S_Pos); // настройка входа канал 1 или XOR каналов
-  TIM3->CR2 |= (0b00 << TIM_CR2_MMS_Pos);  // режим триггера таймера
+  TIM3->CR2 |= (0b010 << TIM_CR2_MMS_Pos); // режим триггера таймера
   TIM3->CR2 |= (0b00 << TIM_CR2_CCDS_Pos); // Настройка запроса ДМА
 
   TIM3->CCER = 0x00;
