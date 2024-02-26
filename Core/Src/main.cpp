@@ -85,6 +85,7 @@ extern "C" void TIM3_IRQHandler(void)
   {
     GPIOB->BRR = (0b01 << 11U);
   }
+
   TIM3->SR = ~TIM3->SR;
 }
 
@@ -182,7 +183,7 @@ void set_tmr3_cfg(void)
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
   TIM3->CCR2 = 500; // TIMx capture/compare register
-  TIM3->CCR1 = 500; // TIMx capture/compare register
+  TIM3->CCR1 = 600; // TIMx capture/compare register
 
   TIM3->ARR = 1000; // auto-reload register
 
@@ -217,7 +218,7 @@ void set_tmr3_cfg(void)
   TIM3->DIER |= (0b00 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
   TIM3->DIER |= (0b00 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
   TIM3->DIER |= (0b01 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_UIE_Pos);   // Update interrupt enable
+  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos);   // Update interrupt enable
 
   TIM3->SMCR = 0x00;
   TIM3->SMCR |= (0b00 << TIM_SMCR_ETP_Pos);  // External trigger polarity
