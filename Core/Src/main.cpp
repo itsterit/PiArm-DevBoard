@@ -55,9 +55,8 @@ int main(void)
 
   coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
   coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
-  coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE,
-                                                0,
-                                                (TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk));
+  coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk));
+  coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -189,15 +188,6 @@ void set_tmr3_cfg(void)
   TIM3->PSC = 71; // Prescaler value
 
   TIM3->SR = ~TIM3->SR;
-
-  TIM3->SMCR = 0x00;
-  TIM3->SMCR |= (0b00 << TIM_SMCR_ETP_Pos);  // External trigger polarity
-  TIM3->SMCR |= (0b00 << TIM_SMCR_ECE_Pos);  // External clock enable
-  TIM3->SMCR |= (0b00 << TIM_SMCR_ETPS_Pos); // External trigger prescaler
-  TIM3->SMCR |= (0b00 << TIM_SMCR_ETF_Pos);  // External trigger filter
-  TIM3->SMCR |= (0b00 << TIM_SMCR_MSM_Pos);  // Master/Slave mode
-  TIM3->SMCR |= (0b00 << TIM_SMCR_TS_Pos);   // Trigger selection
-  TIM3->SMCR |= (0b00 << TIM_SMCR_SMS_Pos);  // Slave mode selection
 
   TIM3->CR2 = 0x00;
   TIM3->CR2 |= (0b00 << TIM_CR2_TI1S_Pos); // настройка входа канал 1 или XOR каналов
