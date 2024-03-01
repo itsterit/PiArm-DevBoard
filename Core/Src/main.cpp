@@ -14,6 +14,13 @@ GPIO gen_freq(GPIOB, 5U);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
+void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
+{
+  uint32_t timer_arr = tmr_freq / frq;
+  uint32_t timer_main_channel = (timer_arr / 100) * duty;
+  coil_frequency_timer.set_timer_config(timer_main_channel+10, timer_main_channel, 100, 0, timer_arr, 71, 0);
+}
+
 int main(void)
 {
   led_pin.clock_enable(true);
@@ -61,23 +68,17 @@ int main(void)
   AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
   coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
   coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
-  coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk));
+  coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_CC3IE_Msk | TIM_DIER_CC4IE_Msk));
   coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
   coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
   coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-  coil_frequency_timer.set_timer_config(400, 300, 100, 0, 1000, 71, 0);
+  coil_frequency_timer.set_timer_config(350, 300, 100, 250, 1000, 71, 0);
+  // config_timer(1000000, 1000, 50);
   coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
   NVIC_EnableIRQ(TIM3_IRQn);
 
   while (true)
   {
-    if (!(btn_3.get_level()))
-    {
-      TIM3->CCR1 = 60; // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
-      TIM3->CCR2 = 50; // TIMx capture/compare register - шим
-      TIM3->CCR3 = 10; // TIMx capture/compare register - таймер 1 + смещение на замер тока
-      TIM3->ARR = 100; // auto-reload register
-    }
   }
 }
 
