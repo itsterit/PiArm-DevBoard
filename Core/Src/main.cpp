@@ -53,8 +53,13 @@ int main(void)
     }
   }
 
-  coil_frequency_timer.set_channel_output_config(2, 0, 1, 1, CHANNEL_PWM_MODE_1);
-  coil_frequency_timer.set_event_generation(0, 0, 0, 0, 0, 0);
+  coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
+  coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE,
+                                            CAPTURE_COMPARE_4_GENERATION_DISABLE,
+                                            CAPTURE_COMPARE_3_GENERATION_DISABLE,
+                                            CAPTURE_COMPARE_2_GENERATION_DISABLE,
+                                            CAPTURE_COMPARE_1_GENERATION_DISABLE,
+                                            UPDATE_GENERATION_DISABLE);
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -186,20 +191,6 @@ void set_tmr3_cfg(void)
   TIM3->PSC = 71; // Prescaler value
 
   TIM3->SR = ~TIM3->SR;
-
-  TIM3->DIER = 0x00;
-  TIM3->DIER |= (0b00 << TIM_DIER_TDE_Pos);   // Trigger DMA request enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC4DE_Pos); // Capture/Compare 4 DMA request enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC3DE_Pos); // Capture/Compare 3 DMA request enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC2DE_Pos); // Capture/Compare 2 DMA request enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC1DE_Pos); // Capture/Compare 1 DMA request enable
-  TIM3->DIER |= (0b00 << TIM_DIER_UDE_Pos);   // Update DMA request enable
-  TIM3->DIER |= (0b00 << TIM_DIER_TIE_Pos);   // Trigger interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC4IE_Pos); // Capture/Compare 4 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_CC3IE_Pos); // Capture/Compare 3 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_CC2IE_Pos); // Capture/Compare 2 interrupt enable
-  TIM3->DIER |= (0b00 << TIM_DIER_CC1IE_Pos); // Capture/Compare 1 interrupt enable
-  TIM3->DIER |= (0b01 << TIM_DIER_UIE_Pos);   // Update interrupt enable
 
   TIM3->SMCR = 0x00;
   TIM3->SMCR |= (0b00 << TIM_SMCR_ETP_Pos);  // External trigger polarity
