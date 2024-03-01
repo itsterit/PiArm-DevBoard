@@ -3,12 +3,16 @@
 #include <stm32f103xb.h>
 #include "GPIO/GPIO.h"
 #include "clock_control/clock_control.h"
+#include "timer/timer.h"
 
 GPIO led_pin(GPIOB, 11U);
 GPIO btn_3(GPIOB, 15U);
 GPIO btn_2(GPIOB, 14U);
 GPIO btn_1(GPIOB, 13U);
 GPIO gen_freq(GPIOB, 5U);
+
+timer coil_frequency_timer(TIM3);
+timer sampling_timer(TIM1);
 
 void set_tmr3_cfg(void);
 void set_tmr1_cfg(void);
@@ -86,12 +90,6 @@ extern "C" void TIM3_IRQHandler(void)
 
 void set_tmr1_cfg(void)
 {
-
-  /**
-   *  use apb2(72MHz) as timer clock
-   */
-  RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
-
   TIM1->CR2 = 0x00;
   TIM1->CR2 |= (0b00 << TIM_CR2_OIS4_Pos);  // Output Idle state x (OCx output)
   TIM1->CR2 |= (0b00 << TIM_CR2_OIS3N_Pos); // Output Idle state x (OCxN output)
@@ -175,7 +173,6 @@ void set_tmr3_cfg(void)
   RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
   AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
   AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
-  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
   TIM3->CCR1 = 600; // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
   TIM3->CCR2 = 500; // TIMx capture/compare register - шим
