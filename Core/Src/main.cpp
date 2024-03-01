@@ -57,6 +57,7 @@ int main(void)
   coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
   coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk));
   coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
+  coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -188,11 +189,6 @@ void set_tmr3_cfg(void)
   TIM3->PSC = 71; // Prescaler value
 
   TIM3->SR = ~TIM3->SR;
-
-  TIM3->CR2 = 0x00;
-  TIM3->CR2 |= (0b00 << TIM_CR2_TI1S_Pos); // настройка входа канал 1 или XOR каналов
-  TIM3->CR2 |= (0b011 << TIM_CR2_MMS_Pos); // режим триггера таймера
-  TIM3->CR2 |= (0b00 << TIM_CR2_CCDS_Pos); // Настройка запроса ДМА
 
   TIM3->CCER = 0x00;
   TIM3->CCER |= (0b00 << TIM_CCER_CC4P_Pos); //
