@@ -58,6 +58,7 @@ int main(void)
   coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk));
   coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
   coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
+  coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -66,6 +67,13 @@ int main(void)
 
   while (true)
   {
+    if (!(btn_3.get_level()))
+    {
+      TIM3->CCR1 = 60;  // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
+      TIM3->CCR2 = 50;  // TIMx capture/compare register - шим
+      TIM3->CCR3 = 10;  // TIMx capture/compare register - таймер 1 + смещение на замер тока
+      TIM3->ARR = 100; // auto-reload register
+    }
   }
 }
 
@@ -187,18 +195,6 @@ void set_tmr3_cfg(void)
   TIM3->ARR = 1000; // auto-reload register
 
   TIM3->PSC = 71; // Prescaler value
-
-  TIM3->SR = ~TIM3->SR;
-
-  TIM3->CCER = 0x00;
-  TIM3->CCER |= (0b00 << TIM_CCER_CC4P_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC4E_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC3P_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC3E_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC2P_Pos); // Capture/Compare output polarity
-  TIM3->CCER |= (0b01 << TIM_CCER_CC2E_Pos); // Capture/Compare output enable
-  TIM3->CCER |= (0b00 << TIM_CCER_CC1P_Pos); //
-  TIM3->CCER |= (0b00 << TIM_CCER_CC1E_Pos); //
 
   TIM3->CR1 = 0x00;
   TIM3->CR1 |= (0b00 << TIM_CR1_CKD_Pos);  // коэффициент деления между тактовой частотой таймера и тактовой частотой дискретизации
