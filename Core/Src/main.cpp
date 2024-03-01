@@ -59,6 +59,7 @@ int main(void)
   coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
   coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
   coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
+  coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -69,9 +70,9 @@ int main(void)
   {
     if (!(btn_3.get_level()))
     {
-      TIM3->CCR1 = 60;  // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
-      TIM3->CCR2 = 50;  // TIMx capture/compare register - шим
-      TIM3->CCR3 = 10;  // TIMx capture/compare register - таймер 1 + смещение на замер тока
+      TIM3->CCR1 = 60; // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
+      TIM3->CCR2 = 50; // TIMx capture/compare register - шим
+      TIM3->CCR3 = 10; // TIMx capture/compare register - таймер 1 + смещение на замер тока
       TIM3->ARR = 100; // auto-reload register
     }
   }
@@ -195,14 +196,4 @@ void set_tmr3_cfg(void)
   TIM3->ARR = 1000; // auto-reload register
 
   TIM3->PSC = 71; // Prescaler value
-
-  TIM3->CR1 = 0x00;
-  TIM3->CR1 |= (0b00 << TIM_CR1_CKD_Pos);  // коэффициент деления между тактовой частотой таймера и тактовой частотой дискретизации
-  TIM3->CR1 |= (0b01 << TIM_CR1_ARPE_Pos); // Использовать теневой регистр для обновления
-  TIM3->CR1 |= (0b00 << TIM_CR1_CMS_Pos);  // Центрировать сигнал
-  TIM3->CR1 |= (0b00 << TIM_CR1_DIR_Pos);  // Направление счетчика
-  TIM3->CR1 |= (0b00 << TIM_CR1_OPM_Pos);  // Не отключать таймер после первой итерации
-  TIM3->CR1 |= (0b00 << TIM_CR1_URS_Pos);  // Источники запросов обновления
-  TIM3->CR1 |= (0b00 << TIM_CR1_UDIS_Pos); // Обновление включено - для обновления теневого регистра
-  TIM3->CR1 |= (0b01 << TIM_CR1_CEN_Pos);  // Запустить счетчик
 }
