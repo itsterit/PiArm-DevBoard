@@ -54,6 +54,7 @@ int main(void)
   }
 
   coil_frequency_timer.set_channel_output_config(2, 0, 1, 1, CHANNEL_PWM_MODE_1);
+  coil_frequency_timer.set_event_generation(0, 0, 0, 0, 0, 0);
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -183,21 +184,6 @@ void set_tmr3_cfg(void)
   TIM3->ARR = 1000; // auto-reload register
 
   TIM3->PSC = 71; // Prescaler value
-
-  // TIM3->CCMR1 = 0x00;
-  // TIM3->CCMR1 |= (0b000 << TIM_CCMR1_CC2S_Pos);  // Capture/Compare selection(CC3 channel is configured as output)
-  // TIM3->CCMR1 |= (0b000 << TIM_CCMR1_OC2CE_Pos); // Output compare clear enable
-  // TIM3->CCMR1 |= (0b001 << TIM_CCMR1_OC2PE_Pos); // Output compare preload enable
-  // TIM3->CCMR1 |= (0b001 << TIM_CCMR1_OC2FE_Pos); // Output compare fast enable
-  // TIM3->CCMR1 |= (0b110 << TIM_CCMR1_OC2M_Pos);  // Output compare mode
-
-  TIM3->EGR = 0x00;
-  TIM3->EGR |= (0b00 << TIM_EGR_TG_Pos);   // Trigger generation
-  TIM3->EGR |= (0b00 << TIM_EGR_CC4G_Pos); // Capture/compare 4 generation
-  TIM3->EGR |= (0b00 << TIM_EGR_CC3G_Pos); // Capture/compare 3 generation
-  TIM3->EGR |= (0b00 << TIM_EGR_CC2G_Pos); // Capture/compare 2 generation
-  TIM3->EGR |= (0b00 << TIM_EGR_CC1G_Pos); // Capture/compare 1 generation
-  TIM3->EGR |= (0b00 << TIM_EGR_UG_Pos);   // Update generation
 
   TIM3->SR = ~TIM3->SR;
 
