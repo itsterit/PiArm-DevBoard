@@ -54,12 +54,10 @@ int main(void)
   }
 
   coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
-  coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE,
-                                            CAPTURE_COMPARE_4_GENERATION_DISABLE,
-                                            CAPTURE_COMPARE_3_GENERATION_DISABLE,
-                                            CAPTURE_COMPARE_2_GENERATION_DISABLE,
-                                            CAPTURE_COMPARE_1_GENERATION_DISABLE,
-                                            UPDATE_GENERATION_DISABLE);
+  coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
+  coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE,
+                                                0,
+                                                (TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk));
 
   set_tmr1_cfg();
   NVIC_EnableIRQ(TIM1_UP_IRQn);
@@ -182,8 +180,8 @@ void set_tmr3_cfg(void)
   AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
   AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
 
-  TIM3->CCR1 = 600; // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
-  TIM3->CCR2 = 500; // TIMx capture/compare register - шим
+  TIM3->CCR1 = 400; // TIMx capture/compare register - таймер 1 + смещение анализ сигнала
+  TIM3->CCR2 = 300; // TIMx capture/compare register - шим
   TIM3->CCR3 = 100; // TIMx capture/compare register - таймер 1 + смещение на замер тока
 
   TIM3->ARR = 1000; // auto-reload register
