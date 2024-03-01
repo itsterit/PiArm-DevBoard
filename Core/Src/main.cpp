@@ -11,6 +11,9 @@ GPIO btn_2(GPIOB, 14U);
 GPIO btn_1(GPIOB, 13U);
 GPIO gen_freq(GPIOB, 5U);
 
+GPIO usb_tx(GPIOA, 9U);
+GPIO usb_rx(GPIOA, 10U);
+
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
@@ -20,7 +23,7 @@ void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
   uint32_t timer_main_channel = (timer_arr / 100) * duty;
 
   uint8_t start_sampling_offset = 10;
-  
+
   uint32_t start_coil_reply_sampling = (timer_main_channel + start_sampling_offset);
   uint32_t end_coil_reply_sampling = (timer_arr - start_sampling_offset);
 
@@ -33,6 +36,11 @@ int main(void)
 {
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
+
+  usb_tx.clock_enable(true);
+  usb_tx.set_config(GPIO::alternate_push_pull);
+  usb_rx.clock_enable(true);
+  usb_rx.set_config(GPIO::alternate_push_pull);
 
   gen_freq.clock_enable(true);
   gen_freq.set_config(GPIO::alternate_push_pull);
@@ -83,6 +91,49 @@ int main(void)
   config_timer(1000000, 5000, 20);
   coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
   NVIC_EnableIRQ(TIM3_IRQn);
+
+  RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+  USART1->SR &= ~USART1->SR;
+
+  USART1->CR3 = 0x00;
+  USART1->CR3 |= (0b00 << USART_CR3_CTSIE_Pos); // CTS interrupt enable
+  USART1->CR3 |= (0b00 << USART_CR3_CTSE_Pos);  // CTS enable
+  USART1->CR3 |= (0b00 << USART_CR3_RTSE_Pos);  // RTS enable
+  USART1->CR3 |= (0b00 << USART_CR3_DMAT_Pos);  // DMA enable transmitter
+  USART1->CR3 |= (0b00 << USART_CR3_DMAR_Pos);  // DMA enable receiver
+  USART1->CR3 |= (0b00 << USART_CR3_SCEN_Pos);  // Smartcard mode enable
+  USART1->CR3 |= (0b00 << USART_CR3_NACK_Pos);  // Smartcard NACK enable
+  USART1->CR3 |= (0b00 << USART_CR3_HDSEL_Pos); // Half-duplex selection
+  USART1->CR3 |= (0b00 << USART_CR3_IRLP_Pos);  // IrDA low-power
+  USART1->CR3 |= (0b00 << USART_CR3_IREN_Pos);  // IrDA mode enable
+  USART1->CR3 |= (0b00 << USART_CR3_EIE_Pos);   // Error interrupt enable
+
+  USART1->CR2 = 0x00;
+  USART1->CR2 |= (0b00 << USART_CR2_LINEN_Pos); // LIN mode enable
+  USART1->CR2 |= (0b00 << USART_CR2_STOP_Pos);  // STOP bits
+  USART1->CR2 |= (0b00 << USART_CR2_CLKEN_Pos); // Clock enable
+  USART1->CR2 |= (0b00 << USART_CR2_CPOL_Pos);  // Clock polarity
+  USART1->CR2 |= (0b00 << USART_CR2_CPHA_Pos);  // Clock phase
+  USART1->CR2 |= (0b00 << USART_CR2_LBCL_Pos);  // Last bit clock pulse
+  USART1->CR2 |= (0b00 << USART_CR2_LBDIE_Pos); // LIN break detection interrupt enable
+  USART1->CR2 |= (0b00 << USART_CR2_LBDL_Pos);  // lin break detection length
+  USART1->CR2 |= (0b00 << USART_CR2_ADD_Pos);   // Address of the USART node
+
+  USART1->CR1 = 0x00;
+  USART1->CR1 |= (0b00 << USART_CR1_UE_Pos);     // USART enable
+  USART1->CR1 |= (0b00 << USART_CR1_M_Pos);      // Word length
+  USART1->CR1 |= (0b00 << USART_CR1_WAKE_Pos);   // Wakeup method
+  USART1->CR1 |= (0b00 << USART_CR1_PCE_Pos);    // Parity control enable
+  USART1->CR1 |= (0b00 << USART_CR1_PS_Pos);     // Parity selection
+  USART1->CR1 |= (0b00 << USART_CR1_PEIE_Pos);   // PE interrupt enable
+  USART1->CR1 |= (0b00 << USART_CR1_TXEIE_Pos);  // TXE interrupt enable
+  USART1->CR1 |= (0b00 << USART_CR1_TCIE_Pos);   // Transmission complete interrupt enable
+  USART1->CR1 |= (0b00 << USART_CR1_RXNEIE_Pos); // RXNE interrupt enable
+  USART1->CR1 |= (0b00 << USART_CR1_IDLEIE_Pos); // IDLE interrupt enable
+  USART1->CR1 |= (0b00 << USART_CR1_TE_Pos);     // Transmitter enable
+  USART1->CR1 |= (0b00 << USART_CR1_RE_Pos);     // Receiver enable
+  USART1->CR1 |= (0b00 << USART_CR1_RWU_Pos);    // Receiver wakeup
+  USART1->CR1 |= (0b00 << USART_CR1_SBK_Pos);    // Send break
 
   while (true)
   {
