@@ -95,6 +95,10 @@ int main(void)
   RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
   USART1->SR &= ~USART1->SR;
 
+  USART1->BRR = 0x00;
+  USART1->BRR |= (((468 & (USART_BRR_DIV_Mantissa_Msk >> USART_BRR_DIV_Mantissa_Pos)) << USART_BRR_DIV_Mantissa_Pos) |
+                  ((75 & (USART_BRR_DIV_Fraction_Msk >> USART_BRR_DIV_Fraction_Pos)) << USART_BRR_DIV_Fraction_Pos));
+
   USART1->CR3 = 0x00;
   USART1->CR3 |= (0b00 << USART_CR3_CTSIE_Pos); // CTS interrupt enable
   USART1->CR3 |= (0b00 << USART_CR3_CTSE_Pos);  // CTS enable
@@ -120,7 +124,7 @@ int main(void)
   USART1->CR2 |= (0b00 << USART_CR2_ADD_Pos);   // Address of the USART node
 
   USART1->CR1 = 0x00;
-  USART1->CR1 |= (0b00 << USART_CR1_UE_Pos);     // USART enable
+  USART1->CR1 |= (0b01 << USART_CR1_UE_Pos);     // USART enable
   USART1->CR1 |= (0b00 << USART_CR1_M_Pos);      // Word length
   USART1->CR1 |= (0b00 << USART_CR1_WAKE_Pos);   // Wakeup method
   USART1->CR1 |= (0b00 << USART_CR1_PCE_Pos);    // Parity control enable
@@ -130,13 +134,20 @@ int main(void)
   USART1->CR1 |= (0b00 << USART_CR1_TCIE_Pos);   // Transmission complete interrupt enable
   USART1->CR1 |= (0b00 << USART_CR1_RXNEIE_Pos); // RXNE interrupt enable
   USART1->CR1 |= (0b00 << USART_CR1_IDLEIE_Pos); // IDLE interrupt enable
-  USART1->CR1 |= (0b00 << USART_CR1_TE_Pos);     // Transmitter enable
-  USART1->CR1 |= (0b00 << USART_CR1_RE_Pos);     // Receiver enable
+  USART1->CR1 |= (0b01 << USART_CR1_TE_Pos);     // Transmitter enable
+  USART1->CR1 |= (0b01 << USART_CR1_RE_Pos);     // Receiver enable
   USART1->CR1 |= (0b00 << USART_CR1_RWU_Pos);    // Receiver wakeup
   USART1->CR1 |= (0b00 << USART_CR1_SBK_Pos);    // Send break
 
+  USART1->DR = 0x41;
+
   while (true)
   {
+    if (USART1->SR & USART_SR_TC_Msk)
+    {
+      USART1->SR &= ~USART1->SR;
+      USART1->DR = 0x41;
+    }
   }
 }
 
