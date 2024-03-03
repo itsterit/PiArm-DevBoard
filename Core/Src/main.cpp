@@ -98,9 +98,11 @@ int main(void)
   coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
   // NVIC_EnableIRQ(TIM3_IRQn);
 
+  while (1)
+    if ((btn_2.get_level()))
+      break;
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
-  usb.LogD((char *)"Hello!");
-  // usb_line.transmit((uint8_t *)"Hello!", 6);
+  usb.LogV((char *)"\n\rStarting...\n\r");
 
   while (true)
   {
@@ -136,6 +138,5 @@ extern "C" void TIM3_IRQHandler(void)
 
 void log_out_method(char *str, uint8_t len)
 {
-  USART1->DR = (uint8_t)*str;
-  // usb_line.transmit((uint8_t *)str, len);
+  usb_line.transmit((uint8_t *)str, len);
 }

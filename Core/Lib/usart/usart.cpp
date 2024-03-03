@@ -47,22 +47,26 @@ bool usart::usart_config(USART_WORD_LENGTH_Type word_length,
 
 bool usart::transmit(uint8_t *msg, int32_t len)
 {
-    uint16_t transmit_err = 0;
     if (usart_x)
     {
-        usart_x->DR = *msg++;
+        uint16_t transmit_err = 0;
+        usart_x->SR &= ~usart_x->SR;
+        usart_x->DR = (uint8_t)*msg++;
+
         while (transmit_err++ < 0xFFF)
         {
-            if ((usart_x->SR & USART_SR_TC_Msk))
+            if (usart_x->SR & USART_SR_TC_Msk)
             {
                 usart_x->SR &= ~usart_x->SR;
                 transmit_err = 0;
                 if (--len > 0)
                 {
-                    usart_x->DR = *msg++;
-                    continue;
+                    usart_x->DR = (uint8_t)*msg++;
                 }
-                return 1;
+                else
+                {
+                    return 1;
+                }
             }
         }
     }

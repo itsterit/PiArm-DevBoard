@@ -6,8 +6,8 @@ class GPIO
 {
 private:
     GPIO_TypeDef *GPIOx;
-    uint8_t pin_number;
-    bool pin_data_read_access{0};
+    volatile uint8_t pin_number;
+    volatile bool pin_data_read_access{0};
     volatile uint32_t *pin_level;
 
 public:
