@@ -13,6 +13,8 @@ timer::timer(TIM_TypeDef *timer)
         RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
     else if (act_timer == TIM4)
         RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+    else
+        act_timer = 0;
 }
 
 void timer::set_channel_output_config(uint8_t channel,
