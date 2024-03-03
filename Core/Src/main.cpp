@@ -5,6 +5,7 @@
 #include "clock_control/clock_control.h"
 #include "timer/timer.h"
 #include "usart/usart.h"
+#include "SimpleLog/SimpleLog.h"
 
 GPIO led_pin(GPIOB, 11U);
 GPIO btn_3(GPIOB, 15U);
@@ -19,6 +20,8 @@ timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
 usart usb_line(USART1);
+void log_out_method(char *str, uint8_t len);
+SimpleLog usb(log_out_method);
 
 void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 {
@@ -80,7 +83,7 @@ int main(void)
   sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
   sampling_timer.set_timer_config(0, 0, 0, 0, 5, 72, 0);
   sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
-  NVIC_EnableIRQ(TIM1_UP_IRQn);
+  // NVIC_EnableIRQ(TIM1_UP_IRQn);
 
   RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
   AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
@@ -93,13 +96,16 @@ int main(void)
   coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
   config_timer(1000000, 5000, 20);
   coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
-  NVIC_EnableIRQ(TIM3_IRQn);
+  // NVIC_EnableIRQ(TIM3_IRQn);
 
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
-  usb_line.transmit((uint8_t*)"Hello!\n\r", 8);
+  usb.LogD((char *)"Hello!");
+  // usb_line.transmit((uint8_t *)"Hello!", 6);
 
   while (true)
   {
+    if (!(btn_2.get_level()))
+      NVIC_SystemReset();
   }
 }
 
@@ -107,11 +113,11 @@ extern "C" void TIM1_UP_IRQHandler(void)
 {
   TIM1->SR = ~TIM1->SR;
 
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BRR = (0b01 << 11U);
 }
 
 extern "C" void TIM3_IRQHandler(void)
@@ -126,4 +132,10 @@ extern "C" void TIM3_IRQHandler(void)
   }
 
   TIM3->SR = ~TIM3->SR;
+}
+
+void log_out_method(char *str, uint8_t len)
+{
+  USART1->DR = (uint8_t)*str;
+  // usb_line.transmit((uint8_t *)str, len);
 }
