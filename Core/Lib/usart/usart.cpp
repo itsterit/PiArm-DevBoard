@@ -21,26 +21,50 @@ bool usart::usart_config(USART_WORD_LENGTH_Type word_length,
 {
     if ((usart_x) && (usart_bus_clk / baud_rate))
     {
-        USART1->BRR = usart_bus_clk / baud_rate;
-        USART1->SR &= ~USART1->SR;
+        usart_x->BRR = usart_bus_clk / baud_rate;
+        usart_x->SR &= ~USART1->SR;
 
-        USART1->CR2 &= ~USART_CR2_STOP_Msk;
-        USART1->CR2 |= (stop_bits << USART_CR2_STOP_Pos);
+        usart_x->CR2 &= ~USART_CR2_STOP_Msk;
+        usart_x->CR2 |= (stop_bits << USART_CR2_STOP_Pos);
 
-        USART1->CR1 &= ~USART_CR1_M_Msk;
-        USART1->CR1 |= (word_length << USART_CR1_M_Pos);
+        usart_x->CR1 &= ~USART_CR1_M_Msk;
+        usart_x->CR1 |= (word_length << USART_CR1_M_Pos);
 
-        USART1->CR1 &= ~USART_CR1_PCE_Msk;
-        USART1->CR1 |= ((parity_control >> 1) << USART_CR1_PCE_Pos);
+        usart_x->CR1 &= ~USART_CR1_PCE_Msk;
+        usart_x->CR1 |= ((parity_control >> 1) << USART_CR1_PCE_Pos);
 
-        USART1->CR1 &= ~USART_CR1_PS_Msk;
-        USART1->CR1 |= ((parity_control & 0b01) << USART_CR1_PS_Pos);
+        usart_x->CR1 &= ~USART_CR1_PS_Msk;
+        usart_x->CR1 |= ((parity_control & 0b01) << USART_CR1_PS_Pos);
 
-        USART1->CR1 |= USART_CR1_TE_Msk;
-        USART1->CR1 |= USART_CR1_RE_Msk;
-        USART1->CR1 |= USART_CR1_UE_Msk;
+        usart_x->CR1 |= USART_CR1_TE_Msk;
+        usart_x->CR1 |= USART_CR1_RE_Msk;
+        usart_x->CR1 |= USART_CR1_UE_Msk;
 
         return 1;
+    }
+    return 0;
+}
+
+bool usart::transmit(uint8_t *msg, int32_t len)
+{
+    uint16_t transmit_err = 0;
+    if (usart_x)
+    {
+        usart_x->DR = *msg++;
+        while (transmit_err++ < 0xFFF)
+        {
+            if ((usart_x->SR & USART_SR_TC_Msk))
+            {
+                usart_x->SR &= ~usart_x->SR;
+                transmit_err = 0;
+                if (--len > 0)
+                {
+                    usart_x->DR = *msg++;
+                    continue;
+                }
+                return 1;
+            }
+        }
     }
     return 0;
 }

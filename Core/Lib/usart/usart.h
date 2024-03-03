@@ -35,6 +35,7 @@ public:
                       PARITY_CONTROL_Type parity_control,
                       STOP_BITS_Type stop_bits,
                       uint32_t usart_bus_clk, uint32_t baud_rate);
+    bool transmit(uint8_t* msg, int32_t len);
 };
 
 #endif /* __USART_H__ */

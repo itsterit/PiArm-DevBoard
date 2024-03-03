@@ -18,7 +18,7 @@ GPIO usb_rx(GPIOA, 10U);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
-usart usb_libe(USART1);
+usart usb_line(USART1);
 
 void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 {
@@ -95,16 +95,11 @@ int main(void)
   coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
   NVIC_EnableIRQ(TIM3_IRQn);
 
-  usb_libe.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
-  
-  USART1->DR = 0x41;
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
+  usb_line.transmit((uint8_t*)"Hello!\n\r", 8);
+
   while (true)
   {
-    if (USART1->SR & USART_SR_TC_Msk)
-    {
-      USART1->SR &= ~USART1->SR;
-      USART1->DR = 0x41;
-    }
   }
 }
 
