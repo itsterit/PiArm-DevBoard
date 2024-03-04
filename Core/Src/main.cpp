@@ -99,8 +99,14 @@ int main(void)
   // NVIC_EnableIRQ(TIM3_IRQn);
 
   while (1)
+  {
+    led_pin.set();
     if ((btn_2.get_level()))
+    {
+      led_pin.reset();
       break;
+    }
+  }
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
   usb.LogV((char *)"\n\rStarting...\n\r");
 
