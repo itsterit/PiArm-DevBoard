@@ -72,3 +72,14 @@ bool usart::transmit(uint8_t *msg, int32_t len)
     }
     return 0;
 }
+
+bool usart::interrupt_config(uint16_t interrupt_config_msk)
+{
+    if (usart_x)
+    {
+        usart_x->CR1 &= ~(USART_CR1_TXEIE_Msk | USART_CR1_TCIE_Msk | USART_CR1_RXNEIE_Msk | USART_CR1_IDLEIE_Msk);
+        usart_x->CR1 |= ((USART_CR1_TXEIE_Msk | USART_CR1_TCIE_Msk | USART_CR1_RXNEIE_Msk | USART_CR1_IDLEIE_Msk) & interrupt_config_msk);
+        return 1;
+    }
+    return 0;
+}

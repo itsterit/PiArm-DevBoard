@@ -21,7 +21,7 @@ timer sampling_timer(TIM1);
 
 usart usb_line(USART1);
 void log_out_method(char *str, uint8_t len);
-SimpleLog usb(log_out_method);
+SimpleLog Logger(log_out_method);
 
 void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 {
@@ -107,13 +107,59 @@ int main(void)
       break;
     }
   }
+
+  RCC->APB2ENR |= RCC_APB2ENR_IOPAEN; // разрешаем тактирование порта GPIOA
+
+  // настройка вывода PA9 (TX1) на режим альтернативной функции с активным выходом
+  // Биты CNF = 10, ,биты MODE = X1
+  GPIOA->CRH &= (~GPIO_CRH_CNF9_0);
+  GPIOA->CRH |= (GPIO_CRH_CNF9_1 | GPIO_CRH_MODE9);
+
+  // настройка вывода PA10 (RX1) на режим входа с подтягивающим резистором
+  // Биты CNF = 10, ,биты MODE = 00, ODR = 1
+  GPIOA->CRH &= (~GPIO_CRH_CNF10_0);
+  GPIOA->CRH |= GPIO_CRH_CNF10_1;
+  GPIOA->CRH &= (~(GPIO_CRH_MODE10));
+  GPIOA->BSRR |= GPIO_ODR_ODR10;
+
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
-  usb.LogV((char *)"\n\rStarting...\n\r");
+  Logger.LogV((char *)"\n\rStarting...\n\r");
+
+  USART1->CR1 |= (USART_CR1_RXNEIE_Msk);
+  NVIC_EnableIRQ(USART1_IRQn);
 
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
+  }
+}
+
+extern "C" void USART1_IRQHandler(void)
+{
+  USART1->SR = ~USART1->SR;
+  {
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BRR = (0b01 << 11U);
   }
 }
 
