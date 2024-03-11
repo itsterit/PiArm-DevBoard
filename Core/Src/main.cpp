@@ -13,6 +13,7 @@ timer sampling_timer(TIM1);
 
 usart usb_line(USART1);
 SimpleLog Logger(log_out_method);
+dma_control usb_line_dma(DMA1, DMA1_Channel1);
 
 int main(void)
 {
@@ -86,6 +87,13 @@ int main(void)
   Logger.LogV((char *)"\n\rStarting...\n\r");
   USART1->CR1 |= (USART_CR1_IDLEIE_Msk);
   NVIC_EnableIRQ(USART1_IRQn);
+
+  const char str[] = "Hello!";
+  usb_line_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+                              MSIZE_8bits, PSIZE_8bits,
+                              MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Memory,
+                              TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+  usb_line_dma.dma_start(strlen(str), (uint32_t *)&str[0], (uint32_t *)USART1->DR);
 
   /**
    * ждем отпуская кнопки сброса
