@@ -83,7 +83,13 @@ private:
 
 public:
     dma_control(DMA_TypeDef *DMA_num, DMA_Channel_TypeDef *DMA_channel);
-    void dma_set_config();
+    void dma_set_config(eMEM2MEM_MODE memory_to_memory_mode, eCHANNEL_PRIORITY_LEVEL channel_priority_level,
+                        eMSIZE memory_size, ePSIZE peripheral_size, eMEMORY_INCREMENT_MODE memory_increment_mode,
+                        ePERIPHERAL_INCREMENT_MODE peripheral_increment_mode, eCIRCULAR_MODE circular_mode,
+                        eDATA_TRANSFER_DIRECTION data_transfer_direction,
+                        eTRANSFER_ERROR_INTERRUPT_ENABLE transfer_error_interrupt_enable,
+                        eHALF_TRANSFER_INTERRUPT_ENABLE half_transfer_interrupt_enable,
+                        eTRANSFER_COMPLETE_INTERRUPT_ENABLE transfer_complete_interrupt_enable);
     void dma_start(uint16_t counter, uint32_t *data_pointer, uint32_t *peripheral_pointer);
 };
 
