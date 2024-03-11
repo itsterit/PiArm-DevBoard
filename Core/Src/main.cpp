@@ -1,11 +1,4 @@
-#include <stdint.h>
 #include <main.h>
-#include <stm32f103xb.h>
-#include "GPIO/GPIO.h"
-#include "clock_control/clock_control.h"
-#include "timer/timer.h"
-#include "usart/usart.h"
-#include "SimpleLog/SimpleLog.h"
 
 GPIO led_pin(GPIOB, 11U);
 GPIO btn_3(GPIOB, 15U);
@@ -111,7 +104,7 @@ int main(void)
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 9600);
   Logger.LogV((char *)"\n\rStarting...\n\r");
 
-  USART1->CR1 |= (USART_CR1_RXNEIE_Msk);
+  USART1->CR1 |= (USART_CR1_IDLEIE_Msk);
   NVIC_EnableIRQ(USART1_IRQn);
 
   while (true)
@@ -124,30 +117,8 @@ int main(void)
 extern "C" void USART1_IRQHandler(void)
 {
   USART1->SR = ~USART1->SR;
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BRR = (0b01 << 11U);
-
-  char msg = USART1->DR;
-  USART1->DR = msg;
+  char test = USART1->DR;
+  Logger.LogD((char *)"USART1 irq\n\r");
 }
 
 extern "C" void TIM1_UP_IRQHandler(void)

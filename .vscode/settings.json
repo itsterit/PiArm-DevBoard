@@ -1,3 +1,30 @@
 {
-    "cSpell.language": "en,ru-RU"
+    "cSpell.language": "en,ru-RU",
+    "commentbars.quickPresets": [
+        {
+            "label": "Heavy",
+            "fillChar": "#",
+            "width": 75,
+            "thickness": 3,
+            "seamlessFill": true
+        },
+        {
+            "label": "Medium",
+            "fillChar": "=",
+            "width": 60,
+            "thickness": 3
+        },
+        {
+            "label": "Normal",
+            "fillChar": "~",
+            "width": 45,
+            "thickness": 1
+        },
+        {
+            "label": "Light",
+            "fillChar": "-",
+            "width": 30,
+            "thickness": 1
+        }
+    ]
 }
