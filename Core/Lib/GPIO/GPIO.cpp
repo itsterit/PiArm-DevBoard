@@ -65,7 +65,7 @@ bool GPIO::set_config(PIN_INPUT_Type pin_input_config)
  * @details     Устанавливает push_pull или open_drain
  * @param[in]   pin_alternate_config PIN_ALTERNATE_Type
  */
-bool GPIO::set_config(PIN_ALTERNATE_Type pin_alternate_config)
+bool GPIO::set_config(PIN_ALTERNATE_Type pin_alternate_config, ALTERNATE_MODE_Type alternate_mode_config)
 {
     pin_data_read_access = 0;
     volatile uint32_t *configuration_register = ((pin_number > 7) ? &(GPIOx->CRH) : &(GPIOx->CRL));
@@ -73,12 +73,16 @@ bool GPIO::set_config(PIN_ALTERNATE_Type pin_alternate_config)
     volatile uint8_t cnfg_shift = mode_shift + 2;
 
     *configuration_register &= ~(0b11 << cnfg_shift);
+    *configuration_register &= ~(0b11 << mode_shift);
     *configuration_register |= (pin_alternate_config << cnfg_shift);
-    *configuration_register |= (0b11 << mode_shift);
+    *configuration_register |= ((alternate_mode_config >> 1) << mode_shift);
+
+    GPIOx->ODR &= ~(0b01 << pin_number);
+    GPIOx->ODR |= ((alternate_mode_config & 0b01) << pin_number);
 
     asm("NOP");
     return ((((*configuration_register & (0b11 << cnfg_shift)) >> cnfg_shift) == pin_alternate_config) &&
-            (((*configuration_register & (0b11 << mode_shift)) >> mode_shift) == 0b11));
+            (((*configuration_register & ((alternate_mode_config >> 1) << mode_shift)) >> mode_shift) == 0b11));
 }
 
 /**

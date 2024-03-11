@@ -25,6 +25,13 @@ public:
 
     typedef enum
     {
+        alternate_output_mode = 0b110,
+        alternate_input_pull_down = 0b000,
+        alternate_input_pull_up = 0b001,
+    } ALTERNATE_MODE_Type;
+
+    typedef enum
+    {
         input_analog = 0b00000,
         input_floating = 0b01000,
         input_pull_down = 0b10000,
@@ -34,7 +41,7 @@ public:
     GPIO(GPIO_TypeDef *GPIOx, uint8_t pin_number);
     bool clock_enable(bool clock_status);
     bool set_config(PIN_INPUT_Type pin_input_config);
-    bool set_config(PIN_ALTERNATE_Type pin_alternate_config);
+    bool set_config(PIN_ALTERNATE_Type pin_alternate_config, ALTERNATE_MODE_Type alternate_mode_config);
     bool set_config(PIN_OUTPUT_Type pin_output_config);
     void set(void)
     {
