@@ -7,6 +7,7 @@
 #include "timer/timer.h"
 #include "usart/usart.h"
 #include "SimpleLog/SimpleLog.h"
+#include "dma_control/dma_control.h"
 
 extern timer coil_frequency_timer;
 extern timer sampling_timer;
