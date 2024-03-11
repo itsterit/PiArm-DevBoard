@@ -5,7 +5,6 @@ GPIO btn_3(GPIOB, 15U);
 GPIO btn_2(GPIOB, 14U);
 GPIO btn_1(GPIOB, 13U);
 GPIO gen_freq(GPIOB, 5U);
-
 GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 
@@ -13,7 +12,6 @@ timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
 usart usb_line(USART1);
-void log_out_method(char *str, uint8_t len);
 SimpleLog Logger(log_out_method);
 
 int main(void)
@@ -81,6 +79,9 @@ int main(void)
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
   // NVIC_EnableIRQ(TIM3_IRQn);
 
+  /**
+   * ждем отпуская кнопки сброса
+  */
   while (1)
   {
     led_pin.set();
@@ -91,6 +92,9 @@ int main(void)
     }
   }
 
+  /**
+   * Конфижим УАРТ
+  */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 9600);
   Logger.LogV((char *)"\n\rStarting...\n\r");
   USART1->CR1 |= (USART_CR1_IDLEIE_Msk);
@@ -101,16 +105,4 @@ int main(void)
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
   }
-}
-
-extern "C" void USART1_IRQHandler(void)
-{
-  USART1->SR = ~USART1->SR;
-  char test = USART1->DR;
-  Logger.LogD((char *)"USART1 irq\n\r");
-}
-
-void log_out_method(char *str, uint8_t len)
-{
-  usb_line.transmit((uint8_t *)str, len);
 }

@@ -12,4 +12,8 @@ extern timer coil_frequency_timer;
 extern timer sampling_timer;
 void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 
+void log_out_method(char *str, uint8_t len);
+extern usart usb_line;
+extern SimpleLog Logger;
+
 #endif /* __MAIN_H__ */
