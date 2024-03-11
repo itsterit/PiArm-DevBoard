@@ -80,8 +80,16 @@ int main(void)
   // NVIC_EnableIRQ(TIM3_IRQn);
 
   /**
+   * Конфижим УАРТ
+   */
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 9600);
+  Logger.LogV((char *)"\n\rStarting...\n\r");
+  USART1->CR1 |= (USART_CR1_IDLEIE_Msk);
+  NVIC_EnableIRQ(USART1_IRQn);
+
+  /**
    * ждем отпуская кнопки сброса
-  */
+   */
   while (1)
   {
     led_pin.set();
@@ -91,15 +99,6 @@ int main(void)
       break;
     }
   }
-
-  /**
-   * Конфижим УАРТ
-  */
-  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 9600);
-  Logger.LogV((char *)"\n\rStarting...\n\r");
-  USART1->CR1 |= (USART_CR1_IDLEIE_Msk);
-  NVIC_EnableIRQ(USART1_IRQn);
-
   while (true)
   {
     if (!(btn_2.get_level()))
