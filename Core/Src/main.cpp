@@ -122,8 +122,9 @@ int main(void)
   GPIOA->CRH &= (~(GPIO_CRH_MODE10));
   GPIOA->BSRR |= GPIO_ODR_ODR10;
 
-  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 115200);
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 9600);
   Logger.LogV((char *)"\n\rStarting...\n\r");
+  // usb_line.transmit((uint8_t *)"~", 1);
 
   USART1->CR1 |= (USART_CR1_RXNEIE_Msk);
   NVIC_EnableIRQ(USART1_IRQn);
@@ -138,29 +139,30 @@ int main(void)
 extern "C" void USART1_IRQHandler(void)
 {
   USART1->SR = ~USART1->SR;
-  {
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
-  }
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BRR = (0b01 << 11U);
+
+  char msg = USART1->DR;
+  USART1->DR = msg;
 }
 
 extern "C" void TIM1_UP_IRQHandler(void)
