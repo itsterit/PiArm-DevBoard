@@ -25,22 +25,17 @@ bool usart::usart_config(USART_WORD_LENGTH_Type word_length,
         usart_x->BRR = usart_bus_clk / baud_rate;
         usart_x->SR &= ~USART1->SR;
 
-        usart_x->CR2 &= ~USART_CR2_STOP_Msk;
+        usart_x->CR2 = 0;
         usart_x->CR2 |= (stop_bits << USART_CR2_STOP_Pos);
 
-        usart_x->CR1 &= ~USART_CR1_M_Msk;
-        usart_x->CR1 |= (word_length << USART_CR1_M_Pos);
-
-        usart_x->CR1 &= ~USART_CR1_PCE_Msk;
-        usart_x->CR1 |= ((parity_control >> 1) << USART_CR1_PCE_Pos);
-
-        usart_x->CR1 &= ~USART_CR1_PS_Msk;
-        usart_x->CR1 |= ((parity_control & 0b01) << USART_CR1_PS_Pos);
-
-        usart_x->CR3 &= ~(USART_CR3_DMAT_Msk | USART_CR3_DMAR_Msk);
+        usart_x->CR3 = 0;
         usart_x->CR3 |= ((dma_config & 0b01) << USART_CR3_DMAT_Pos);
         usart_x->CR3 |= (((dma_config >> 1)) << USART_CR3_DMAR_Pos);
 
+        usart_x->CR1 = 0;
+        usart_x->CR1 |= (word_length << USART_CR1_M_Pos);
+        usart_x->CR1 |= ((parity_control >> 1) << USART_CR1_PCE_Pos);
+        usart_x->CR1 |= ((parity_control & 0b01) << USART_CR1_PS_Pos);
         usart_x->CR1 |= USART_CR1_TE_Msk;
         usart_x->CR1 |= USART_CR1_RE_Msk;
         usart_x->CR1 |= USART_CR1_UE_Msk;
