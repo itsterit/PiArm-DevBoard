@@ -17,6 +17,7 @@ usart::usart(USART_TypeDef *usart_x)
 bool usart::usart_config(USART_WORD_LENGTH_Type word_length,
                          PARITY_CONTROL_Type parity_control,
                          STOP_BITS_Type stop_bits,
+                         DMA_CONFIG_Type dma_config,
                          uint32_t usart_bus_clk, uint32_t baud_rate)
 {
     if ((usart_x) && (usart_bus_clk / baud_rate))
@@ -36,6 +37,10 @@ bool usart::usart_config(USART_WORD_LENGTH_Type word_length,
         usart_x->CR1 &= ~USART_CR1_PS_Msk;
         usart_x->CR1 |= ((parity_control & 0b01) << USART_CR1_PS_Pos);
 
+        usart_x->CR3 &= ~(USART_CR3_DMAT_Msk | USART_CR3_DMAR_Msk);
+        usart_x->CR3 |= ((dma_config & 0b01) << USART_CR3_DMAT_Pos);
+        usart_x->CR3 |= (((dma_config >> 1)) << USART_CR3_DMAR_Pos);
+
         usart_x->CR1 |= USART_CR1_TE_Msk;
         usart_x->CR1 |= USART_CR1_RE_Msk;
         usart_x->CR1 |= USART_CR1_UE_Msk;
@@ -53,7 +58,7 @@ bool usart::transmit(uint8_t *msg, int32_t len)
         usart_x->SR &= ~usart_x->SR;
         usart_x->DR = (uint8_t)*msg++;
 
-        while (transmit_err++ < 0xFFF)
+        while (transmit_err++ < 0xFFFFFFFF)
         {
             if (usart_x->SR & USART_SR_TC_Msk)
             {

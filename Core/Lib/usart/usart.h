@@ -24,6 +24,14 @@ typedef enum
     NUMBER_OF_STOP_BIT_IS_15 = 0b11,
 } STOP_BITS_Type;
 
+typedef enum
+{
+    DMA_MODE_IS_DISABLED = 0b00,
+    DMA_MODE_TXEN_RXDIS  = 0b01,
+    DMA_MODE_RXEN_TXDIS  = 0b10,
+    DMA_MODE_RXEN_TXEN   = 0b11,
+} DMA_CONFIG_Type;
+
 class usart
 {
 private:
@@ -34,6 +42,7 @@ public:
     bool usart_config(USART_WORD_LENGTH_Type word_length,
                       PARITY_CONTROL_Type parity_control,
                       STOP_BITS_Type stop_bits,
+                      DMA_CONFIG_Type dma_config,
                       uint32_t usart_bus_clk, uint32_t baud_rate);
     bool interrupt_config(uint16_t interrupt_config_msk);
     bool transmit(uint8_t* msg, int32_t len);
