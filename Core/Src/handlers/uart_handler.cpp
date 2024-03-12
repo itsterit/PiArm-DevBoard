@@ -12,7 +12,7 @@ extern "C" void DMA1_Channel4_IRQHandler(void)
 
 extern "C" void USART1_IRQHandler(void)
 {
-    uint8_t asd = USART1->SR;
+    USART1->SR = USART1->SR;
     char test = USART1->DR;
     usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
     Logger.LogD((char *)"USART1 irq\n\r");

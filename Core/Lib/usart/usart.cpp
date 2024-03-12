@@ -50,14 +50,14 @@ bool usart::transmit(uint8_t *msg, int32_t len)
     if (usart_x)
     {
         uint32_t transmit_err = 0;
-        usart_x->SR &= ~usart_x->SR;
+        usart_x->SR = usart_x->SR;
         usart_x->DR = (uint8_t)*msg++;
 
         while (transmit_err++ < 0xFFFFFFFF)
         {
             if (usart_x->SR & USART_SR_TC_Msk)
             {
-                usart_x->SR &= ~usart_x->SR;
+                usart_x->SR = usart_x->SR;
                 transmit_err = 0;
                 if (--len > 0)
                 {

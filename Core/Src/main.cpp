@@ -86,16 +86,16 @@ int main(void)
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 4800);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
   NVIC_EnableIRQ(USART1_IRQn);
-  // Logger.LogD((char *)"Starting...\n\r");
+  Logger.LogD((char *)"Starting...\n\r");
 
-  const char str[] = "Hello!\n\r";
-  usb_tx_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                              MSIZE_8bits, PSIZE_8bits,
-                              MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Memory,
-                              TEIE_Disabled, HTIE_Disabled, TCIE_Enabled);
-  NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  // const char str[] = "Hello!\n\r";
+  // usb_tx_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+  //                             MSIZE_8bits, PSIZE_8bits,
+  //                             MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Memory,
+  //                             TEIE_Disabled, HTIE_Disabled, TCIE_Enabled);
+  // NVIC_EnableIRQ(DMA1_Channel4_IRQn);
   
-  usb_tx_dma.dma_start(8, (uint32_t *)&str[0], (uint32_t *)&USART1->DR);
+  //usb_tx_dma.dma_start(8, (uint32_t *)&str[0], (uint32_t *)&USART1->DR);
 
   while (true)
   {
