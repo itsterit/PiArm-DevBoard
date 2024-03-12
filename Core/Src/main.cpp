@@ -85,7 +85,6 @@ int main(void)
    */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 4800);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
-  Logger.LogD((char *)"Starting...\n\r");
   NVIC_EnableIRQ(USART1_IRQn);
 
   set_dma_cfg();
