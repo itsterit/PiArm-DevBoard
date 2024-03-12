@@ -15,6 +15,8 @@ void dma_control::dma_set_config(eMEM2MEM_MODE memory_to_memory_mode, eCHANNEL_P
                                  eHALF_TRANSFER_INTERRUPT_ENABLE half_transfer_interrupt_enable,
                                  eTRANSFER_COMPLETE_INTERRUPT_ENABLE transfer_complete_interrupt_enable)
 {
+  DMA_num->IFCR = 0xFFFFFFFF;                                                                                         // сброс флагов
+  DMA_channel->CNDTR = 0;                                                                                             // количество кадров для передачи
   DMA_channel->CCR = 0x00;
   DMA_channel->CCR |=
         ((memory_to_memory_mode              & (DMA_CCR_MEM2MEM_Msk >> DMA_CCR_MEM2MEM_Pos))  << DMA_CCR_MEM2MEM_Pos) // Memory to memory mode disabled
@@ -32,7 +34,6 @@ void dma_control::dma_set_config(eMEM2MEM_MODE memory_to_memory_mode, eCHANNEL_P
 
 void dma_control::dma_start(uint16_t counter, uint32_t *data_pointer, uint32_t *peripheral_pointer)
 {
-  DMA_num->IFCR = DMA_num->IFCR;                    // сброс флагов
   DMA_channel->CMAR = (uint32_t)data_pointer;       // адрес памяти
   DMA_channel->CPAR = (uint32_t)peripheral_pointer; // адрес периферии
   DMA_channel->CNDTR = counter;                     // количество кадров для передачи

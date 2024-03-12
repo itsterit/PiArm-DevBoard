@@ -9,12 +9,18 @@
 #include "SimpleLog/SimpleLog.h"
 #include "dma_control/dma_control.h"
 
+// Работа с таймерами
+void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 extern timer coil_frequency_timer;
 extern timer sampling_timer;
-void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 
+// Работа с уарт
 void log_out_method(char *str, uint8_t len);
 extern usart usb_line;
 extern SimpleLog Logger;
+
+extern dma_control usb_tx_dma;
+volatile void usb_as_dma_transmit(uint8_t *msg, int16_t len);
+inline void set_dma_cfg();
 
 #endif /* __MAIN_H__ */
