@@ -83,31 +83,9 @@ int main(void)
   /**
    * Конфижим УАРТ
    */
-  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 9600);
-  Logger.LogV((char *)"\n\rStarting...\n\r");
-  USART1->CR1 |= (USART_CR1_IDLEIE_Msk);
-  NVIC_EnableIRQ(USART1_IRQn);
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, 72000000, 4800);
+  Logger.LogD((char *)"Starting...\n\r");
 
-  USART1->CR3 |= (USART_CR3_DMAT_Msk);
-  const char str[] = "Hello!";
-  usb_line_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                              MSIZE_8bits, PSIZE_8bits,
-                              MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Memory,
-                              TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-  usb_line_dma.dma_start(strlen(str)-1, (uint32_t *)&str[0], (uint32_t *)&USART1->DR);
-
-  /**
-   * ждем отпуская кнопки сброса
-   */
-  while (1)
-  {
-    led_pin.set();
-    if ((btn_2.get_level()))
-    {
-      led_pin.reset();
-      break;
-    }
-  }
   while (true)
   {
     if (!(btn_2.get_level()))

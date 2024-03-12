@@ -49,7 +49,7 @@ bool usart::transmit(uint8_t *msg, int32_t len)
 {
     if (usart_x)
     {
-        uint16_t transmit_err = 0;
+        uint32_t transmit_err = 0;
         usart_x->SR &= ~usart_x->SR;
         usart_x->DR = (uint8_t)*msg++;
 
