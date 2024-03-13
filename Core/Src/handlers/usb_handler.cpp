@@ -69,7 +69,7 @@ extern "C" void USART1_IRQHandler(void)
         set_usb_rx_dma_cfg();
     }
     USART1->SR = USART1->SR;
-    volatile char clear_uart_data_register  __attribute__ ((unused)) = USART1->DR;
+    volatile char clear_uart_data_register __attribute__((unused)) = USART1->DR;
 }
 
 /**

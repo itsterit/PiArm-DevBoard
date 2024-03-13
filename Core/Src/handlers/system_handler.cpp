@@ -14,7 +14,7 @@ extern "C" void HardFault_Handler(void)
 {
     __asm volatile(
         /* Кол-во итерация для извлечения LR и PC из стека */
-        "LDR R0, =6				\n"
+        "LDR R0, =7				\n"
         /* Тут должны дойти до LR регистра */
         "read_stack:			\n"
         "SUBS R0, R0, #1 		\n"
