@@ -9,6 +9,8 @@
 #include "SimpleLog/SimpleLog.h"
 #include "dma_control/dma_control.h"
 
+#define USB_BUFFER_SIZE (0xFFF)
+
 // Работа с таймерами
 void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 extern timer coil_frequency_timer;
@@ -19,14 +21,12 @@ void log_out_method(char *str, uint8_t len);
 extern usart usb_line;
 extern SimpleLog Logger;
 
-#define DMA_MAX_FRAME_SIZE 0xFFFF
+// Работа с ДМА 4м и 5м каналом
 extern dma_control usb_tx_dma;
 extern dma_control usb_rx_dma;
-volatile void usb_as_dma_transmit(uint8_t *msg, int16_t len);
-
+void usb_as_dma_transmit(uint8_t *msg, int16_t len);
 void set_usb_tx_dma_cfg();
 void set_usb_rx_dma_cfg();
-
-extern uint8_t usb_buffer[0xFF];
+extern uint8_t usb_buffer[USB_BUFFER_SIZE];
 
 #endif /* __MAIN_H__ */

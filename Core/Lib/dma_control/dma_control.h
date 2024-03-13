@@ -2,6 +2,7 @@
 #define __DMACONTROL_DMACONTROL_H__
 #include <stdint.h>
 #include <stm32f103xb.h>
+#define DMA_MAX_FRAME_SIZE (0xFFFF)
 
 typedef enum
 {

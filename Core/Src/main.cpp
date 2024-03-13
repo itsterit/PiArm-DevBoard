@@ -11,7 +11,7 @@ GPIO usb_rx(GPIOA, 10U);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
-uint8_t usb_buffer[0xFF]{0};
+uint8_t usb_buffer[USB_BUFFER_SIZE]{0};
 usart usb_line(USART1);
 SimpleLog Logger(log_out_method);
 dma_control usb_tx_dma(DMA1, DMA1_Channel4);
