@@ -11,9 +11,11 @@ GPIO usb_rx(GPIOA, 10U);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
+uint8_t usb_buffer[0xFF]{0};
 usart usb_line(USART1);
 SimpleLog Logger(log_out_method);
 dma_control usb_tx_dma(DMA1, DMA1_Channel4);
+dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 
 int main(void)
 {
@@ -87,15 +89,17 @@ int main(void)
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
   NVIC_EnableIRQ(USART1_IRQn);
 
-  set_dma_cfg();
+  set_usb_tx_dma_cfg();
   NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
   const char str[] = "Hello!\n\r";
-
+  usb_as_dma_transmit((uint8_t *)&str[0], 8);
+  
+  set_usb_rx_dma_cfg();
+  
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-    usb_as_dma_transmit((uint8_t *)&str[0], 8);
   }
 }

@@ -20,7 +20,12 @@ extern usart usb_line;
 extern SimpleLog Logger;
 
 extern dma_control usb_tx_dma;
+extern dma_control usb_rx_dma;
 volatile void usb_as_dma_transmit(uint8_t *msg, int16_t len);
-inline void set_dma_cfg();
+
+void set_usb_tx_dma_cfg();
+void set_usb_rx_dma_cfg();
+
+extern uint8_t usb_buffer[0xFF];
 
 #endif /* __MAIN_H__ */
