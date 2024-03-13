@@ -83,20 +83,20 @@ int main(void)
   // NVIC_EnableIRQ(TIM3_IRQn);
 
   /**
-   * Конфижим УАРТ
+   * Конфижим УАРТ в дма режим
    */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 4800);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
+  set_usb_tx_dma_cfg();
+  set_usb_rx_dma_cfg();
+  NVIC_SetPriority(DMA1_Channel4_IRQn, 3);
+  NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+  NVIC_SetPriority(DMA1_Channel5_IRQn, 3);
+  NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  NVIC_SetPriority(USART1_IRQn, 4);
   NVIC_EnableIRQ(USART1_IRQn);
 
-  set_usb_tx_dma_cfg();
-  NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
-  const char str[] = "Hello!\n\r";
-  usb_as_dma_transmit((uint8_t *)&str[0], 8);
-  
-  set_usb_rx_dma_cfg();
-  
   while (true)
   {
     if (!(btn_2.get_level()))

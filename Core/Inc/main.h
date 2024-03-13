@@ -19,6 +19,7 @@ void log_out_method(char *str, uint8_t len);
 extern usart usb_line;
 extern SimpleLog Logger;
 
+#define DMA_MAX_FRAME_SIZE 0xFFFF
 extern dma_control usb_tx_dma;
 extern dma_control usb_rx_dma;
 volatile void usb_as_dma_transmit(uint8_t *msg, int16_t len);
