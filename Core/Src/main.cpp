@@ -96,8 +96,8 @@ int main(void)
   NVIC_SetPriority(USART1_IRQn, 4);
   NVIC_EnableIRQ(USART1_IRQn);
 
-  uint8_t ErrArr[1] = {0};
-  ErrArr[0xFFFFFF] = -1;
+  // uint8_t ErrArr[1] = {0};
+  // ErrArr[0xFFFFFF] = -1;
 
   while (true)
   {

@@ -44,13 +44,20 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 64K
+  RAM    (xrw)    : ORIGIN = 0x20000000,  LENGTH = 20K - 0xA
+  NOINIT (xrw)    : ORIGIN = 0x20000000 + 20K - 0xA, LENGTH = 0xA
+  FLASH   (rx)    : ORIGIN = 0x8000000,   LENGTH = 64K
 }
 
 /* Sections */
 SECTIONS
 {
+  .noinit (NOLOAD):
+  {
+    /* place all symbols in input sections that start with .noinit */
+    KEEP(*(*.noinit*))
+  } > NOINIT
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
