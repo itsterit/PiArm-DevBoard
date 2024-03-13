@@ -24,7 +24,12 @@ extern "C" void HardFault_Handler(void)
         "B read_stack			\n"
         /* Тут извлекаем PC регистр */
         "get_stack_PC:			\n"
-        "POP {r0}				\n");
+        "POP {r0}				\n"
+        /* Сохраняем полученные данные в noinit  */
+        "LDR r4, =0x20000000 	\n" // PC
+        "STR r0, [r4]			\n"
+        "LDR r4, =0x20000004	\n" // LR
+        "STR r1, [r4]			\n");
 
     while (1)
     {
