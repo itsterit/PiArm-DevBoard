@@ -91,7 +91,6 @@ int main(void)
   NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
   const char str[] = "Hello!\n\r";
-  // usb_tx_dma.dma_start(8, (uint32_t *), (uint32_t *)&USART1->DR);
 
   while (true)
   {
