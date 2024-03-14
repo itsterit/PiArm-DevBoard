@@ -8,7 +8,9 @@
 #include "usart/usart.h"
 #include "SimpleLog/SimpleLog.h"
 #include "dma_control/dma_control.h"
+#include "ModBus/ModBusRTU.h"
 
+#define MODBUS_ADDRESS  (1)
 #define USB_BUFFER_SIZE (0xFFF)
 
 // Работа с таймерами
@@ -28,5 +30,11 @@ void usb_as_dma_transmit(uint8_t *msg, int16_t len);
 void set_usb_tx_dma_cfg();
 void set_usb_rx_dma_cfg();
 extern uint8_t usb_buffer[USB_BUFFER_SIZE];
+
+// modbus 
+extern uint16_t usInputRegisters[MB_INPUT_ADR_MAX];
+extern uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX];
+void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize);
+extern ModBusRTU ModBus;
 
 #endif /* __MAIN_H__ */

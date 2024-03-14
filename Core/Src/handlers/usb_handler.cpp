@@ -65,7 +65,7 @@ extern "C" void USART1_IRQHandler(void)
     }
     if (USART1->SR & USART_SR_IDLE_Msk)
     {
-        usb_as_dma_transmit((uint8_t *)&usb_buffer[0], (USB_BUFFER_SIZE - DMA1_Channel5->CNDTR));
+        ModBus.FrameHandler((uint8_t *)&usb_buffer[0], (USB_BUFFER_SIZE - DMA1_Channel5->CNDTR), MODBUS_ADDRESS, USB_BUFFER_SIZE);
         set_usb_rx_dma_cfg();
     }
     USART1->SR = USART1->SR;

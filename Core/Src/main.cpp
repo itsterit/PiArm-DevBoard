@@ -17,6 +17,10 @@ SimpleLog Logger(log_out_method);
 dma_control usb_tx_dma(DMA1, DMA1_Channel4);
 dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 
+uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
+uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
+ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
+
 int main(void)
 {
   /**
