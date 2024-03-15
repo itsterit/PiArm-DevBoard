@@ -13,16 +13,16 @@ ModBusRTU::ModBusRTU(void (*ModBusTxCallback)(uint8_t *DataPtr, int16_t DataSize
                      bool (*ModBusSaveCallback)(void),
                      uint16_t *InputRegistersPtr, uint16_t *HoldingRegistersPtr)
 {
-    ModBusTxCallback_ = ModBusTxCallback;
-    ModBusSaveCallback_ = ModBusSaveCallback;
-    HandlerInputRegistersPtr = InputRegistersPtr;
+    ModBusTxCallback_          = ModBusTxCallback;
+    ModBusSaveCallback_        = ModBusSaveCallback;
+    HandlerInputRegistersPtr   = InputRegistersPtr;
     HandlerHoldingRegistersPtr = HoldingRegistersPtr;
 }
 ModBusRTU::ModBusRTU(void (*ModBusTxCallback)(uint8_t *DataPtr, int16_t DataSize),
                      uint16_t *InputRegistersPtr, uint16_t *HoldingRegistersPtr)
 {
-    ModBusTxCallback_ = ModBusTxCallback;
-    HandlerInputRegistersPtr = InputRegistersPtr;
+    ModBusTxCallback_          = ModBusTxCallback;
+    HandlerInputRegistersPtr   = InputRegistersPtr;
     HandlerHoldingRegistersPtr = HoldingRegistersPtr;
 }
 
@@ -38,14 +38,14 @@ bool ModBusRTU::FrameHandler(uint8_t *DataPtr, int16_t DataSize, uint16_t Modbus
 {
     if ((DataSize > 3) && (BufferSize > 5))
     {
-        DataPtr_ = &DataPtr[0];
-        DataSize_ = DataSize;
+        DataPtr_    = &DataPtr[0];
+        DataSize_   = DataSize;
         BufferSize_ = BufferSize;
 
         if (MbCrcCheck(DataPtr, DataSize) && ((DataPtr[0] == ModbusAddress) || (DataPtr[0] == 0)))
         {
             HandlerMbDataLocation = (DataPtr_[3] | (DataPtr_[2] << 8));
-            HandlerMbDataAmount = (DataPtr_[5] | (DataPtr_[4] << 8));
+            HandlerMbDataAmount   = (DataPtr_[5] | (DataPtr_[4] << 8));
 
             switch (DataPtr_[1])
             {
@@ -90,8 +90,8 @@ bool ModBusRTU::FrameHandler(uint8_t *DataPtr, int16_t DataSize, uint16_t Modbus
 /*-------------------- 0x06 --------------------*/
 bool ModBusRTU::WriteHoldingSingleFunc(void)
 {
-    if ((HandlerMbDataLocation <= (BufferSize_ / 2)) &&
-        ((HandlerMbDataLocation + HandlerMbDataAmount) <= MB_HOLDING_ADR_MAX))
+    if (((HandlerMbDataLocation + HandlerMbDataAmount) < (BufferSize_ / 2)) &&
+        ((HandlerMbDataLocation + HandlerMbDataAmount) < MB_HOLDING_ADR_MAX))
     {
         unsigned char HandlerTmpChar = 4;
         uint16_t HandlerTmpShort = 0;
@@ -116,8 +116,8 @@ bool ModBusRTU::WriteHoldingMultFunc(void)
 {
     if (DataSize_ >= (7 + DataPtr_[6] + 2))
     {
-        if (((HandlerMbDataLocation + HandlerMbDataAmount) <= (BufferSize_ / 2)) &&
-            ((HandlerMbDataLocation + HandlerMbDataAmount) <= MB_HOLDING_ADR_MAX))
+        if (((HandlerMbDataLocation + HandlerMbDataAmount) < (BufferSize_ / 2)) &&
+            ((HandlerMbDataLocation + HandlerMbDataAmount) < MB_HOLDING_ADR_MAX))
         {
             /* Начало области с данными */
             unsigned char HandlerTmpChar = 7;
@@ -152,9 +152,9 @@ bool ModBusRTU::WriteHoldingMultFunc(void)
 /*-------------------- 0x04 --------------------*/
 void ModBusRTU::ReadInputFunc(void)
 {
-    if (HandlerMbDataLocation <= (MB_INPUT_ADR_MAX))
+    if ((HandlerMbDataLocation + HandlerMbDataAmount) < (MB_INPUT_ADR_MAX))
     {
-        if ((HandlerMbDataAmount != 0) && ((HandlerMbDataLocation + HandlerMbDataAmount) <= ((BufferSize_ / 2) - 5)))
+        if ((HandlerMbDataAmount != 0) && ((HandlerMbDataLocation + HandlerMbDataAmount) < ((BufferSize_ / 2) - 5)))
         {
             /* Кол-во регистров в ответе */
             DataPtr_[2] = HandlerMbDataAmount * 2;
@@ -194,9 +194,9 @@ void ModBusRTU::ReadInputFunc(void)
 /*-------------------- 0x03 --------------------*/
 void ModBusRTU::ReadHoldingFunc(void)
 {
-    if (HandlerMbDataLocation <= MB_HOLDING_ADR_MAX)
+    if ((HandlerMbDataLocation + HandlerMbDataAmount) < MB_HOLDING_ADR_MAX)
     {
-        if ((HandlerMbDataAmount != 0) && ((HandlerMbDataLocation + HandlerMbDataAmount) <= ((BufferSize_ / 2) - 5)))
+        if ((HandlerMbDataAmount != 0) && ((HandlerMbDataLocation + HandlerMbDataAmount) < ((BufferSize_ / 2) - 5)))
         {
             /* Кол-во регистров в ответе */
             DataPtr_[2] = HandlerMbDataAmount * 2;
