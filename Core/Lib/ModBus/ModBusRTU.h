@@ -2,9 +2,8 @@
 #define __MODBUS_RTU_H__
 #include <stdint.h>
 
-#define MB_MAX_FRAME_SIZE (100)
-#define MB_INPUT_ADR_MAX (100)
-#define MB_HOLDING_ADR_MAX (100)
+#define MB_INPUT_ADR_MAX    (100)
+#define MB_HOLDING_ADR_MAX  (100)
 
 class ModBusRTU
 {
@@ -23,13 +22,8 @@ private:
     void ReadInputFunc(void);          // 0x04
     bool WriteHoldingSingleFunc(void); // 0x06
     bool WriteHoldingMultFunc(void);   // 0x10
-    bool WriteMemoryFunc(void);        // 0x65
 
 public:
-    ModBusRTU(void (*)(uint8_t *, int16_t),                    // ModBusTxCallback_
-              bool (*)(uint8_t *, uint32_t, uint32_t, uint16_t), // ModBusWriteCallback_
-              uint16_t *InputRegistersPtr, uint16_t *HoldingRegistersPtr);
-
     ModBusRTU(void (*)(uint8_t *, int16_t), // ModBusTxCallback_
               bool (*)(void),               // ModBusSaveCallback_
               uint16_t *InputRegistersPtr, uint16_t *HoldingRegistersPtr);

@@ -10,15 +10,6 @@
  * @param[in] HoldingRegistersPtr   Указатель на область регистров хранения.
  */
 ModBusRTU::ModBusRTU(void (*ModBusTxCallback)(uint8_t *DataPtr, int16_t DataSize),
-                     bool (*ModBusWriteCallback)(uint8_t *DataPtr, uint32_t DataSize, uint32_t WriteOffset, uint16_t FileType),
-                     uint16_t *InputRegistersPtr, uint16_t *HoldingRegistersPtr)
-{
-    ModBusTxCallback_ = ModBusTxCallback;
-    ModBusWriteCallback_ = ModBusWriteCallback;
-    HandlerInputRegistersPtr = InputRegistersPtr;
-    HandlerHoldingRegistersPtr = HoldingRegistersPtr;
-}
-ModBusRTU::ModBusRTU(void (*ModBusTxCallback)(uint8_t *DataPtr, int16_t DataSize),
                      bool (*ModBusSaveCallback)(void),
                      uint16_t *InputRegistersPtr, uint16_t *HoldingRegistersPtr)
 {
@@ -99,7 +90,8 @@ bool ModBusRTU::FrameHandler(uint8_t *DataPtr, int16_t DataSize, uint16_t Modbus
 /*-------------------- 0x06 --------------------*/
 bool ModBusRTU::WriteHoldingSingleFunc(void)
 {
-    if (HandlerMbDataLocation <= (BufferSize_ / 2))
+    if ((HandlerMbDataLocation <= (BufferSize_ / 2)) &&
+        ((HandlerMbDataLocation + HandlerMbDataAmount) <= MB_HOLDING_ADR_MAX))
     {
         unsigned char HandlerTmpChar = 4;
         uint16_t HandlerTmpShort = 0;
@@ -124,7 +116,8 @@ bool ModBusRTU::WriteHoldingMultFunc(void)
 {
     if (DataSize_ >= (7 + DataPtr_[6] + 2))
     {
-        if ((HandlerMbDataLocation + HandlerMbDataAmount) <= (BufferSize_ / 2))
+        if (((HandlerMbDataLocation + HandlerMbDataAmount) <= (BufferSize_ / 2)) &&
+            ((HandlerMbDataLocation + HandlerMbDataAmount) <= MB_HOLDING_ADR_MAX))
         {
             /* Начало области с данными */
             unsigned char HandlerTmpChar = 7;
