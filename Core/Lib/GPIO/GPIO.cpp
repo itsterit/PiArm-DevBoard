@@ -22,6 +22,7 @@ bool GPIO::clock_enable(bool clock_status)
     volatile uint32_t apb_bus_shift = (gpio_position + RCC_APB2ENR_IOPAEN_Pos);
     volatile uint32_t apb_bus_mask = (0b01 << apb_bus_shift);
 
+    RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
     if (clock_status)
         RCC->APB2ENR |= (apb_bus_mask);
     else

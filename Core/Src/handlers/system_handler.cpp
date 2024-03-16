@@ -37,3 +37,13 @@ extern "C" void HardFault_Handler(void)
     }
     // NVIC_SystemReset();
 }
+
+extern "C" void EXTI15_10_IRQHandler(void)
+{
+    EXTI->PR = EXTI->PR;
+    {
+        led_pin.set();
+        Logger.LogE((char *)"Current fault detected!\n\r");
+        led_pin.reset();
+    }
+}

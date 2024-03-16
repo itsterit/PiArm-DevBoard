@@ -13,6 +13,8 @@
 #define MODBUS_ADDRESS  (1)
 #define USB_BUFFER_SIZE (0xFFF)
 
+extern GPIO led_pin;
+
 // Работа с таймерами
 void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 extern timer coil_frequency_timer;

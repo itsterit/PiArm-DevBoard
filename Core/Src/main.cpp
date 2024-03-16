@@ -24,9 +24,7 @@ ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0])
 
 int main(void)
 {
-  /**
-   *  конфижим ноги проца
-   */
+  /* конфижим ноги проца */
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
   usb_tx.clock_enable(true);
@@ -42,12 +40,7 @@ int main(void)
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
 
-  cur_fault.clock_enable(true);
-  cur_fault.set_config(GPIO::input_floating);
-
-  /**
-   * конфижим тактирование проца
-   */
+  /* конфижим тактирование проца */
   clock_control::hse::enable(true);
   if (clock_control::hse::ready())
   {
@@ -69,14 +62,11 @@ int main(void)
     }
   }
 
-  /**
-   * таймер настройки сэмплирования и настройка задающего таймер
-   */
+  /* таймер настройки сэмплирования и настройка задающего таймер */
   sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, 0);
   sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
   sampling_timer.set_timer_config(0, 0, 0, 0, 5, 72, 0);
   sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
-  RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
   AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
   AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
   coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
@@ -90,9 +80,7 @@ int main(void)
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
   // NVIC_EnableIRQ(TIM3_IRQn);
 
-  /**
-   * Конфижим УАРТ в дма режим
-   */
+  /* Конфижим УАРТ в дма режим */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 9600);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
   set_usb_tx_dma_cfg();
@@ -104,18 +92,25 @@ int main(void)
   NVIC_SetPriority(USART1_IRQn, 4);
   NVIC_EnableIRQ(USART1_IRQn);
 
-  // uint8_t ErrArr[1] = {0};
-  // ErrArr[0xFFFFFF] = -1;
+  /* превышение тока на катушке */
+  cur_fault.clock_enable(true);
+  cur_fault.set_config(GPIO::input_floating);
+  EXTI->IMR = (EXTI_IMR_MR13_Msk);
+  EXTI->EMR = (EXTI_EMR_MR13_Msk);
+  EXTI->RTSR = EXTI_RTSR_TR13_Msk;
+  EXTI->FTSR = (EXTI_FTSR_TR13_Msk);
+  AFIO->EXTICR[3] = (AFIO_EXTICR4_EXTI13_Msk);
+  EXTI->PR = EXTI->PR;
+  NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 
-    if (!(cur_fault.get_level()))
-      led_pin.set();
-    else
-      led_pin.reset();
-
+    // if (!(cur_fault.get_level()))
+    //   led_pin.set();
+    // else
+    //   led_pin.reset();
   }
 }
