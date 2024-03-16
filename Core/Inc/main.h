@@ -10,14 +10,18 @@
 #include "dma_control/dma_control.h"
 #include "ModBus/ModBusRTU.h"
 
-#define INVERT_GENERATOR_SIGNAL (1)
+#define INVERT_GENERATOR_SIGNAL (0)
 #define MODBUS_ADDRESS          (1)
 #define USB_BUFFER_SIZE         (0xFFF)
 
 extern GPIO led_pin;
+extern GPIO gen_freq;
+
+extern uint8_t cur_fault_delay;
 
 // Работа с таймерами
-void config_timer(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
+void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
+void set_timer_config();
 extern timer coil_frequency_timer;
 extern timer sampling_timer;
 

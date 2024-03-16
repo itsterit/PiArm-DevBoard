@@ -22,6 +22,8 @@ uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
+uint8_t cur_fault_delay = 0;
+
 int main(void)
 {
   /* конфижим ноги проца */
@@ -31,8 +33,6 @@ int main(void)
   usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
   usb_rx.clock_enable(true);
   usb_rx.set_config(GPIO::alternate_push_pull, GPIO::alternate_input_pull_up);
-  gen_freq.clock_enable(true);
-  gen_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
   btn_3.clock_enable(true);
   btn_3.set_config(GPIO::input_floating);
   btn_2.clock_enable(true);
@@ -86,38 +86,33 @@ int main(void)
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
-  sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, 0);
-  sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-  sampling_timer.set_timer_config(0, 0, 0, 0, 5, 72, 0);
-  sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
-  AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
-  AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
-#if INVERT_GENERATOR_SIGNAL
-  coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_2);
-#else
-  coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
-#endif
-  coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
-  coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_CC2IE_Msk | TIM_DIER_CC3IE_Msk | TIM_DIER_CC4IE_Msk));
-  coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
-  coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
-  coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-  config_timer(1000000, 500, 20);
-  coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
+  set_timer_config();
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
   // NVIC_EnableIRQ(TIM3_IRQn);
 
-  // SysTick_Config(72000);
-  // NVIC_EnableIRQ(SysTick_IRQn);
+  SysTick_Config(72000);
+  NVIC_EnableIRQ(SysTick_IRQn);
 
   while (true)
   {
+    if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)
+    {
+      if (cur_fault_delay)
+      {
+        if (!(--cur_fault_delay))
+        {
+          led_pin.reset();
+          set_timer_config();
+        }
+      }
+    }
+
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 
     if ((usHoldingRegisters[0] && usHoldingRegisters[1]))
     {
-      config_timer(1000000, usHoldingRegisters[0], usHoldingRegisters[1]);
+      set_generation_timing(1000000, usHoldingRegisters[0], usHoldingRegisters[1]);
       usHoldingRegisters[0] = 0;
       usHoldingRegisters[1] = 0;
     }
