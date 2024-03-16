@@ -94,13 +94,15 @@ int main(void)
 
   /* превышение тока на катушке */
   cur_fault.clock_enable(true);
-  cur_fault.set_config(GPIO::input_floating);
+  cur_fault.set_config(GPIO::input_pull_up);
+
   EXTI->IMR = (EXTI_IMR_MR13_Msk);
-  EXTI->EMR = (EXTI_EMR_MR13_Msk);
+  // EXTI->EMR = (EXTI_EMR_MR13_Msk);
   EXTI->RTSR = EXTI_RTSR_TR13_Msk;
   EXTI->FTSR = (EXTI_FTSR_TR13_Msk);
-  AFIO->EXTICR[3] = (AFIO_EXTICR4_EXTI13_Msk);
+  AFIO->EXTICR[3] = (0b0010 << AFIO_EXTICR4_EXTI13_Pos);
   EXTI->PR = EXTI->PR;
+
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   while (true)
