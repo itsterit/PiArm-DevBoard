@@ -38,28 +38,25 @@ extern "C" void HardFault_Handler(void)
     // NVIC_SystemReset();
 }
 
+bool led_out = 0;
+extern "C" void SysTick_Handler(void)
+{
+    if (led_out)
+    {
+        led_out = 0;
+        led_pin.set();
+    }
+    else
+    {
+        led_out = 1;
+        led_pin.reset();
+    }
+}
+
 extern "C" void EXTI15_10_IRQHandler(void)
 {
     EXTI->PR = EXTI->PR;
     {
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.set();
-        led_pin.reset();
+        Logger.LogE((char *)"Fault error detected!!\n\r");
     }
 }
