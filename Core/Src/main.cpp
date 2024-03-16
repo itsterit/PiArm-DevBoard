@@ -7,6 +7,7 @@ GPIO btn_1(GPIOB, 13U);
 GPIO gen_freq(GPIOB, 5U);
 GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
+GPIO cur_fault(GPIOC, 13U);
 
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
@@ -40,6 +41,9 @@ int main(void)
   btn_2.set_config(GPIO::input_floating);
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
+
+  cur_fault.clock_enable(true);
+  cur_fault.set_config(GPIO::input_floating);
 
   /**
    * конфижим тактирование проца
@@ -107,5 +111,11 @@ int main(void)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
+
+    if (!(cur_fault.get_level()))
+      led_pin.set();
+    else
+      led_pin.reset();
+
   }
 }
