@@ -9,6 +9,7 @@ GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
 
+uint8_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
@@ -21,8 +22,6 @@ dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
-
-uint8_t cur_fault_delay = 0;
 
 int main(void)
 {
@@ -74,6 +73,9 @@ int main(void)
   NVIC_SetPriority(USART1_IRQn, 4);
   NVIC_EnableIRQ(USART1_IRQn);
 
+  SysTick_Config(72000);
+  NVIC_EnableIRQ(SysTick_IRQn);
+
   /* превышение тока на катушке */
   cur_fault.clock_enable(true);
   cur_fault.set_config(GPIO::input_pull_up);
@@ -87,26 +89,11 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
-  // NVIC_EnableIRQ(TIM1_UP_IRQn);
-  // NVIC_EnableIRQ(TIM3_IRQn);
-
-  SysTick_Config(72000);
-  NVIC_EnableIRQ(SysTick_IRQn);
+  NVIC_EnableIRQ(TIM1_UP_IRQn);
+  NVIC_EnableIRQ(TIM3_IRQn);
 
   while (true)
   {
-    if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)
-    {
-      if (cur_fault_delay)
-      {
-        if (!(--cur_fault_delay))
-        {
-          led_pin.reset();
-          set_timer_config();
-        }
-      }
-    }
-
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 

@@ -41,12 +41,19 @@ extern "C" void HardFault_Handler(void)
 /**
  * @brief   Прерывание системного таймера
  * @details Установлен наименьший приоритет
- * @note    В большинстве своем для работы в бесконечном цикле 
+ * @note    В большинстве своем для работы в бесконечном цикле
  *          проверяется статус флаг.
-*/
+ */
 extern "C" void SysTick_Handler(void)
 {
-
+    if (cur_fault_delay)
+    {
+        if (!(--cur_fault_delay))
+        {
+            led_pin.reset();
+            set_timer_config();
+        }
+    }
 }
 
 /**
@@ -58,7 +65,7 @@ extern "C" void SysTick_Handler(void)
  */
 extern "C" void EXTI15_10_IRQHandler(void)
 {
-    
+
     GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
     GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
 #if INVERT_GENERATOR_SIGNAL
@@ -68,6 +75,6 @@ extern "C" void EXTI15_10_IRQHandler(void)
 #endif
 
     EXTI->PR = EXTI->PR;
-    led_pin.set();
     cur_fault_delay = 0xFF;
+    led_pin.set();
 }
