@@ -53,10 +53,23 @@ extern "C" void SysTick_Handler(void)
     }
 }
 
+/**
+ * @brief   Сработала защита по току катушки
+ * @details Отключаем генерацию частоты катушки
+ * @note    Для надежности переводим ногу проца в режим GPIO и после отработки тайминга
+ *          защиты возвращаем в исходное состояние.
+ * @warning В боевой плате применен драйвер ключа инвертирующий входной сигнал!!!
+ */
 extern "C" void EXTI15_10_IRQHandler(void)
 {
+
+    GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+    GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
+#if INVERT_GENERATOR_SIGNAL
+    GPIOB->BSRR |= (GPIO_BSRR_BS5_Msk);
+#else
+    GPIOB->BSRR |= (GPIO_BSRR_BR5_Msk);
+#endif
+
     EXTI->PR = EXTI->PR;
-    {
-        Logger.LogE((char *)"Fault error detected!!\n\r");
-    }
 }

@@ -10,8 +10,9 @@
 #include "dma_control/dma_control.h"
 #include "ModBus/ModBusRTU.h"
 
-#define MODBUS_ADDRESS  (1)
-#define USB_BUFFER_SIZE (0xFFF)
+#define INVERT_GENERATOR_SIGNAL (1)
+#define MODBUS_ADDRESS          (1)
+#define USB_BUFFER_SIZE         (0xFFF)
 
 extern GPIO led_pin;
 
