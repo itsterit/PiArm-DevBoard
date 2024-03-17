@@ -9,6 +9,7 @@
 #include "SimpleLog/SimpleLog.h"
 #include "dma_control/dma_control.h"
 #include "ModBus/ModBusRTU.h"
+#include "adc/adc.h"
 
 #define INVERT_GENERATOR_SIGNAL (0)
 #define MODBUS_ADDRESS          (1)

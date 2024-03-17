@@ -9,6 +9,8 @@ GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
 
+GPIO bat_voltage_pin(GPIOA, 4U);
+
 uint8_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
@@ -38,6 +40,9 @@ int main(void)
   btn_2.set_config(GPIO::input_floating);
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
+
+  bat_voltage_pin.clock_enable(true);
+  bat_voltage_pin.set_config(GPIO::output_push_pull);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -89,8 +94,10 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
-  NVIC_EnableIRQ(TIM1_UP_IRQn);
-  NVIC_EnableIRQ(TIM3_IRQn);
+  // NVIC_EnableIRQ(TIM1_UP_IRQn);
+  // NVIC_EnableIRQ(TIM3_IRQn);
+
+  adc_set_config();
 
   while (true)
   {
