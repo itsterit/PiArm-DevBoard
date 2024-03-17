@@ -42,7 +42,7 @@ int main(void)
   btn_1.set_config(GPIO::input_floating);
 
   bat_voltage_pin.clock_enable(true);
-  bat_voltage_pin.set_config(GPIO::output_push_pull);
+  bat_voltage_pin.set_config(GPIO::input_analog);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -97,10 +97,10 @@ int main(void)
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
   // NVIC_EnableIRQ(TIM3_IRQn);
 
-  adc_set_config();
-
   while (true)
   {
+    adc_set_config();
+
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 
