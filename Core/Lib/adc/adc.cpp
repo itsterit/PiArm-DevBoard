@@ -3,33 +3,34 @@
 
 void adc_set_config()
 {
-    RCC->APB2ENR |= RCC_APB2ENR_ADC2EN;
+    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
 
     /* калибровка */
-    ADC2->CR2 |= (0b01 << ADC_CR2_ADON_Pos); // A/D converter ON / OFF
+    ADC1->CR2 |= (0b01 << ADC_CR2_ADON_Pos); // A/D converter ON / OFF
 
     /* Ждем включение */
     for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
         asm("NOP");
 
     /* калибруем и ждем */
-    ADC2->CR2 |= ADC_CR2_CAL;
-    while ((ADC2->CR2 & ADC_CR2_CAL) != 0)
+    ADC1->CR2 |= ADC_CR2_CAL;
+    while ((ADC1->CR2 & ADC_CR2_CAL) != 0)
         asm("NOP");
     Logger.LogI((char *)"CAL is ok\n\r");
 
-    ADC2->SQR3 = 4; // 1 преобразование - канал 0
+    ADC1->CR2 |= (0b01 << ADC_CR2_TSVREFE_Pos);
+    ADC1->SQR3 = 17; // 1 преобразование - канал 0
 
-    ADC2->CR2 &= ~ADC_CR2_CONT; // запрет непрерывного режима
-    ADC2->CR1 &= ~ADC_CR1_SCAN; // запрет режима сканирования
+    ADC1->CR2 &= ~ADC_CR2_CONT; // запрет непрерывного режима
+    ADC1->CR1 &= ~ADC_CR1_SCAN; // запрет режима сканирования
 
-    ADC2->SR = ADC2->SR;
-    ADC2->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
-    ADC2->CR2 |= (ADC_CR2_SWSTART);
+    ADC1->SR = ADC1->SR;
+    ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
+    ADC1->CR2 |= (ADC_CR2_SWSTART);
 
-    while ((ADC2->SR & ADC_SR_EOC) == 0)
+    while ((ADC1->SR & ADC_SR_EOC) == 0)
         asm("NOP");
-    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r",  ADC2->DR);
+    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r",  ADC1->DR);
 
     // ADC2->CR1 |= (0b00 << ADC_CR1_AWDEN_Pos)     // Analog watchdog enable on regular channels
     //              | (0b00 << ADC_CR1_JAWDEN_Pos)  // Analog watchdog enable on injected channels
