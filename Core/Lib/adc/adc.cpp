@@ -1,25 +1,70 @@
 #include "adc.h"
 #include "main.h"
 
-void adc_set_config()
+/**
+ * @brief   Запуск и калибровка АЦП
+ */
+bool adc::enable(ADC_TypeDef *adc_x)
 {
     RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
+    RCC->APB2ENR |= RCC_APB2ENR_ADC2EN;
 
-    /* калибровка */
-    ADC1->CR2 |= (0b01 << ADC_CR2_ADON_Pos); // A/D converter ON / OFF
-
-    /* Ждем включение */
+    adc_x->CR2 |= (ADC_CR2_ADON);
     for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
         asm("NOP");
 
+    adc_x->CR2 |= ADC_CR2_CAL;
+    for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
+        if ((adc_x->CR2 & ADC_CR2_CAL) == 0)
+            return 1;
+
+    return 0;
+}
+
+void adc::set_cr1_config(ADC_TypeDef *adc_x,
+                         AWDEN_Type awden, JAWDEN_Type jawden,
+                         DUALMOD_Type dualmod,
+                         uint8_t discnum,
+                         JDISCEN_Type jdiscen, DISCEN_Type discen,
+                         JAUTO_Type jauto,
+                         AWDSGL_Type awdsgl,
+                         SCAN_Type scan,
+                         JEOCIE_Type jeocie, AWDIE_Type awdie, EOCIE_Type eocie, uint8_t awdch)
+{
+    adc_x->CR1 |= (awden << ADC_CR1_AWDEN_Pos)       // Analog watchdog enable on regular channels
+                  | (jawden << ADC_CR1_JAWDEN_Pos)   // Analog watchdog enable on injected channels
+                  | (dualmod << ADC_CR1_DUALMOD_Pos) // Dual mode selection
+                  | (discnum << ADC_CR1_DISCNUM_Pos) // Discontinuous mode channel count
+                  | (jdiscen << ADC_CR1_JDISCEN_Pos) // Discontinuous mode on injected channels
+                  | (discen << ADC_CR1_DISCEN_Pos)   // Discontinuous mode on regular channels
+                  | (jauto << ADC_CR1_JAUTO_Pos)     // Automatic Injected Group conversion
+                  | (awdsgl << ADC_CR1_AWDSGL_Pos)   // Enable the watchdog on a single channel in scan mode
+                  | (scan << ADC_CR1_SCAN_Pos)       // Scan mode
+                  | (jeocie << ADC_CR1_JEOSIE_Pos)   // Interrupt enable for injected channels
+                  | (awdie << ADC_CR1_AWDIE_Pos)     // Analog watchdog interrupt enable
+                  | (eocie << ADC_CR1_EOSIE_Pos)     // Interrupt enable for EOC
+                  | (awdch << ADC_CR1_AWDCH_Pos);    // Analog watchdog channel select bits
+}
+
+void adc_set_config()
+{
+    // RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
+
+    /* калибровка */
+    // ADC1->CR2 |= (0b01 << ADC_CR2_ADON_Pos); // A/D converter ON / OFF
+
+    // /* Ждем включение */
+    // for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
+    //     asm("NOP");
+
     /* калибруем и ждем */
-    ADC1->CR2 |= ADC_CR2_CAL;
-    while ((ADC1->CR2 & ADC_CR2_CAL) != 0)
-        asm("NOP");
-    Logger.LogI((char *)"CAL is ok\n\r");
+    // ADC1->CR2 |= ADC_CR2_CAL;
+    // while ((ADC1->CR2 & ADC_CR2_CAL) != 0)
+    //     asm("NOP");
+    // Logger.LogI((char *)"CAL is ok\n\r");
 
     ADC1->CR2 |= (0b01 << ADC_CR2_TSVREFE_Pos);
-    ADC1->SQR3 = 17; // 1 преобразование - канал 0
+    ADC1->SQR3 = 4; // 1 преобразование - канал 0
 
     ADC1->CR2 &= ~ADC_CR2_CONT; // запрет непрерывного режима
     ADC1->CR1 &= ~ADC_CR1_SCAN; // запрет режима сканирования
@@ -30,7 +75,7 @@ void adc_set_config()
 
     while ((ADC1->SR & ADC_SR_EOC) == 0)
         asm("NOP");
-    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r",  ADC1->DR);
+    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", ADC1->DR);
 
     // ADC2->CR1 |= (0b00 << ADC_CR1_AWDEN_Pos)     // Analog watchdog enable on regular channels
     //              | (0b00 << ADC_CR1_JAWDEN_Pos)  // Analog watchdog enable on injected channels

@@ -8,6 +8,7 @@ GPIO gen_freq(GPIOB, 5U);
 GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
+GPIO dc_enable(GPIOB, 3);
 
 GPIO bat_voltage_pin(GPIOA, 4U);
 
@@ -30,6 +31,12 @@ int main(void)
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
+
+  AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
+
+  dc_enable.clock_enable(true);
+  dc_enable.set_config(GPIO::output_push_pull);
+
   usb_tx.clock_enable(true);
   usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
   usb_rx.clock_enable(true);
@@ -94,15 +101,27 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
-  // NVIC_EnableIRQ(TIM1_UP_IRQn);
-  // NVIC_EnableIRQ(TIM3_IRQn);
+  //  NVIC_EnableIRQ(TIM1_UP_IRQn);
+  //  NVIC_EnableIRQ(TIM3_IRQn);
+
+  // if (adc::enable(ADC1))
+  //   Logger.LogI((char *)"CAL is ok\n\r");
+  // adc_set_config();
+
+  dc_enable.set();
+  led_pin.set();
 
   while (true)
   {
-    adc_set_config();
 
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
+
+    if (!(btn_1.get_level()) || !(btn_1.get_level()))
+    {
+      led_pin.set();
+      cur_fault_delay = 200;
+    }
 
     if ((usHoldingRegisters[0] && usHoldingRegisters[1]))
     {
