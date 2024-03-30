@@ -25,32 +25,69 @@ bool adc::enable(ADC_TypeDef *adc_x)
 /**
  * @brief   конфигурирование control register 1
  */
-void adc::set_cr1_config(ADC_TypeDef *adc_x, ADC_CR1_AWDEN_Type awden, ADC_CR1_JAWDEN_Type jawden, ADC_CR1_DUALMOD_Type dualmod, uint8_t discnum,
-                         ADC_CR1_JDISCEN_Type jdiscen, ADC_CR1_DISCEN_Type discen, ADC_CR1_JAUTO_Type jauto, ADC_CR1_AWDSGL_Type awdsgl, 
-                         ADC_CR1_SCAN_Type scan, ADC_CR1_JEOCIE_Type jeocie, ADC_CR1_AWDIE_Type awdie, ADC_CR1_EOCIE_Type eocie, uint8_t awdch)
+void adc::set_cr1_config(ADC_TypeDef *adc_x,
+                         ADC_CR1_AWDEN_Type awden,
+                         ADC_CR1_JAWDEN_Type jawden,
+                         ADC_CR1_DUALMOD_Type dualmod,
+                         uint8_t discnum,
+                         ADC_CR1_JDISCEN_Type jdiscen,
+                         ADC_CR1_DISCEN_Type discen,
+                         ADC_CR1_JAUTO_Type jauto,
+                         ADC_CR1_AWDSGL_Type awdsgl,
+                         ADC_CR1_SCAN_Type scan,
+                         ADC_CR1_JEOCIE_Type jeocie,
+                         ADC_CR1_AWDIE_Type awdie,
+                         ADC_CR1_EOCIE_Type eocie,
+                         uint8_t awdch)
 {
-    adc_x->CR1 |= (awden       << ADC_CR1_AWDEN_Pos)                          // Analog watchdog enable on regular channels
-                  | (jawden    << ADC_CR1_JAWDEN_Pos)                         // Analog watchdog enable on injected channels
-                  | (dualmod   << ADC_CR1_DUALMOD_Pos)                        // Dual mode selection
-                  | ((discnum  << ADC_CR1_DISCNUM_Pos) & ADC_CR1_DISCNUM_Msk) // Discontinuous mode channel count
-                  | (jdiscen   << ADC_CR1_JDISCEN_Pos)                        // Discontinuous mode on injected channels
-                  | (discen    << ADC_CR1_DISCEN_Pos)                         // Discontinuous mode on regular channels
-                  | (jauto     << ADC_CR1_JAUTO_Pos)                          // Automatic Injected Group conversion
-                  | (awdsgl    << ADC_CR1_AWDSGL_Pos)                         // Enable the watchdog on a single channel in scan mode
-                  | (scan      << ADC_CR1_SCAN_Pos)                           // Scan mode
-                  | (jeocie    << ADC_CR1_JEOSIE_Pos)                         // Interrupt enable for injected channels
-                  | (awdie     << ADC_CR1_AWDIE_Pos)                          // Analog watchdog interrupt enable
-                  | (eocie     << ADC_CR1_EOSIE_Pos)                          // Interrupt enable for EOC
-                  | ((awdch    << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);    // Analog watchdog channel select bits
+    adc_x->CR1 |= (awden        << ADC_CR1_AWDEN_Pos)                           // Analog watchdog enable on regular channels
+                  | (jawden     << ADC_CR1_JAWDEN_Pos)                          // Analog watchdog enable on injected channels
+                  | (dualmod    << ADC_CR1_DUALMOD_Pos)                         // Dual mode selection
+                  | ((discnum   << ADC_CR1_DISCNUM_Pos) & ADC_CR1_DISCNUM_Msk)  // Discontinuous mode channel count
+                  | (jdiscen    << ADC_CR1_JDISCEN_Pos)                         // Discontinuous mode on injected channels
+                  | (discen     << ADC_CR1_DISCEN_Pos)                          // Discontinuous mode on regular channels
+                  | (jauto      << ADC_CR1_JAUTO_Pos)                           // Automatic Injected Group conversion
+                  | (awdsgl     << ADC_CR1_AWDSGL_Pos)                          // Enable the watchdog on a single channel in scan mode
+                  | (scan       << ADC_CR1_SCAN_Pos)                            // Scan mode
+                  | (jeocie     << ADC_CR1_JEOSIE_Pos)                          // Interrupt enable for injected channels
+                  | (awdie      << ADC_CR1_AWDIE_Pos)                           // Analog watchdog interrupt enable
+                  | (eocie      << ADC_CR1_EOSIE_Pos)                           // Interrupt enable for EOC
+                  | ((awdch     << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);     // Analog watchdog channel select bits
+}
+
+/**
+ * @brief   конфигурирование control register 2
+ * @note    программный запуск вынесен отдельной функцией
+ */
+void adc::set_cr2_config(ADC_TypeDef *adc_x,
+                         ADC_CR2_TSVREFE_Type adc_cr2_tsvrefe,
+                         ADC_CR2_EXTTRIG_Type adc_cr2_exttrig,
+                         ADC_CR2_EXTSEL_Type adc_cr2_extsel,
+                         ADC_CR2_JEXTTRIG_Type adc_cr2_jexttrig,
+                         ADC_CR2_JEXTSEL_Type adc_cr2_jextsel,
+                         ADC_CR2_ALIGN_Type adc_cr2_align,
+                         ADC_CR2_DMA_Type adc_cr2_dma,
+                         ADC_CR2_RSTCAL_Type adc_cr2_rstcal,
+                         ADC_CR2_CONT_Type adc_cr2_cont,
+                         ADC_CR2_ADON_Type adc_cr2_adon)
+{
+    adc_x->CR2 |= (adc_cr2_tsvrefe << ADC_CR2_TSVREFE_Pos)                      // Temperature sensor and VREFINT enable
+                  | (0b00               << ADC_CR2_SWSTART_Pos)                 // Start conversion of regular channels
+                  | (0b00               << ADC_CR2_JSWSTART_Pos)                // Start conversion of injected channels
+                  | (adc_cr2_exttrig    << ADC_CR2_EXTTRIG_Pos)                 // External trigger conversion mode for regular channels
+                  | (adc_cr2_extsel     << ADC_CR2_EXTSEL_Pos)                  // External event select for regular group
+                  | (adc_cr2_jexttrig   << ADC_CR2_JEXTTRIG_Pos)                // External trigger conversion mode for injected channels
+                  | (adc_cr2_jextsel    << ADC_CR2_JEXTSEL_Pos)                 // External event select for injected group
+                  | (adc_cr2_align      << ADC_CR2_ALIGN_Pos)                   // Data alignment
+                  | (adc_cr2_dma        << ADC_CR2_DMA_Pos)                     // Direct memory access mode
+                  | (adc_cr2_rstcal     << ADC_CR2_RSTCAL_Pos)                  // Reset calibration
+                  | (adc_cr2_cont       << ADC_CR2_CONT_Pos)                    // Continuous conversion
+                  | (adc_cr2_adon       << ADC_CR2_ADON_Pos);                   // A/D converter ON / OFF
 }
 
 void adc_set_config()
 {
-    ADC1->CR2 |= (ADC_CR2_TSVREFE_Msk);
     ADC1->SQR3 = 2; // 1 преобразование - канал 0
-
-    ADC1->CR2 &= ~ADC_CR2_CONT; // запрет непрерывного режима
-    ADC1->CR1 &= ~ADC_CR1_SCAN; // запрет режима сканирования
 
     ADC1->SR = ADC1->SR;
     ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
@@ -80,20 +117,6 @@ void adc_set_config()
         asm("NOP");
     uint32_t adc_val = ADC1->DR;
     Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
-
-    // ADC2->CR1 |= (0b00 << ADC_CR1_AWDEN_Pos)     // Analog watchdog enable on regular channels
-    //              | (0b00 << ADC_CR1_JAWDEN_Pos)  // Analog watchdog enable on injected channels
-    //              | (0b00 << ADC_CR1_DUALMOD_Pos) // Dual mode selection
-    //              | (0b00 << ADC_CR1_DISCNUM_Pos) // Discontinuous mode channel count
-    //              | (0b00 << ADC_CR1_JDISCEN_Pos) // Discontinuous mode on injected channels
-    //              | (0b00 << ADC_CR1_DISCEN_Pos)  // Discontinuous mode on regular channels
-    //              | (0b00 << ADC_CR1_JAUTO_Pos)   // Automatic Injected Group conversion
-    //              | (0b00 << ADC_CR1_AWDSGL_Pos)  // Enable the watchdog on a single channel in scan mode
-    //              | (0b00 << ADC_CR1_SCAN_Pos)    // Scan mode
-    //              | (0b00 << ADC_CR1_JEOSIE_Pos)  // Interrupt enable for injected channels
-    //              | (0b00 << ADC_CR1_AWDIE_Pos)   // Analog watchdog interrupt enable
-    //              | (0b00 << ADC_CR1_EOSIE_Pos)   // Interrupt enable for EOC
-    //              | (0b00 << ADC_CR1_AWDCH_Pos);  // Analog watchdog channel select bits
 
     // ADC2->CR2 |= (0b00 << ADC_CR2_TSVREFE_Pos)    // Temperature sensor and VREFINT enable
     //              | (0b00 << ADC_CR2_SWSTART_Pos)  // Start conversion of regular channels

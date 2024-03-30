@@ -109,6 +109,31 @@ int main(void)
   //  NVIC_EnableIRQ(TIM3_IRQn);
 
   adc::enable(ADC1);
+  adc::set_cr1_config(ADC1,
+                      AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+                      JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+                      DUALMOD__INDEPENDENT_MODE,
+                      1,
+                      JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+                      DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+                      JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+                      AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS,
+                      SCAN__SCAN_MODE_DISABLED,
+                      JEOCIE__JEOC_INTERRUPT_DISABLED,
+                      AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
+                      EOCIE__EOC_INTERRUPT_DISABLED,
+                      0);
+  adc::set_cr2_config(ADC1,
+                      TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
+                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
+                      EXTSEL__SWSTART,
+                      JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
+                      JEXTSEL__JSWSTART,
+                      ALIGN__RIGHT_ALIGNMENT,
+                      DMA__DMA_MODE_DISABLED,
+                      RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+                      CONT__SINGLE_CONVERSION_MODE,
+                      ADON__ENABLE_ADC);
 
   while (true)
   {
