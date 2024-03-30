@@ -25,8 +25,9 @@ bool adc::enable(ADC_TypeDef *adc_x)
 /**
  * @brief   конфигурирование control register 1
  */
-void adc::set_cr1_config(ADC_TypeDef *adc_x, AWDEN_Type awden, JAWDEN_Type jawden, DUALMOD_Type dualmod, uint8_t discnum,
-                         JDISCEN_Type jdiscen, DISCEN_Type discen, JAUTO_Type jauto, AWDSGL_Type awdsgl, SCAN_Type scan, JEOCIE_Type jeocie, AWDIE_Type awdie, EOCIE_Type eocie, uint8_t awdch)
+void adc::set_cr1_config(ADC_TypeDef *adc_x, ADC_CR1_AWDEN_Type awden, ADC_CR1_JAWDEN_Type jawden, ADC_CR1_DUALMOD_Type dualmod, uint8_t discnum,
+                         ADC_CR1_JDISCEN_Type jdiscen, ADC_CR1_DISCEN_Type discen, ADC_CR1_JAUTO_Type jauto, ADC_CR1_AWDSGL_Type awdsgl, 
+                         ADC_CR1_SCAN_Type scan, ADC_CR1_JEOCIE_Type jeocie, ADC_CR1_AWDIE_Type awdie, ADC_CR1_EOCIE_Type eocie, uint8_t awdch)
 {
     adc_x->CR1 |= (awden       << ADC_CR1_AWDEN_Pos)                          // Analog watchdog enable on regular channels
                   | (jawden    << ADC_CR1_JAWDEN_Pos)                         // Analog watchdog enable on injected channels
