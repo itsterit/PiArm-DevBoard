@@ -22,29 +22,25 @@ bool adc::enable(ADC_TypeDef *adc_x)
     return 0;
 }
 
-void adc::set_cr1_config(ADC_TypeDef *adc_x,
-                         AWDEN_Type awden, JAWDEN_Type jawden,
-                         DUALMOD_Type dualmod,
-                         uint8_t discnum,
-                         JDISCEN_Type jdiscen, DISCEN_Type discen,
-                         JAUTO_Type jauto,
-                         AWDSGL_Type awdsgl,
-                         SCAN_Type scan,
-                         JEOCIE_Type jeocie, AWDIE_Type awdie, EOCIE_Type eocie, uint8_t awdch)
+/**
+ * @brief   конфигурирование control register 1
+ */
+void adc::set_cr1_config(ADC_TypeDef *adc_x, AWDEN_Type awden, JAWDEN_Type jawden, DUALMOD_Type dualmod, uint8_t discnum,
+                         JDISCEN_Type jdiscen, DISCEN_Type discen, JAUTO_Type jauto, AWDSGL_Type awdsgl, SCAN_Type scan, JEOCIE_Type jeocie, AWDIE_Type awdie, EOCIE_Type eocie, uint8_t awdch)
 {
-    adc_x->CR1 |= (awden        << ADC_CR1_AWDEN_Pos)                           // Analog watchdog enable on regular channels
-                  | (jawden     << ADC_CR1_JAWDEN_Pos)                          // Analog watchdog enable on injected channels
-                  | (dualmod    << ADC_CR1_DUALMOD_Pos)                         // Dual mode selection
-                  | ((discnum   << ADC_CR1_DISCNUM_Pos) & ADC_CR1_DISCNUM_Msk)  // Discontinuous mode channel count
-                  | (jdiscen    << ADC_CR1_JDISCEN_Pos)                         // Discontinuous mode on injected channels
-                  | (discen     << ADC_CR1_DISCEN_Pos)                          // Discontinuous mode on regular channels
-                  | (jauto      << ADC_CR1_JAUTO_Pos)                           // Automatic Injected Group conversion
-                  | (awdsgl     << ADC_CR1_AWDSGL_Pos)                          // Enable the watchdog on a single channel in scan mode
-                  | (scan       << ADC_CR1_SCAN_Pos)                            // Scan mode
-                  | (jeocie     << ADC_CR1_JEOSIE_Pos)                          // Interrupt enable for injected channels
-                  | (awdie      << ADC_CR1_AWDIE_Pos)                           // Analog watchdog interrupt enable
-                  | (eocie      << ADC_CR1_EOSIE_Pos)                           // Interrupt enable for EOC
-                  | ((awdch     << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);     // Analog watchdog channel select bits
+    adc_x->CR1 |= (awden       << ADC_CR1_AWDEN_Pos)                          // Analog watchdog enable on regular channels
+                  | (jawden    << ADC_CR1_JAWDEN_Pos)                         // Analog watchdog enable on injected channels
+                  | (dualmod   << ADC_CR1_DUALMOD_Pos)                        // Dual mode selection
+                  | ((discnum  << ADC_CR1_DISCNUM_Pos) & ADC_CR1_DISCNUM_Msk) // Discontinuous mode channel count
+                  | (jdiscen   << ADC_CR1_JDISCEN_Pos)                        // Discontinuous mode on injected channels
+                  | (discen    << ADC_CR1_DISCEN_Pos)                         // Discontinuous mode on regular channels
+                  | (jauto     << ADC_CR1_JAUTO_Pos)                          // Automatic Injected Group conversion
+                  | (awdsgl    << ADC_CR1_AWDSGL_Pos)                         // Enable the watchdog on a single channel in scan mode
+                  | (scan      << ADC_CR1_SCAN_Pos)                           // Scan mode
+                  | (jeocie    << ADC_CR1_JEOSIE_Pos)                         // Interrupt enable for injected channels
+                  | (awdie     << ADC_CR1_AWDIE_Pos)                          // Analog watchdog interrupt enable
+                  | (eocie     << ADC_CR1_EOSIE_Pos)                          // Interrupt enable for EOC
+                  | ((awdch    << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);    // Analog watchdog channel select bits
 }
 
 void adc_set_config()
