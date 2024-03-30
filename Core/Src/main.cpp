@@ -53,7 +53,7 @@ int main(void)
   bat_voltage_pin.set_config(GPIO::input_analog);
 
   coil_current_pin.clock_enable(true);
-  coil_current_pin.set_config(GPIO::input_pull_down);
+  coil_current_pin.set_config(GPIO::input_analog);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
