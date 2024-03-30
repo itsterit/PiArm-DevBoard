@@ -104,30 +104,16 @@ int main(void)
   //  NVIC_EnableIRQ(TIM1_UP_IRQn);
   //  NVIC_EnableIRQ(TIM3_IRQn);
 
-  // if (adc::enable(ADC1))
-  //   Logger.LogI((char *)"CAL is ok\n\r");
-  // adc_set_config();
+  if (adc::enable(ADC1))
+    Logger.LogI((char *)"CAL is ok\n\r");
+  adc_set_config();
 
-  dc_enable.set();
-  led_pin.set();
+  // dc_enable.set();
+  // led_pin.set();
 
   while (true)
   {
-
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-
-    if (!(btn_1.get_level()) || !(btn_1.get_level()))
-    {
-      led_pin.set();
-      cur_fault_delay = 200;
-    }
-
-    if ((usHoldingRegisters[0] && usHoldingRegisters[1]))
-    {
-      set_generation_timing(1000000, usHoldingRegisters[0], usHoldingRegisters[1]);
-      usHoldingRegisters[0] = 0;
-      usHoldingRegisters[1] = 0;
-    }
   }
 }

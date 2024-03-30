@@ -4,6 +4,8 @@
 #include <stm32f103xb.h>
 #include "adc_cr1.h"
 
+void adc_set_config();
+
 class adc
 {
 public:
