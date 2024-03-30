@@ -109,10 +109,10 @@ int main(void)
   //  NVIC_EnableIRQ(TIM3_IRQn);
 
   adc::enable(ADC1);
-  adc_set_config();
 
   while (true)
   {
+    adc_set_config();
 
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
