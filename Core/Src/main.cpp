@@ -11,6 +11,7 @@ GPIO cur_fault(GPIOC, 13U);
 GPIO dc_enable(GPIOB, 3);
 
 GPIO bat_voltage_pin(GPIOA, 4U);
+GPIO coil_current_pin(GPIOA, 2U);
 
 uint8_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
@@ -50,6 +51,9 @@ int main(void)
 
   bat_voltage_pin.clock_enable(true);
   bat_voltage_pin.set_config(GPIO::input_analog);
+
+  coil_current_pin.clock_enable(true);
+  coil_current_pin.set_config(GPIO::input_pull_down);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -104,15 +108,12 @@ int main(void)
   //  NVIC_EnableIRQ(TIM1_UP_IRQn);
   //  NVIC_EnableIRQ(TIM3_IRQn);
 
-  if (adc::enable(ADC1))
-    Logger.LogI((char *)"CAL is ok\n\r");
+  adc::enable(ADC1);
   adc_set_config();
-
-  // dc_enable.set();
-  // led_pin.set();
 
   while (true)
   {
+
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
   }

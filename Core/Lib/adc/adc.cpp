@@ -9,7 +9,7 @@ bool adc::enable(ADC_TypeDef *adc_x)
     RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
     RCC->APB2ENR |= RCC_APB2ENR_ADC2EN;
 
-    adc_x->CR2 |= (ADC_CR2_ADON);
+    adc_x->CR2 |= (ADC_CR2_ADON_Msk);
     for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
         asm("NOP");
 
@@ -31,40 +31,25 @@ void adc::set_cr1_config(ADC_TypeDef *adc_x,
                          SCAN_Type scan,
                          JEOCIE_Type jeocie, AWDIE_Type awdie, EOCIE_Type eocie, uint8_t awdch)
 {
-    adc_x->CR1 |= (awden        << ADC_CR1_AWDEN_Pos)   // Analog watchdog enable on regular channels
-                  | (jawden     << ADC_CR1_JAWDEN_Pos)  // Analog watchdog enable on injected channels
-                  | (dualmod    << ADC_CR1_DUALMOD_Pos) // Dual mode selection
-                  | (discnum    << ADC_CR1_DISCNUM_Pos) // Discontinuous mode channel count
-                  | (jdiscen    << ADC_CR1_JDISCEN_Pos) // Discontinuous mode on injected channels
-                  | (discen     << ADC_CR1_DISCEN_Pos)  // Discontinuous mode on regular channels
-                  | (jauto      << ADC_CR1_JAUTO_Pos)   // Automatic Injected Group conversion
-                  | (awdsgl     << ADC_CR1_AWDSGL_Pos)  // Enable the watchdog on a single channel in scan mode
-                  | (scan       << ADC_CR1_SCAN_Pos)    // Scan mode
-                  | (jeocie     << ADC_CR1_JEOSIE_Pos)  // Interrupt enable for injected channels
-                  | (awdie      << ADC_CR1_AWDIE_Pos)   // Analog watchdog interrupt enable
-                  | (eocie      << ADC_CR1_EOSIE_Pos)   // Interrupt enable for EOC
-                  | (awdch      << ADC_CR1_AWDCH_Pos);  // Analog watchdog channel select bits
+    adc_x->CR1 |= (awden << ADC_CR1_AWDEN_Pos)       // Analog watchdog enable on regular channels
+                  | (jawden << ADC_CR1_JAWDEN_Pos)   // Analog watchdog enable on injected channels
+                  | (dualmod << ADC_CR1_DUALMOD_Pos) // Dual mode selection
+                  | (discnum << ADC_CR1_DISCNUM_Pos) // Discontinuous mode channel count
+                  | (jdiscen << ADC_CR1_JDISCEN_Pos) // Discontinuous mode on injected channels
+                  | (discen << ADC_CR1_DISCEN_Pos)   // Discontinuous mode on regular channels
+                  | (jauto << ADC_CR1_JAUTO_Pos)     // Automatic Injected Group conversion
+                  | (awdsgl << ADC_CR1_AWDSGL_Pos)   // Enable the watchdog on a single channel in scan mode
+                  | (scan << ADC_CR1_SCAN_Pos)       // Scan mode
+                  | (jeocie << ADC_CR1_JEOSIE_Pos)   // Interrupt enable for injected channels
+                  | (awdie << ADC_CR1_AWDIE_Pos)     // Analog watchdog interrupt enable
+                  | (eocie << ADC_CR1_EOSIE_Pos)     // Interrupt enable for EOC
+                  | (awdch << ADC_CR1_AWDCH_Pos);    // Analog watchdog channel select bits
 }
 
 void adc_set_config()
 {
-    // RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
-
-    /* калибровка */
-    // ADC1->CR2 |= (0b01 << ADC_CR2_ADON_Pos); // A/D converter ON / OFF
-
-    // /* Ждем включение */
-    // for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
-    //     asm("NOP");
-
-    /* калибруем и ждем */
-    // ADC1->CR2 |= ADC_CR2_CAL;
-    // while ((ADC1->CR2 & ADC_CR2_CAL) != 0)
-    //     asm("NOP");
-    // Logger.LogI((char *)"CAL is ok\n\r");
-
-    ADC1->CR2 |= (0b01 << ADC_CR2_TSVREFE_Pos);
-    ADC1->SQR3 = 4; // 1 преобразование - канал 0
+    ADC1->CR2 |= (ADC_CR2_TSVREFE_Msk);
+    ADC1->SQR3 = 2; // 1 преобразование - канал 0
 
     ADC1->CR2 &= ~ADC_CR2_CONT; // запрет непрерывного режима
     ADC1->CR1 &= ~ADC_CR1_SCAN; // запрет режима сканирования
@@ -75,7 +60,28 @@ void adc_set_config()
 
     while ((ADC1->SR & ADC_SR_EOC) == 0)
         asm("NOP");
-    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", ADC1->DR);
+    uint32_t adc_val = ADC1->DR;
+    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
+
+    ADC1->SMPR1 |=   (0b00 << ADC_SMPR1_SMP17_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
+
+    ADC1->SMPR2 |=   (0b00 << ADC_SMPR2_SMP9_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP8_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP7_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP6_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP5_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP4_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP3_Pos)  // Channel x Sample time selection
+                   | (0b01 << ADC_SMPR2_SMP2_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP1_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR2_SMP0_Pos); // Channel x Sample time selection
 
     // ADC2->CR1 |= (0b00 << ADC_CR1_AWDEN_Pos)     // Analog watchdog enable on regular channels
     //              | (0b00 << ADC_CR1_JAWDEN_Pos)  // Analog watchdog enable on injected channels
@@ -104,26 +110,6 @@ void adc_set_config()
     //              | (0b00 << ADC_CR2_CAL_Pos)      // A/D Calibration
     //              | (0b00 << ADC_CR2_CONT_Pos)     // Continuous conversion
     //              | (0b00 << ADC_CR2_ADON_Pos);    // A/D converter ON / OFF
-
-    // ADC2->SMPR1 |= (0b00 << ADC_SMPR1_SMP17_Pos)    // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
-
-    // ADC2->SMPR2 |= (0b00 << ADC_SMPR2_SMP9_Pos)    // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP8_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP7_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP6_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP5_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP4_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP3_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP2_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP1_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP0_Pos); // Channel x Sample time selection
 
     // ADC2->JOFR1 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
     // ADC2->JOFR2 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
