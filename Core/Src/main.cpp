@@ -105,15 +105,15 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
-  //  NVIC_EnableIRQ(TIM1_UP_IRQn);
-  //  NVIC_EnableIRQ(TIM3_IRQn);
+  NVIC_EnableIRQ(TIM1_UP_IRQn);
+  NVIC_EnableIRQ(TIM3_IRQn);
 
   adc::enable(ADC1);
   adc::set_cr1_config(ADC1,
                       AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
                       JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
                       DUALMOD__INDEPENDENT_MODE,
-                      1,
+                      0,
                       JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                       DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                       JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
@@ -132,12 +132,29 @@ int main(void)
                       ALIGN__RIGHT_ALIGNMENT,
                       DMA__DMA_MODE_DISABLED,
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                      CONT__SINGLE_CONVERSION_MODE,
+                      CONT__CONTINUOUS_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
+
+  ADC1->SR = ADC1->SR;
+  ADC1->CR2 |= (ADC_CR2_SWSTART);
 
   while (true)
   {
-    adc_set_config();
+
+    for (uint32_t conversion_counter = 0; conversion_counter < 0xFFFFFFFF; conversion_counter++)
+    {
+      if ((ADC1->SR & ADC_SR_EOC))
+      {
+        ADC1->SR = ADC1->SR;
+        uint32_t adc_val = ADC1->DR;
+        Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
+        break;
+      }
+      else if (conversion_counter > 0xFFFFFFF)
+      {
+        Logger.LogE((char *)"ADC_SR_EOS_Msk err\n\r");
+      }
+    }
 
     if (!(btn_2.get_level()))
       NVIC_SystemReset();

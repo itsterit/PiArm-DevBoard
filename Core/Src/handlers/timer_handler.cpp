@@ -9,7 +9,7 @@ void set_timer_config()
 
     sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, 0);
     sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-    sampling_timer.set_timer_config(0, 0, 0, 0, 5, 72, 0);
+    sampling_timer.set_timer_config(0, 0, 0, 0, 5, 71, 0);
     sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
 
 #if INVERT_GENERATOR_SIGNAL

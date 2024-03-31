@@ -40,19 +40,19 @@ void adc::set_cr1_config(ADC_TypeDef *adc_x,
                          ADC_CR1_EOCIE_Type eocie,
                          uint8_t awdch)
 {
-    adc_x->CR1 |= (awden        << ADC_CR1_AWDEN_Pos)                           // Analog watchdog enable on regular channels
-                  | (jawden     << ADC_CR1_JAWDEN_Pos)                          // Analog watchdog enable on injected channels
-                  | (dualmod    << ADC_CR1_DUALMOD_Pos)                         // Dual mode selection
-                  | ((discnum   << ADC_CR1_DISCNUM_Pos) & ADC_CR1_DISCNUM_Msk)  // Discontinuous mode channel count
-                  | (jdiscen    << ADC_CR1_JDISCEN_Pos)                         // Discontinuous mode on injected channels
-                  | (discen     << ADC_CR1_DISCEN_Pos)                          // Discontinuous mode on regular channels
-                  | (jauto      << ADC_CR1_JAUTO_Pos)                           // Automatic Injected Group conversion
-                  | (awdsgl     << ADC_CR1_AWDSGL_Pos)                          // Enable the watchdog on a single channel in scan mode
-                  | (scan       << ADC_CR1_SCAN_Pos)                            // Scan mode
-                  | (jeocie     << ADC_CR1_JEOSIE_Pos)                          // Interrupt enable for injected channels
-                  | (awdie      << ADC_CR1_AWDIE_Pos)                           // Analog watchdog interrupt enable
-                  | (eocie      << ADC_CR1_EOSIE_Pos)                           // Interrupt enable for EOC
-                  | ((awdch     << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);     // Analog watchdog channel select bits
+    adc_x->CR1 |= (awden    << ADC_CR1_AWDEN_Pos);                          // Analog watchdog enable on regular channels
+    adc_x->CR1 |= (jawden   << ADC_CR1_JAWDEN_Pos);                         // Analog watchdog enable on injected channels
+    adc_x->CR1 |= (dualmod  << ADC_CR1_DUALMOD_Pos);                        // Dual mode selection
+    adc_x->CR1 |= ((discnum << ADC_CR1_DISCNUM_Pos) & ADC_CR1_DISCNUM_Msk); // Discontinuous mode channel count
+    adc_x->CR1 |= (jdiscen  << ADC_CR1_JDISCEN_Pos);                        // Discontinuous mode on injected channels
+    adc_x->CR1 |= (discen   << ADC_CR1_DISCEN_Pos);                         // Discontinuous mode on regular channels
+    adc_x->CR1 |= (jauto    << ADC_CR1_JAUTO_Pos);                          // Automatic Injected Group conversion
+    adc_x->CR1 |= (awdsgl   << ADC_CR1_AWDSGL_Pos);                         // Enable the watchdog on a single channel in scan mode
+    adc_x->CR1 |= (scan     << ADC_CR1_SCAN_Pos);                           // Scan mode
+    adc_x->CR1 |= (jeocie   << ADC_CR1_JEOSIE_Pos);                         // Interrupt enable for injected channels
+    adc_x->CR1 |= (awdie    << ADC_CR1_AWDIE_Pos);                          // Analog watchdog interrupt enable
+    adc_x->CR1 |= (eocie    << ADC_CR1_EOSIE_Pos);                          // Interrupt enable for EOC
+    adc_x->CR1 |= ((awdch   << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);     // Analog watchdog channel select bits
 }
 
 /**
@@ -71,52 +71,44 @@ void adc::set_cr2_config(ADC_TypeDef *adc_x,
                          ADC_CR2_CONT_Type adc_cr2_cont,
                          ADC_CR2_ADON_Type adc_cr2_adon)
 {
-    adc_x->CR2 |= (adc_cr2_tsvrefe << ADC_CR2_TSVREFE_Pos)                      // Temperature sensor and VREFINT enable
-                  | (0b00               << ADC_CR2_SWSTART_Pos)                 // Start conversion of regular channels
-                  | (0b00               << ADC_CR2_JSWSTART_Pos)                // Start conversion of injected channels
-                  | (adc_cr2_exttrig    << ADC_CR2_EXTTRIG_Pos)                 // External trigger conversion mode for regular channels
-                  | (adc_cr2_extsel     << ADC_CR2_EXTSEL_Pos)                  // External event select for regular group
-                  | (adc_cr2_jexttrig   << ADC_CR2_JEXTTRIG_Pos)                // External trigger conversion mode for injected channels
-                  | (adc_cr2_jextsel    << ADC_CR2_JEXTSEL_Pos)                 // External event select for injected group
-                  | (adc_cr2_align      << ADC_CR2_ALIGN_Pos)                   // Data alignment
-                  | (adc_cr2_dma        << ADC_CR2_DMA_Pos)                     // Direct memory access mode
-                  | (adc_cr2_rstcal     << ADC_CR2_RSTCAL_Pos)                  // Reset calibration
-                  | (adc_cr2_cont       << ADC_CR2_CONT_Pos)                    // Continuous conversion
-                  | (adc_cr2_adon       << ADC_CR2_ADON_Pos);                   // A/D converter ON / OFF
+    adc_x->CR2 |= (adc_cr2_tsvrefe  << ADC_CR2_TSVREFE_Pos);                // Temperature sensor and VREFINT enable
+    adc_x->CR2 |= (0b00             << ADC_CR2_SWSTART_Pos);                // Start conversion of regular channels
+    adc_x->CR2 |= (0b00             << ADC_CR2_JSWSTART_Pos);               // Start conversion of injected channels
+    adc_x->CR2 |= (adc_cr2_exttrig  << ADC_CR2_EXTTRIG_Pos);                // External trigger conversion mode for regular channels
+    adc_x->CR2 |= (adc_cr2_extsel   << ADC_CR2_EXTSEL_Pos);                 // External event select for regular group
+    adc_x->CR2 |= (adc_cr2_jexttrig << ADC_CR2_JEXTTRIG_Pos);               // External trigger conversion mode for injected channels
+    adc_x->CR2 |= (adc_cr2_jextsel  << ADC_CR2_JEXTSEL_Pos);                // External event select for injected group
+    adc_x->CR2 |= (adc_cr2_align    << ADC_CR2_ALIGN_Pos);                  // Data alignment
+    adc_x->CR2 |= (adc_cr2_dma      << ADC_CR2_DMA_Pos);                    // Direct memory access mode
+    adc_x->CR2 |= (adc_cr2_rstcal   << ADC_CR2_RSTCAL_Pos);                 // Reset calibration
+    adc_x->CR2 |= (adc_cr2_cont     << ADC_CR2_CONT_Pos);                   // Continuous conversion
+    adc_x->CR2 |= (adc_cr2_adon     << ADC_CR2_ADON_Pos);                   // A/D converter ON / OFF
+
+    ADC1->SQR3 = 2; // 1 преобразование - канал 0
 }
 
 void adc_set_config()
 {
-    ADC1->SQR3 = 2; // 1 преобразование - канал 0
 
-    ADC1->SR = ADC1->SR;
-    ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
-    ADC1->CR2 |= (ADC_CR2_SWSTART);
+    // ADC1->SMPR1 |= (0b00 << ADC_SMPR1_SMP17_Pos)    // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
 
-    ADC1->SMPR1 |= (0b00 << ADC_SMPR1_SMP17_Pos)    // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
-
-    ADC1->SMPR2 |= (0b00 << ADC_SMPR2_SMP9_Pos)    // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP8_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP7_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP6_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP5_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP4_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP3_Pos)  // Channel x Sample time selection
-                   | (0b01 << ADC_SMPR2_SMP2_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP1_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP0_Pos); // Channel x Sample time selection
-
-    while ((ADC1->SR & ADC_SR_EOC) == 0)
-        asm("NOP");
-    uint32_t adc_val = ADC1->DR;
-    Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
+    // ADC1->SMPR2 |= (0b00 << ADC_SMPR2_SMP9_Pos)    // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP8_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP7_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP6_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP5_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP4_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP3_Pos)  // Channel x Sample time selection
+    //                | (0b01 << ADC_SMPR2_SMP2_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP1_Pos)  // Channel x Sample time selection
+    //                | (0b00 << ADC_SMPR2_SMP0_Pos); // Channel x Sample time selection
 
     // ADC2->CR2 |= (0b00 << ADC_CR2_TSVREFE_Pos)    // Temperature sensor and VREFINT enable
     //              | (0b00 << ADC_CR2_SWSTART_Pos)  // Start conversion of regular channels
