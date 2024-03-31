@@ -105,7 +105,8 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
-  NVIC_EnableIRQ(TIM1_UP_IRQn);
+  // NVIC_EnableIRQ(TIM1_UP_IRQn);
+  NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_EnableIRQ(TIM3_IRQn);
 
   adc::enable(ADC1);
