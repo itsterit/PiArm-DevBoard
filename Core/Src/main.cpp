@@ -137,25 +137,25 @@ int main(void)
                       ADON__ENABLE_ADC);
 
   ADC1->SR = ADC1->SR;
-  ADC1->CR2 |= (ADC_CR2_SWSTART);
+  // ADC1->CR2 |= (ADC_CR2_SWSTART);
 
   while (true)
   {
 
-    for (uint32_t conversion_counter = 0; conversion_counter < 0xFFFFFFFF; conversion_counter++)
-    {
-      if ((ADC1->SR & ADC_SR_EOC))
-      {
-        ADC1->SR = ADC1->SR;
-        uint32_t adc_val = ADC1->DR;
-        Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
-        break;
-      }
-      else if (conversion_counter > 0xFFFFFFF)
-      {
-        Logger.LogE((char *)"ADC_SR_EOS_Msk err\n\r");
-      }
-    }
+    // for (uint32_t conversion_counter = 0; conversion_counter < 0xFFFFFFFF; conversion_counter++)
+    // {
+    //   if ((ADC1->SR & ADC_SR_EOC))
+    //   {
+    //     ADC1->SR = ADC1->SR;
+    //     uint32_t adc_val = ADC1->DR;
+    //     Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
+    //     break;
+    //   }
+    //   else if (conversion_counter > 0xFFFFFFF)
+    //   {
+    //     Logger.LogE((char *)"ADC_SR_EOS_Msk err\n\r");
+    //   }
+    // }
 
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
