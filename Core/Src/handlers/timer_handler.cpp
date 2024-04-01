@@ -44,8 +44,8 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 // extern "C" void TIM1_UP_IRQHandler(void)
 extern "C" void TIM1_CC_IRQHandler(void)
 {
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
+    // GPIOB->BSRR = (0b01 << 11U);
+    // GPIOB->BRR = (0b01 << 11U);
 
     TIM1->SR = ~TIM1->SR;
 }
@@ -55,24 +55,26 @@ extern "C" void TIM3_IRQHandler(void)
     TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
     TIM1->SR = ~TIM1->SR;
     TIM1->CNT = 0;
-
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BSRR = (0b01 << 11U);
-
-    if (TIM3->SR & TIM_SR_CC3IF_Msk)
     {
-        /* Начало замера тока катушки */
-        TIM1->CR1 |= (TIM_CR1_CEN_Msk);
-        GPIOB->BRR = (0b01 << 11U);
-    }
-    else
-    {
+        if (TIM3->SR & TIM_SR_CC2IF_Msk)
+        {
+            /* Конец замера тока катушки */
+            GPIOB->BSRR = (0b01 << 11U);
+            GPIOB->BRR = (0b01 << 11U);
+        }
+        if (TIM3->SR & TIM_SR_CC3IF_Msk)
+        {
+            /* Начало замера тока катушки */
+            TIM1->CR1 |= (TIM_CR1_CEN_Msk);
+            GPIOB->BSRR = (0b01 << 11U);
+            GPIOB->BRR = (0b01 << 11U);
+        }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
+            GPIOB->BSRR = (0b01 << 11U);
+            GPIOB->BRR = (0b01 << 11U);
         }
     }
-
     TIM3->SR = ~TIM3->SR;
 }
