@@ -20,6 +20,8 @@ public:
     static void set_cr2_config(ADC_TypeDef *adc_x, ADC_CR2_TSVREFE_Type adc_cr2_tsvrefe, ADC_CR2_EXTTRIG_Type adc_cr2_exttrig, ADC_CR2_EXTSEL_Type adc_cr2_extsel,
                                ADC_CR2_JEXTTRIG_Type adc_cr2_jexttrig, ADC_CR2_JEXTSEL_Type adc_cr2_jextsel, ADC_CR2_ALIGN_Type adc_cr2_align,
                                ADC_CR2_DMA_Type adc_cr2_dma, ADC_CR2_RSTCAL_Type adc_cr2_rstcal, ADC_CR2_CONT_Type adc_cr2_cont, ADC_CR2_ADON_Type adc_cr2_adon);
+
+    static void start();
 };
 
 #endif /* __ADC_H__ */

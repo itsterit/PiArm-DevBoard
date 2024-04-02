@@ -40,6 +40,7 @@ void adc::set_cr1_config(ADC_TypeDef *adc_x,
                          ADC_CR1_EOCIE_Type eocie,
                          uint8_t awdch)
 {
+    adc_x->CR1 = 0;
     adc_x->CR1 |= (awden    << ADC_CR1_AWDEN_Pos);                          // Analog watchdog enable on regular channels
     adc_x->CR1 |= (jawden   << ADC_CR1_JAWDEN_Pos);                         // Analog watchdog enable on injected channels
     adc_x->CR1 |= (dualmod  << ADC_CR1_DUALMOD_Pos);                        // Dual mode selection
@@ -71,6 +72,9 @@ void adc::set_cr2_config(ADC_TypeDef *adc_x,
                          ADC_CR2_CONT_Type adc_cr2_cont,
                          ADC_CR2_ADON_Type adc_cr2_adon)
 {
+    ADC1->SQR3 = 2; // 1 преобразование - канал 0
+
+    adc_x->CR2 = 0;
     adc_x->CR2 |= (adc_cr2_tsvrefe  << ADC_CR2_TSVREFE_Pos);                // Temperature sensor and VREFINT enable
     adc_x->CR2 |= (0b00             << ADC_CR2_SWSTART_Pos);                // Start conversion of regular channels
     adc_x->CR2 |= (0b00             << ADC_CR2_JSWSTART_Pos);               // Start conversion of injected channels
@@ -84,7 +88,6 @@ void adc::set_cr2_config(ADC_TypeDef *adc_x,
     adc_x->CR2 |= (adc_cr2_cont     << ADC_CR2_CONT_Pos);                   // Continuous conversion
     adc_x->CR2 |= (adc_cr2_adon     << ADC_CR2_ADON_Pos);                   // A/D converter ON / OFF
 
-    ADC1->SQR3 = 2; // 1 преобразование - канал 0
 }
 
 void adc_set_config()

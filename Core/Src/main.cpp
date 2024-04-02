@@ -125,12 +125,12 @@ int main(void)
                       SCAN__SCAN_MODE_DISABLED,
                       JEOCIE__JEOC_INTERRUPT_DISABLED,
                       AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
-                      EOCIE__EOC_INTERRUPT_DISABLED,
+                      EOCIE__EOC_INTERRUPT_ENABLED,
                       0);
   adc::set_cr2_config(ADC1,
                       TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
-                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
-                      EXTSEL__SWSTART,
+                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
+                      EXTSEL__TIMER_1_CC1_EVENT,
                       JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
                       JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT,
@@ -138,29 +138,30 @@ int main(void)
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                       CONT__CONTINUOUS_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
-
-  ADC1->SR = ADC1->SR;
-  // ADC1->CR2 |= (ADC_CR2_SWSTART);
+  NVIC_EnableIRQ(ADC1_2_IRQn);
 
   while (true)
   {
-
-    // for (uint32_t conversion_counter = 0; conversion_counter < 0xFFFFFFFF; conversion_counter++)
-    // {
-    //   if ((ADC1->SR & ADC_SR_EOC))
-    //   {
-    //     ADC1->SR = ADC1->SR;
-    //     uint32_t adc_val = ADC1->DR;
-    //     Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
-    //     break;
-    //   }
-    //   else if (conversion_counter > 0xFFFFFFF)
-    //   {
-    //     Logger.LogE((char *)"ADC_SR_EOS_Msk err\n\r");
-    //   }
-    // }
-
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
+
+    if (usHoldingRegisters[0])
+    {
+      ADC1->CR2 &= ~(0b111 << ADC_CR2_EXTSEL_Pos);
+      // ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
+      ADC1->CR2 |= (ADC_CR2_SWSTART);
+      usHoldingRegisters[0] = 0;
+    }
   }
+}
+
+extern "C" void ADC1_2_IRQHandler(void)
+{
+  GPIOB->BRR = (0b01 << 11U);
+  ADC1->SR = ~ADC1->SR;
+
+  // // ADC1->SR = ADC1->SR;
+
+  // uint32_t adc_val = ADC1->DR;
+  // Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
 }
