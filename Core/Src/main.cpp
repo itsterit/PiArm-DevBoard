@@ -103,15 +103,6 @@ int main(void)
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  /* таймер настройки сэмплирования и настройка задающего таймер */
-  set_timer_config();
-  // NVIC_EnableIRQ(TIM1_UP_IRQn);
-  NVIC_SetPriority(TIM1_CC_IRQn, 1);
-  NVIC_EnableIRQ(TIM1_CC_IRQn);
-
-  NVIC_SetPriority(TIM3_IRQn, 2);
-  NVIC_EnableIRQ(TIM3_IRQn);
-
   adc::enable(ADC1);
   adc::set_cr1_config(ADC1,
                       AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
@@ -130,7 +121,7 @@ int main(void)
   adc::set_cr2_config(ADC1,
                       TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
                       EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__SWSTART,
+                      EXTSEL__TIMER_1_CC1_EVENT,
                       JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
                       JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT,
@@ -139,6 +130,14 @@ int main(void)
                       CONT__SINGLE_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
   NVIC_EnableIRQ(ADC1_2_IRQn);
+
+  /* таймер настройки сэмплирования и настройка задающего таймер */
+  set_timer_config();
+  // NVIC_EnableIRQ(TIM1_UP_IRQn);
+  NVIC_SetPriority(TIM1_CC_IRQn, 1);
+  // NVIC_EnableIRQ(TIM1_CC_IRQn);
+  NVIC_SetPriority(TIM3_IRQn, 2);
+  NVIC_EnableIRQ(TIM3_IRQn);
 
   while (true)
   {
@@ -157,9 +156,12 @@ int main(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BSRR = (0b01 << 11U);
   GPIOB->BRR = (0b01 << 11U);
-  ADC1->SR = ~ADC1->SR;
 
+  ADC1->SR = ~ADC1->SR;
   uint32_t adc_val = ADC1->DR;
   Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
 }
