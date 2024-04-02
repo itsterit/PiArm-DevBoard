@@ -128,15 +128,15 @@ int main(void)
                       EOCIE__EOC_INTERRUPT_ENABLED,
                       0);
   adc::set_cr2_config(ADC1,
-                      TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
+                      TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
                       EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__TIMER_1_CC1_EVENT,
+                      EXTSEL__SWSTART,
                       JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
                       JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT,
                       DMA__DMA_MODE_DISABLED,
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                      CONT__CONTINUOUS_CONVERSION_MODE,
+                      CONT__SINGLE_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
@@ -147,7 +147,7 @@ int main(void)
 
     if (usHoldingRegisters[0])
     {
-      ADC1->CR2 &= ~(0b111 << ADC_CR2_EXTSEL_Pos);
+      // ADC1->CR2 &= ~(0b111 << ADC_CR2_EXTSEL_Pos);
       // ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
       ADC1->CR2 |= (ADC_CR2_SWSTART);
       usHoldingRegisters[0] = 0;
@@ -160,8 +160,6 @@ extern "C" void ADC1_2_IRQHandler(void)
   GPIOB->BRR = (0b01 << 11U);
   ADC1->SR = ~ADC1->SR;
 
-  // // ADC1->SR = ADC1->SR;
-
-  // uint32_t adc_val = ADC1->DR;
-  // Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
+  uint32_t adc_val = ADC1->DR;
+  Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
 }

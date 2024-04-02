@@ -11,14 +11,14 @@ bool adc::enable(ADC_TypeDef *adc_x)
                                  (((uint32_t)(ADC2_BASE)) - ((uint32_t)(ADC1_BASE))));
     RCC->APB2ENR |= (0b01 << adc_enable_shift);
 
-    adc_x->CR2 |= (ADC_CR2_ADON_Msk);
-    for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
-        asm("NOP");
+    // adc_x->CR2 |= (ADC_CR2_ADON_Msk);
+    // for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
+    //     asm("NOP");
 
-    adc_x->CR2 |= ADC_CR2_CAL;
-    for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
-        if ((adc_x->CR2 & ADC_CR2_CAL) == 0)
-            return 1;
+    // adc_x->CR2 |= ADC_CR2_CAL;
+    // for (uint8_t adc_start_wait = 0; adc_start_wait < 0xFF; adc_start_wait++)
+    //     if ((adc_x->CR2 & ADC_CR2_CAL) == 0)
+    //         return 1;
     return 0;
 }
 
