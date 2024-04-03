@@ -12,10 +12,9 @@ void set_timer_config()
 
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, (TIM_DIER_CC1IE_Msk));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(10, 0, 0, 0, 50, 71, 0);
+        sampling_timer.set_timer_config(1, 0, 0, 0, 5, 71, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
-
-        TIM1->EGR = 0xF;
+        sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
     }
 
     {
@@ -30,7 +29,7 @@ void set_timer_config()
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-        set_generation_timing(1000000, 1000, 50);
+        set_generation_timing(1000000, 5000, 20);
         coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
 }
@@ -50,7 +49,7 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 // extern "C" void TIM1_UP_IRQHandler(void)
 extern "C" void TIM1_CC_IRQHandler(void)
 {
-    // GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
     // GPIOB->BRR = (0b01 << 11U);
 
     TIM1->SR = ~TIM1->SR;
