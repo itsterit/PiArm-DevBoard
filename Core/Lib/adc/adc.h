@@ -21,7 +21,7 @@ public:
                                ADC_CR2_JEXTTRIG_Type adc_cr2_jexttrig, ADC_CR2_JEXTSEL_Type adc_cr2_jextsel, ADC_CR2_ALIGN_Type adc_cr2_align,
                                ADC_CR2_DMA_Type adc_cr2_dma, ADC_CR2_RSTCAL_Type adc_cr2_rstcal, ADC_CR2_CONT_Type adc_cr2_cont, ADC_CR2_ADON_Type adc_cr2_adon);
 
-    static void start();
+    static void set_injected_sequence(ADC_TypeDef *adc_x, uint8_t injected_sequence_length, uint8_t JSQ4, uint8_t JSQ3, uint8_t JSQ2, uint8_t JSQ1);
 };
 
 #endif /* __ADC_H__ */

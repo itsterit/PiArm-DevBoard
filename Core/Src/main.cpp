@@ -114,15 +114,15 @@ int main(void)
                       JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
                       AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS,
                       SCAN__SCAN_MODE_DISABLED,
-                      JEOCIE__JEOC_INTERRUPT_DISABLED,
+                      JEOCIE__JEOC_INTERRUPT_ENABLED,
                       AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
                       EOCIE__EOC_INTERRUPT_ENABLED,
                       0);
   adc::set_cr2_config(ADC1,
                       TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
-                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__TIMER_1_CC1_EVENT,
-                      JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
+                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
+                      EXTSEL__SWSTART,
+                      JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
                       JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT,
                       DMA__DMA_MODE_DISABLED,
@@ -131,11 +131,13 @@ int main(void)
                       ADON__ENABLE_ADC);
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
+  adc::set_injected_sequence(ADC1, 0, 2, 0, 0, 2);
+
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
-  NVIC_SetPriority(TIM1_CC_IRQn, 1);
-  // NVIC_EnableIRQ(TIM1_CC_IRQn);
+  // NVIC_SetPriority(TIM1_CC_IRQn, 1);
+  NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_SetPriority(TIM3_IRQn, 2);
   NVIC_EnableIRQ(TIM3_IRQn);
 
@@ -148,7 +150,9 @@ int main(void)
     {
       // ADC1->CR2 &= ~(0b111 << ADC_CR2_EXTSEL_Pos);
       // ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
-      ADC1->CR2 |= (ADC_CR2_SWSTART);
+      // ADC1->CR2 |= (ADC_CR2_SWSTART);
+      ADC1->CR2 |= (ADC_CR2_JSWSTART);
+
       usHoldingRegisters[0] = 0;
     }
   }
@@ -162,6 +166,6 @@ extern "C" void ADC1_2_IRQHandler(void)
   GPIOB->BRR = (0b01 << 11U);
 
   ADC1->SR = ~ADC1->SR;
-  uint32_t adc_val = ADC1->DR;
+  uint32_t adc_val = ADC1->JDR1;
   Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
 }
