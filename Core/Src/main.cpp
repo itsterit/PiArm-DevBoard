@@ -129,7 +129,7 @@ int main(void)
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                       CONT__SINGLE_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
-  NVIC_EnableIRQ(ADC1_2_IRQn);
+  // NVIC_EnableIRQ(ADC1_2_IRQn);
 
   adc::set_injected_sequence(ADC1, 0, 2, 0, 0, 2);
 
@@ -137,9 +137,9 @@ int main(void)
   set_timer_config();
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
   // NVIC_SetPriority(TIM1_CC_IRQn, 1);
-  NVIC_EnableIRQ(TIM1_CC_IRQn);
-  NVIC_SetPriority(TIM3_IRQn, 2);
-  NVIC_EnableIRQ(TIM3_IRQn);
+  // NVIC_EnableIRQ(TIM1_CC_IRQn);
+  // NVIC_SetPriority(TIM3_IRQn, 2);
+  // NVIC_EnableIRQ(TIM3_IRQn);
 
   while (true)
   {
@@ -161,9 +161,9 @@ int main(void)
 extern "C" void ADC1_2_IRQHandler(void)
 {
   // GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BRR = (0b01 << 11U);
+  // GPIOB->BRR = (0b01 << 11U);
 
   ADC1->SR = ~ADC1->SR;
   uint32_t adc_val = ADC1->JDR1;
-  // Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", adc_val);
+  Logger.LogD((char *)"%d \n\r", adc_val);
 }
