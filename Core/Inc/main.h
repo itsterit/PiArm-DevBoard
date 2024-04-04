@@ -19,6 +19,7 @@ extern GPIO led_pin;
 extern GPIO gen_freq;
 
 extern uint8_t cur_fault_delay;
+extern GPIO cur_fault;
 
 // Работа с таймерами
 void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty);

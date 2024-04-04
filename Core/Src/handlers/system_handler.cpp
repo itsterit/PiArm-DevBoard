@@ -42,7 +42,7 @@ extern "C" void HardFault_Handler(void)
  * @brief   Прерывание системного таймера
  * @details Установлен наименьший приоритет
  * @note    В большинстве своем для работы в бесконечном цикле
- *          проверяется статус флаг.
+ *          проверяются статус флаги.
  */
 extern "C" void SysTick_Handler(void)
 {
@@ -62,19 +62,27 @@ extern "C" void SysTick_Handler(void)
  * @note    Для надежности переводим ногу проца в режим GPIO и после отработки тайминга
  *          защиты возвращаем в исходное состояние.
  * @warning В боевой плате применен драйвер ключа инвертирующий входной сигнал!!!
+ * @warning Прерывание с самым высоким приоритетом.
  */
 extern "C" void EXTI15_10_IRQHandler(void)
 {
+    __disable_irq();
+    {
+        GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+        GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
 
-    GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
-    GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
 #if INVERT_GENERATOR_SIGNAL
-    GPIOB->BSRR |= (GPIO_BSRR_BS5_Msk);
+        GPIOB->BSRR |= (GPIO_BSRR_BS5_Msk);
 #else
-    GPIOB->BSRR |= (GPIO_BSRR_BR5_Msk);
+        GPIOB->BSRR |= (GPIO_BSRR_BR5_Msk);
 #endif
 
-    EXTI->PR = EXTI->PR;
-    cur_fault_delay = 0xFF;
-    led_pin.set();
+        while (cur_fault.get_level() == 0)
+            asm("NOP");
+
+        EXTI->PR = EXTI->PR;
+        cur_fault_delay = 0xFF;
+        led_pin.set();
+    }
+    __enable_irq();
 }
