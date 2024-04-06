@@ -74,8 +74,7 @@ extern "C" void TIM3_IRQHandler(void)
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
-            // TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
-            // TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
+            TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
             /* Конец замера ответа катушки */
             // GPIOB->BSRR = (0b01 << 11U);
             // GPIOB->BRR = (0b01 << 11U);

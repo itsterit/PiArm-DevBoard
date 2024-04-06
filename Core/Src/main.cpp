@@ -158,12 +158,8 @@ int main(void)
 
     if (usHoldingRegisters[0])
     {
-      // ADC1->CR2 &= ~(0b111 << ADC_CR2_EXTSEL_Pos);
-      // ADC1->CR2 |= (0b111 << ADC_CR2_EXTSEL_Pos);
-      // ADC1->CR2 |= (ADC_CR2_SWSTART);
-      ADC1->CR2 |= (ADC_CR2_JSWSTART);
-
       usHoldingRegisters[0] = 0;
+      set_timer_config();
     }
   }
 }
