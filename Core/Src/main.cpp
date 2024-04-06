@@ -108,6 +108,12 @@ int main(void)
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
+  adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+                            MSIZE_16bits, PSIZE_32bits,
+                            MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
+                            TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+  adc_samling_dma.dma_start(0xFFFF, (uint32_t *)&usInputRegisters[0], (uint32_t *)&ADC1->JDR1);
+
   adc::enable(ADC1);
   adc::set_cr1_config(ADC1,
                       AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
@@ -130,7 +136,7 @@ int main(void)
                       JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
                       JEXTSEL__TIMER_1_TRGO_EVENT,
                       ALIGN__RIGHT_ALIGNMENT,
-                      DMA__DMA_MODE_DISABLED,
+                      DMA__DMA_MODE_ENABLED,
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                       CONT__SINGLE_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
@@ -170,6 +176,6 @@ extern "C" void ADC1_2_IRQHandler(void)
   GPIOB->BRR = (0b01 << 11U);
 
   ADC1->SR = ~ADC1->SR;
-  uint32_t adc_val = ADC1->JDR1;
+  // uint32_t adc_val = ADC1->JDR1;
   // Logger.LogD((char *)"%d \n\r", adc_val);
 }
