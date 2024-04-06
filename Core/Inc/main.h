@@ -35,6 +35,8 @@ extern SimpleLog Logger;
 // Работа с ДМА 4м и 5м каналом
 extern dma_control usb_tx_dma;
 extern dma_control usb_rx_dma;
+extern dma_control adc_samling_dma;
+
 void usb_as_dma_transmit(uint8_t *msg, int16_t len);
 void set_usb_tx_dma_cfg();
 void set_usb_rx_dma_cfg();

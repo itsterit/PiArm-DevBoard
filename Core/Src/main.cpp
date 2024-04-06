@@ -21,6 +21,8 @@ timer sampling_timer(TIM1);
 uint8_t usb_buffer[USB_BUFFER_SIZE]{0};
 usart usb_line(USART1);
 SimpleLog Logger(log_out_method);
+
+dma_control adc_samling_dma(DMA1, DMA1_Channel1);
 dma_control usb_tx_dma(DMA1, DMA1_Channel4);
 dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 
@@ -169,9 +171,9 @@ int main(void)
 extern "C" void ADC1_2_IRQHandler(void)
 {
   // GPIOB->BSRR = (0b01 << 11U);
-  // GPIOB->BRR = (0b01 << 11U);
+  GPIOB->BRR = (0b01 << 11U);
 
   ADC1->SR = ~ADC1->SR;
   uint32_t adc_val = ADC1->JDR1;
-  Logger.LogD((char *)"%d \n\r", adc_val);
+  // Logger.LogD((char *)"%d \n\r", adc_val);
 }
