@@ -12,6 +12,7 @@ GPIO dc_enable(GPIOB, 3);
 
 GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
+GPIO coil_response(GPIOA, 2U);
 
 uint8_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
@@ -54,6 +55,8 @@ int main(void)
 
   coil_current_pin.clock_enable(true);
   coil_current_pin.set_config(GPIO::input_analog);
+  coil_response.clock_enable(true);
+  coil_response.set_config(GPIO::input_analog);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -76,7 +79,6 @@ int main(void)
       }
     }
   }
-
 
   /* Конфижим УАРТ в дма режим */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 9600);
@@ -132,7 +134,8 @@ int main(void)
                       ADON__ENABLE_ADC);
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
-  adc::set_injected_sequence(ADC1, 0, 2, 0, 0, 2);
+  adc::set_injected_sequence(ADC1, 0,
+                             1, 0, 0, 0);
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
@@ -141,6 +144,10 @@ int main(void)
   NVIC_EnableIRQ(TIM1_CC_IRQn);
   // NVIC_SetPriority(TIM3_IRQn, 2);
   NVIC_EnableIRQ(TIM3_IRQn);
+
+  cur_fault_delay = 0xFF;
+  led_pin.set();
+  // dc_enable.set();
 
   while (true)
   {
@@ -166,5 +173,5 @@ extern "C" void ADC1_2_IRQHandler(void)
 
   ADC1->SR = ~ADC1->SR;
   uint32_t adc_val = ADC1->JDR1;
-  // Logger.LogD((char *)"%d \n\r", adc_val);
+  Logger.LogD((char *)"%d \n\r", adc_val);
 }

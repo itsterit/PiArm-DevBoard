@@ -11,7 +11,7 @@
 #include "ModBus/ModBusRTU.h"
 #include "adc/adc.h"
 
-#define INVERT_GENERATOR_SIGNAL (0)
+#define INVERT_GENERATOR_SIGNAL (1)
 #define MODBUS_ADDRESS          (1)
 #define USB_BUFFER_SIZE         (0xFFF)
 
