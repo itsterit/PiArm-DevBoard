@@ -55,7 +55,7 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 extern "C" void TIM1_CC_IRQHandler(void)
 {
     GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
+    // GPIOB->BRR = (0b01 << 11U);
 
     TIM1->SR = ~TIM1->SR;
 }

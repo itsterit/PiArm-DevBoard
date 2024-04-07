@@ -144,10 +144,9 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   set_timer_config();
-  // NVIC_EnableIRQ(TIM1_UP_IRQn);
-  // NVIC_SetPriority(TIM1_CC_IRQn, 1);
+  NVIC_SetPriority(TIM1_CC_IRQn, 1);
   NVIC_EnableIRQ(TIM1_CC_IRQn);
-  // NVIC_SetPriority(TIM3_IRQn, 2);
+  NVIC_SetPriority(TIM3_IRQn, 2);
   NVIC_EnableIRQ(TIM3_IRQn);
 
   cur_fault_delay = 0xFF;
@@ -170,13 +169,14 @@ int main(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
+  // GPIOB->BSRR = (0b01 << 11U);
   GPIOB->BRR = (0b01 << 11U);
 
   ADC1->SR = ~ADC1->SR;
   uint32_t adc_val = ADC1->DR;
   // Logger.LogD((char *)"%d \n\r", adc_val);
+  usInputRegisters[1] = adc_val;
 }
