@@ -72,7 +72,7 @@ void adc::set_cr2_config(ADC_TypeDef *adc_x,
                          ADC_CR2_CONT_Type adc_cr2_cont,
                          ADC_CR2_ADON_Type adc_cr2_adon)
 {
-    ADC1->SQR3 = 2; // 1 преобразование - канал 0
+    ADC1->SQR3 = 1; // 1 преобразование - канал 0
 
     adc_x->CR2 = 0;
     adc_x->CR2 |= (adc_cr2_tsvrefe << ADC_CR2_TSVREFE_Pos);   // Temperature sensor and VREFINT enable

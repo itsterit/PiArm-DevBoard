@@ -12,7 +12,7 @@ void set_timer_config()
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
         sampling_timer.set_timer_config(1, 0, 0, 0, 5, 71, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
-        sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
+        // sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
     }
 
     {
@@ -44,10 +44,9 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
     coil_frequency_timer.set_timer_config(start_coil_reply_sampling, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 71, 0);
 }
 
-// extern "C" void TIM1_UP_IRQHandler(void)
 extern "C" void TIM1_CC_IRQHandler(void)
 {
-    GPIOB->BSRR = (0b01 << 11U);
+    // GPIOB->BSRR = (0b01 << 11U);
     // GPIOB->BRR = (0b01 << 11U);
 
     TIM1->SR = ~TIM1->SR;
@@ -74,7 +73,8 @@ extern "C" void TIM3_IRQHandler(void)
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
-            TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
+            // TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
+
             /* Конец замера ответа катушки */
             // GPIOB->BSRR = (0b01 << 11U);
             // GPIOB->BRR = (0b01 << 11U);
