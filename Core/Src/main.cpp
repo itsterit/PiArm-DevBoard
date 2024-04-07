@@ -132,13 +132,13 @@ int main(void)
   adc::set_cr2_config(ADC1,
                       TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
                       EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__SWSTART,
+                      EXTSEL__TIMER_1_CC1_EVENT,
                       JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
                       JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT,
                       DMA__DMA_MODE_ENABLED,
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                      CONT__CONTINUOUS_CONVERSION_MODE,
+                      CONT__SINGLE_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
