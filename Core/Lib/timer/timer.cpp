@@ -115,8 +115,24 @@ void timer::set_timer_config(uint16_t capture_compare_register1_val,
         act_timer->CCR2 = capture_compare_register2_val;
         act_timer->CCR3 = capture_compare_register3_val;
         act_timer->CCR4 = capture_compare_register4_val;
-        act_timer->ARR = auto_reload_register;
-        act_timer->PSC = prescaler_val;
-        act_timer->CNT = counter_val;
+        act_timer->ARR  = auto_reload_register;
+        act_timer->PSC  = prescaler_val;
+        act_timer->CNT  = counter_val;
+    }
+}
+
+void timer::set_break_and_dead_time(MAIN_OUTPUT_ENABLE_Type main_output_enable, AUTOMATIC_OUTPUT_ENABLE_Type automatic_otput_enable,
+                                    BREAK_POLARITY_Type break_polarity, BREAK_ENABLE_Type break_enable,
+                                    OFF_STATE_SELECTION_FOR_RUN_MODE_Type off_state_selection_for_run_mode, OFF_STATE_SELECTION_FOR_IDLE_MODE_Type off_stateselection_for_idle_mode,
+                                    LOCK_CONFIGURATION_Type lock_configuration,
+                                    uint8_t dead_time_generator_setup)
+{
+    if (act_timer)
+    {
+        act_timer->BDTR = ((main_output_enable << TIM_BDTR_MOE_Pos)                 | (automatic_otput_enable << TIM_BDTR_AOE_Pos)              |
+                           (break_polarity << TIM_BDTR_BKP_Pos)                     | (break_enable << TIM_BDTR_BKE_Pos)                        |
+                           (off_state_selection_for_run_mode << TIM_BDTR_OSSR_Pos)  | (off_stateselection_for_idle_mode << TIM_BDTR_OSSI_Pos)   |
+                           (lock_configuration << TIM_BDTR_LOCK_Pos)                |
+                           (dead_time_generator_setup << TIM_BDTR_DTG_Pos));
     }
 }

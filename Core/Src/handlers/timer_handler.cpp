@@ -13,6 +13,14 @@ void set_timer_config()
         sampling_timer.set_timer_config(1, 0, 0, 0, 5, 71, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
+        sampling_timer.set_channel_output_config(1, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_DISABLE, OUTPUT_COMPARE_FAST_DISABLE, CHANNEL_TOGGLE);
+        sampling_timer.capture_compare_register(0, TIM_CCER_CC1E_Msk);
+
+        sampling_timer.set_break_and_dead_time(OC_AND_OCN_OUTPUTS_ARE_ENABLED, MOE_CAN_BE_SET_ONLY_BY_SOFTWARE,
+                                               BREAK_INPUT_BRK_IS_ACTIVE_HIGH, BREAK_INPUTS_DISABLED,
+                                               WHEN_INACTIVE_OUTPUTS_DISABLED, WHEN_INACTIVE_DISABLED,
+                                               LOCK_OFF,
+                                               0);
     }
 
     {
