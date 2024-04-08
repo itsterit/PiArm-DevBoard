@@ -14,7 +14,7 @@ GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
 GPIO coil_response(GPIOA, 1U);
 
-uint8_t cur_fault_delay = 0;
+uint16_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
@@ -32,6 +32,10 @@ ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0])
 
 int main(void)
 {
+  gen_freq.clock_enable(true);
+  gen_freq.set_config(GPIO::output_push_pull);
+  gen_freq.set();
+
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
@@ -143,13 +147,13 @@ int main(void)
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
-  set_timer_config();
+  // set_timer_config();
   NVIC_SetPriority(TIM1_CC_IRQn, 1);
   NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_SetPriority(TIM3_IRQn, 2);
   NVIC_EnableIRQ(TIM3_IRQn);
 
-  cur_fault_delay = 0xFF;
+  cur_fault_delay = 0xFFF;
   led_pin.set();
   // dc_enable.set();
 
@@ -173,10 +177,10 @@ extern "C" void ADC1_2_IRQHandler(void)
   // GPIOB->BSRR = (0b01 << 11U);
   // GPIOB->BSRR = (0b01 << 11U);
   // GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BRR = (0b01 << 11U);
+  // GPIOB->BRR = (0b01 << 11U);
 
   ADC1->SR = ~ADC1->SR;
-  uint32_t adc_val = ADC1->DR;
-  // Logger.LogD((char *)"%d \n\r", adc_val);
-  usInputRegisters[1] = adc_val;
+
+  if (ADC1->DR > usInputRegisters[1])
+    usInputRegisters[1] = ADC1->DR;
 }

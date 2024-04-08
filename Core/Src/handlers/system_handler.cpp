@@ -70,12 +70,7 @@ extern "C" void EXTI15_10_IRQHandler(void)
     {
         GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
         GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
-
-#if INVERT_GENERATOR_SIGNAL
-        GPIOB->BSRR |= (GPIO_BSRR_BS5_Msk);
-#else
-        GPIOB->BSRR |= (GPIO_BSRR_BR5_Msk);
-#endif
+        GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
 
         while (cur_fault.get_level() == 0)
             asm("NOP");

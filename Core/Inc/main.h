@@ -11,14 +11,14 @@
 #include "ModBus/ModBusRTU.h"
 #include "adc/adc.h"
 
-#define INVERT_GENERATOR_SIGNAL (0)
+#define INVERT_GENERATOR_SIGNAL (1)
 #define MODBUS_ADDRESS          (1)
 #define USB_BUFFER_SIZE         (0xFFF)
 
 extern GPIO led_pin;
 extern GPIO gen_freq;
 
-extern uint8_t cur_fault_delay;
+extern uint16_t cur_fault_delay;
 extern GPIO cur_fault;
 
 // Работа с таймерами
