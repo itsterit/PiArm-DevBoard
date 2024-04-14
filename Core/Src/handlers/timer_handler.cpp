@@ -13,6 +13,7 @@ void set_timer_config()
         sampling_timer.set_timer_config(1, 0, 0, 0, 5, 71, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
+
         sampling_timer.set_channel_output_config(1, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_DISABLE, OUTPUT_COMPARE_FAST_DISABLE, CHANNEL_TOGGLE);
         sampling_timer.capture_compare_register(0, TIM_CCER_CC1E_Msk);
 
@@ -35,7 +36,7 @@ void set_timer_config()
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-        set_generation_timing(1000000, 500, 5);
+        set_generation_timing(1000000, 1000, 5);
         coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
 }
@@ -69,28 +70,27 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC2IF_Msk)
         {
             /* Конец замера тока катушки */
-            // GPIOB->BSRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
         }
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
-            // TIM1->CR1 |= (TIM_CR1_CEN_Msk);
-            // GPIOB->BSRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
-            usInputRegisters[1] = 0;
-            // TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
-
             /* Конец замера ответа катушки */
-            // GPIOB->BSRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
-            // GPIOB->BRR = (0b01 << 11U);
+            adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
+                                           MSIZE_16bits, PSIZE_16bits,
+                                           MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
+                                           TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+            adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
+
+            usInputRegisters[0] = 0;
+            for (uint8_t cnt = 0; cnt < 10; cnt++)
+            {
+                usInputRegisters[0] += usInputRegisters[1 + cnt];
+            }
+            usInputRegisters[0] = usInputRegisters[0] / 10;
+
         }
     }
     TIM3->SR = ~TIM3->SR;

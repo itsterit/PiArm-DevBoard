@@ -30,12 +30,7 @@ extern "C" void HardFault_Handler(void)
         "STR r0, [r4]			\n"
         "LDR r4, =0x20004FFA	\n" // LR
         "STR r1, [r4]			\n");
-
-    while (1)
-    {
-        asm("NOP");
-    }
-    // NVIC_SystemReset();
+    NVIC_SystemReset();
 }
 
 /**

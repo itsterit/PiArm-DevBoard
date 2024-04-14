@@ -112,11 +112,11 @@ int main(void)
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                                 MSIZE_16bits, PSIZE_32bits,
+  adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
+                                 MSIZE_16bits, PSIZE_16bits,
                                  MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
                                  TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-  // adc_samling_dma.dma_start(0xFFFF, (uint32_t *)&usInputRegisters[0], (uint32_t *)&ADC1->JDR1);
+  adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
 
   adc::enable(ADC1);
   adc::set_cr1_config(ADC1,
@@ -131,7 +131,7 @@ int main(void)
                       SCAN__SCAN_MODE_DISABLED,
                       JEOCIE__JEOC_INTERRUPT_DISABLED,
                       AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
-                      EOCIE__EOC_INTERRUPT_ENABLED,
+                      EOCIE__EOC_INTERRUPT_DISABLED,
                       0);
   adc::set_cr2_config(ADC1,
                       TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
@@ -148,14 +148,14 @@ int main(void)
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   // set_timer_config();
-  NVIC_SetPriority(TIM1_CC_IRQn, 1);
-  NVIC_EnableIRQ(TIM1_CC_IRQn);
+  // NVIC_SetPriority(TIM1_CC_IRQn, 1);
+  // NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_SetPriority(TIM3_IRQn, 2);
   NVIC_EnableIRQ(TIM3_IRQn);
 
   cur_fault_delay = 0xFFF;
   led_pin.set();
-  // dc_enable.set();
+  dc_enable.set();
 
   while (true)
   {
@@ -179,8 +179,8 @@ extern "C" void ADC1_2_IRQHandler(void)
   // GPIOB->BSRR = (0b01 << 11U);
   // GPIOB->BRR = (0b01 << 11U);
 
-  ADC1->SR = ~ADC1->SR;
+  // ADC1->SR = ~ADC1->SR;
 
-  if (ADC1->DR > usInputRegisters[1])
-    usInputRegisters[1] = ADC1->DR;
+  // if (ADC1->DR > usInputRegisters[1])
+  //   usInputRegisters[1] = ADC1->DR;
 }
