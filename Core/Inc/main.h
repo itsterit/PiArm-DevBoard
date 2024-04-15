@@ -19,6 +19,7 @@ extern GPIO led_pin;
 extern GPIO gen_freq;
 
 extern uint16_t cur_fault_delay;
+extern uint16_t reboot_delay;
 extern GPIO cur_fault;
 
 // Работа с таймерами
@@ -47,5 +48,8 @@ extern uint16_t usInputRegisters[MB_INPUT_ADR_MAX];
 extern uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX];
 void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize);
 extern ModBusRTU ModBus;
+
+// Работа с АЦП
+bool get_core_voltage(uint16_t *ret_data);
 
 #endif /* __MAIN_H__ */

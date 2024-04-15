@@ -5,7 +5,9 @@
 #include "adc_cr1.h"
 #include "adc_cr2.h"
 
-void adc_set_config();
+#define ADC_END_CONVERSION(ADCx) (ADCx->SR & ADC_SR_EOS_Msk)
+#define ADC_CLEAR_STATUS(ADCx)   (ADCx->SR = ~(ADCx->SR))
+#define ADC_START(ADCx)          (ADCx->CR2 |= ADC_CR2_SWSTART_Msk)
 
 class adc
 {

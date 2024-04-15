@@ -13,6 +13,7 @@ GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
 GPIO coil_response(GPIOA, 1U);
 
+uint16_t reboot_delay = 0;
 uint16_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
@@ -112,35 +113,61 @@ int main(void)
                                  TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
   adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
 
-  adc::enable(ADC1);
-  adc::set_cr1_config(ADC1,
-                      AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                      JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                      DUALMOD__INDEPENDENT_MODE,
-                      0,
-                      JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                      DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                      JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                      AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS,
-                      SCAN__SCAN_MODE_DISABLED,
-                      JEOCIE__JEOC_INTERRUPT_DISABLED,
-                      AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
-                      EOCIE__EOC_INTERRUPT_ENABLED,
-                      0);
-  adc::set_cr2_config(ADC1,
-                      TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
-                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__SWSTART,
-                      JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
-                      JEXTSEL__JSWSTART,
-                      ALIGN__RIGHT_ALIGNMENT,
-                      DMA__DMA_MODE_DISABLED,
-                      RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                      CONT__SINGLE_CONVERSION_MODE,
-                      ADON__ENABLE_ADC);
-  NVIC_EnableIRQ(ADC1_2_IRQn);
-  
-  adc::set_regular_sequence(ADC1, 0, 1, 17);
+  // adc::enable(ADC1);
+  // adc::set_cr1_config(ADC1,
+  //                     AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+  //                     JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+  //                     DUALMOD__INDEPENDENT_MODE,
+  //                     0,
+  //                     JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+  //                     DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+  //                     JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+  //                     AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS,
+  //                     SCAN__SCAN_MODE_DISABLED,
+  //                     JEOCIE__JEOC_INTERRUPT_DISABLED,
+  //                     AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
+  //                     EOCIE__EOC_INTERRUPT_ENABLED,
+  //                     0);
+  // adc::set_cr2_config(ADC1,
+  //                     TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
+  //                     EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
+  //                     EXTSEL__SWSTART,
+  //                     JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
+  //                     JEXTSEL__JSWSTART,
+  //                     ALIGN__RIGHT_ALIGNMENT,
+  //                     DMA__DMA_MODE_DISABLED,
+  //                     RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+  //                     CONT__SINGLE_CONVERSION_MODE,
+  //                     ADON__ENABLE_ADC);
+  // // NVIC_EnableIRQ(ADC1_2_IRQn);
+
+  // adc::set_regular_sequence(ADC1, 0, 1, 17);
+  // ADC_CLEAR_STATUS(ADC1);
+  // ADC_START(ADC1);
+
+  // for (uint16_t cnt = 0; cnt < 0xfff; cnt++)
+  // {
+  //   if (ADC_END_CONVERSION(ADC1))
+  //   {
+  //     uint32_t adc_val = ADC1->DR;
+  //     uint32_t core_voltage = (4915200 / adc_val);
+  //     Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", core_voltage);
+  //   }
+  // }
+
+  if (get_core_voltage(&usInputRegisters[0]))
+  {
+    if (usInputRegisters[0] < 3000)
+    {
+      led_pin.set();
+      reboot_delay = 0xFF;
+    }
+  }
+  else
+  {
+    led_pin.set();
+    reboot_delay = 0xFF;
+  }
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   // set_timer_config();
@@ -157,12 +184,6 @@ int main(void)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-
-    if (usHoldingRegisters[0])
-    {
-      usHoldingRegisters[0] = 0;
-      ADC1->CR2 |= ADC_CR2_SWSTART_Msk;
-    }
   }
 }
 
@@ -171,7 +192,7 @@ extern "C" void ADC1_2_IRQHandler(void)
   ADC1->SR = ~ADC1->SR;
 
   uint32_t adc_val = ADC1->DR;
-  uint32_t core_voltage = (4915200/adc_val);
+  uint32_t core_voltage = (4915200 / adc_val);
 
   Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", core_voltage);
 }

@@ -84,13 +84,6 @@ extern "C" void TIM3_IRQHandler(void)
                                            TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
             adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
 
-            usInputRegisters[0] = 0;
-            for (uint8_t cnt = 0; cnt < 10; cnt++)
-            {
-                usInputRegisters[0] += usInputRegisters[1 + cnt];
-            }
-            usInputRegisters[0] = usInputRegisters[0] / 10;
-
         }
     }
     TIM3->SR = ~TIM3->SR;

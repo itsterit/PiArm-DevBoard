@@ -49,6 +49,15 @@ extern "C" void SysTick_Handler(void)
             set_timer_config();
         }
     }
+    
+    if (reboot_delay)
+    {
+        if (!(--reboot_delay))
+        {
+            led_pin.reset();
+            NVIC_SystemReset();
+        }
+    }
 }
 
 /**

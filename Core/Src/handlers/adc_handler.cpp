@@ -1,82 +1,35 @@
-#include "main.h"
+#include <main.h>
 
-/**
- * @brief   Функция отправки если линия закончила старую транзакцию
- *          ибо иначе данные не перезапишутся.
- */
-void usb_as_dma_transmit(uint8_t *msg, int16_t len)
+bool get_core_voltage(uint16_t *ret_data)
 {
-    if (USB_BUFFER_SIZE >= len)
-        usb_tx_dma.dma_start(len, (uint32_t *)msg, (uint32_t *)&USART1->DR);
-}
+    adc::enable(ADC1);
+    adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+                        DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+                        DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+                        AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS, SCAN__SCAN_MODE_DISABLED, JEOCIE__JEOC_INTERRUPT_DISABLED,
+                        AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_ENABLED, 0);
+    adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED, EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
+                        EXTSEL__SWSTART, JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED, JEXTSEL__JSWSTART,
+                        ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+                        CONT__SINGLE_CONVERSION_MODE, ADON__ENABLE_ADC);
+    NVIC_DisableIRQ(ADC1_2_IRQn);
 
-/**
- * @brief   Функция конфигурирования модуля ДМА на передачу и прием
- * @note    Применяется в случая инициализации модуля, ошибки модуля или ошибки размера буфера
- */
-void set_usb_tx_dma_cfg()
-{
-    usb_tx_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                              MSIZE_8bits, PSIZE_8bits,
-                              MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Memory,
-                              TEIE_Enabled, HTIE_Disabled, TCIE_Enabled);
-}
+    ADC_CLEAR_STATUS(ADC1);
+    adc::set_regular_sequence(ADC1, 0, 1, 17);
+    ADC_START(ADC1);
 
-void set_usb_rx_dma_cfg()
-{
-    usb_rx_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                              MSIZE_8bits, PSIZE_8bits,
-                              MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-                              TEIE_Enabled, HTIE_Disabled, TCIE_Enabled);
-    usb_rx_dma.dma_start(USB_BUFFER_SIZE, (uint32_t *)&usb_buffer[0], (uint32_t *)&USART1->DR);
-}
-
-/**
- * @brief   Обработка прерываний передачи по ДМА как уарт1
- * @details Если дма закончила отправку жде конца передачи от уарт`а
- * @note    Обнаружив ошибку - переинициализация
- */
-extern "C" void DMA1_Channel4_IRQHandler(void)
-{
-    if (DMA1->ISR & DMA_ISR_TCIF4_Msk)
-        usb_line.interrupt_config(USART_CR1_TCIE_Msk | USART_CR1_IDLEIE_Msk);
-    else
-        set_usb_tx_dma_cfg();
-    DMA1->IFCR = (DMA_IFCR_CTEIF4_Msk | DMA_IFCR_CHTIF4_Msk | DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk);
-}
-
-extern "C" void DMA1_Channel5_IRQHandler(void)
-{
-    set_usb_rx_dma_cfg();
-    USART1->SR = USART1->SR;
-    DMA1->IFCR = (DMA_IFCR_CTEIF5_Msk | DMA_IFCR_CHTIF5_Msk | DMA_IFCR_CTCIF5_Msk | DMA_IFCR_CGIF5_Msk);
-}
-
-/**
- * @brief   Обработчик прерываний уар`а как usb
- * @details Если успешная отправка - значит это конец посылки modbus, иначе прием
- */
-extern "C" void USART1_IRQHandler(void)
-{
-    usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
-    if (USART1->SR & USART_SR_TC_Msk)
+    for (uint16_t cnt = 0; cnt < 0xfff; cnt++)
     {
-        set_usb_tx_dma_cfg();
-    }
-    if (USART1->SR & USART_SR_IDLE_Msk)
-    {
-        ModBus.FrameHandler((uint8_t *)&usb_buffer[0], (USB_BUFFER_SIZE - DMA1_Channel5->CNDTR), MODBUS_ADDRESS, USB_BUFFER_SIZE);
-        set_usb_rx_dma_cfg();
-    }
-    USART1->SR = USART1->SR;
-    volatile char clear_uart_data_register __attribute__((unused)) = USART1->DR;
-}
+        if (ADC_END_CONVERSION(ADC1))
+        {
+            ADC_CLEAR_STATUS(ADC1);
+            *ret_data = (4915200 / ADC1->DR);
 
-/**
- * @brief   Отправка логов
- * @note    Ждем отправку
- */
-void log_out_method(char *str, uint8_t len)
-{
-    usb_line.transmit((uint8_t *)str, len);
+            Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", *ret_data);
+
+            return true;
+        }
+    }
+
+    return false;
 }
