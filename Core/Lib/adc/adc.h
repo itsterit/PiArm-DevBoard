@@ -8,6 +8,7 @@
 #define ADC_END_CONVERSION(ADCx) (ADCx->SR & ADC_SR_EOS_Msk)
 #define ADC_CLEAR_STATUS(ADCx)   (ADCx->SR = ~(ADCx->SR))
 #define ADC_START(ADCx)          (ADCx->CR2 |= ADC_CR2_SWSTART_Msk)
+#define ADC_DATA(ADCx)           (ADCx->DR)
 
 class adc
 {

@@ -23,7 +23,7 @@ bool get_core_voltage(uint16_t *ret_data)
         if (ADC_END_CONVERSION(ADC1))
         {
             ADC_CLEAR_STATUS(ADC1);
-            *ret_data = (4915200 / ADC1->DR);
+            *ret_data = (4915200 / ADC_DATA(ADC1));
 
             Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", *ret_data);
 
