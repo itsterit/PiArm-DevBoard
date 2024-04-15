@@ -107,11 +107,11 @@ int main(void)
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
-                                 MSIZE_16bits, PSIZE_16bits,
-                                 MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-                                 TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-  adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
+  // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
+  //                                MSIZE_16bits, PSIZE_16bits,
+  //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
+  //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+  // adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
 
   if (get_core_voltage(&usInputRegisters[0]) && get_voltage(&usInputRegisters[1], 4, usInputRegisters[0]))
   {

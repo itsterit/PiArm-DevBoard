@@ -163,7 +163,7 @@ bool adc::set_sampling(ADC_TypeDef *adc_x, uint8_t channel, ADC_SAMPLING_CONFIG_
             adc_x->SMPR1 &= ~(0b111 << (channel * configuration_offset));
             adc_x->SMPR1 |= (sampling_cycles << (channel * configuration_offset));
         }
-        if ((channel <= 9) && (channel >= 0))
+        else if ((channel <= 9) && (channel >= 0))
         {
             adc_x->SMPR2 &= ~(0b111 << (channel * configuration_offset));
             adc_x->SMPR2 |= (sampling_cycles << (channel * configuration_offset));
