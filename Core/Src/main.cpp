@@ -12,6 +12,7 @@ GPIO dc_enable(GPIOB, 3);
 GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
 GPIO coil_response(GPIOA, 1U);
+GPIO dc_check(GPIOA, 3U);
 
 uint16_t reboot_delay = 0;
 uint16_t cur_fault_delay = 0;
@@ -58,6 +59,8 @@ int main(void)
   coil_current_pin.set_config(GPIO::input_analog);
   coil_response.clock_enable(true);
   coil_response.set_config(GPIO::input_analog);
+  dc_check.clock_enable(true);
+  dc_check.set_config(GPIO::input_analog);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -120,13 +123,18 @@ int main(void)
     Logger.LogI((char *)"\n\rcore_voltage: %dmV\n\r", usInputRegisters[0]);
     Logger.LogI((char *)"bat_voltage:  %dmV\n\r", usInputRegisters[1]);
 
-    if ((usInputRegisters[0] < 3000) || (usInputRegisters[1] < 100))
+    if ((usInputRegisters[0] < 3000) || (usInputRegisters[1] < 4500))
     {
       led_pin.set();
       reboot_delay = 0xFF;
     }
     else
     {
+      dc_enable.set();
+      get_voltage(&usInputRegisters[2], 3, usInputRegisters[0]);
+      usInputRegisters[2] = usInputRegisters[2] * ((float)(1 + 10) / 1);
+
+      Logger.LogI((char *)"dc_voltage:   %dmV\n\r", usInputRegisters[2]);
     }
   }
   else
@@ -142,9 +150,8 @@ int main(void)
   NVIC_SetPriority(TIM3_IRQn, 2);
   NVIC_EnableIRQ(TIM3_IRQn);
 
-  cur_fault_delay = 0xFFF;
-  led_pin.set();
-  // dc_enable.set();
+  // cur_fault_delay = 0xFFF;
+  // led_pin.set();
 
   while (true)
   {
