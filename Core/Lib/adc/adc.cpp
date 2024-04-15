@@ -59,7 +59,7 @@ void adc::set_cr1_config(ADC_TypeDef *adc_x,
     adc_x->CR1 |= ((awdch << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);       // Analog watchdog channel select bits
 }
 
-/**
+/** 
  * @brief   конфигурирование control register 2
  * @note    программный запуск вынесен отдельной функцией
  */

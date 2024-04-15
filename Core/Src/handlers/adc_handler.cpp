@@ -46,7 +46,7 @@ bool get_voltage(uint16_t *ret_data, uint8_t channel, uint16_t reference_voltage
     NVIC_DisableIRQ(ADC1_2_IRQn);
 
     ADC_CLEAR_STATUS(ADC1);
-    if (adc::set_regular_sequence(ADC1, 0, 1, channel) && adc::set_sampling(ADC1, channel, SMP_55_5_cycles))
+    if (adc::set_regular_sequence(ADC1, 0, 1, channel) && adc::set_sampling(ADC1, channel, SMP_239_5_cycles))
     {
         ADC_START(ADC1);
         for (uint16_t cnt = 0; cnt < 0xfff; cnt++)
