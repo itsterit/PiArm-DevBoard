@@ -113,54 +113,20 @@ int main(void)
                                  TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
   adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
 
-  // adc::enable(ADC1);
-  // adc::set_cr1_config(ADC1,
-  //                     AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-  //                     JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-  //                     DUALMOD__INDEPENDENT_MODE,
-  //                     0,
-  //                     JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-  //                     DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-  //                     JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-  //                     AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS,
-  //                     SCAN__SCAN_MODE_DISABLED,
-  //                     JEOCIE__JEOC_INTERRUPT_DISABLED,
-  //                     AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
-  //                     EOCIE__EOC_INTERRUPT_ENABLED,
-  //                     0);
-  // adc::set_cr2_config(ADC1,
-  //                     TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
-  //                     EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-  //                     EXTSEL__SWSTART,
-  //                     JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
-  //                     JEXTSEL__JSWSTART,
-  //                     ALIGN__RIGHT_ALIGNMENT,
-  //                     DMA__DMA_MODE_DISABLED,
-  //                     RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-  //                     CONT__SINGLE_CONVERSION_MODE,
-  //                     ADON__ENABLE_ADC);
-  // // NVIC_EnableIRQ(ADC1_2_IRQn);
-
-  // adc::set_regular_sequence(ADC1, 0, 1, 17);
-  // ADC_CLEAR_STATUS(ADC1);
-  // ADC_START(ADC1);
-
-  // for (uint16_t cnt = 0; cnt < 0xfff; cnt++)
-  // {
-  //   if (ADC_END_CONVERSION(ADC1))
-  //   {
-  //     uint32_t adc_val = ADC1->DR;
-  //     uint32_t core_voltage = (4915200 / adc_val);
-  //     Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", core_voltage);
-  //   }
-  // }
-
-  if (get_core_voltage(&usInputRegisters[0]))
+  if (get_core_voltage(&usInputRegisters[0]) && get_voltage(&usInputRegisters[1], 4, usInputRegisters[0]))
   {
-    if (usInputRegisters[0] < 3000)
+    usInputRegisters[1] = usInputRegisters[1] * ((float)(5.1 + 10) / 5.1);
+
+    Logger.LogI((char *)"\n\rcore_voltage: %dmV\n\r", usInputRegisters[0]);
+    Logger.LogI((char *)"bat_voltage:  %dmV\n\r", usInputRegisters[1]);
+
+    if ((usInputRegisters[0] < 3000) || (usInputRegisters[1] < 100))
     {
       led_pin.set();
       reboot_delay = 0xFF;
+    }
+    else
+    {
     }
   }
   else
@@ -178,7 +144,7 @@ int main(void)
 
   cur_fault_delay = 0xFFF;
   led_pin.set();
-  dc_enable.set();
+  // dc_enable.set();
 
   while (true)
   {

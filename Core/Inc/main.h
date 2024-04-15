@@ -12,8 +12,8 @@
 #include "adc/adc.h"
 
 #define INVERT_GENERATOR_SIGNAL (1)
-#define MODBUS_ADDRESS          (1)
-#define USB_BUFFER_SIZE         (0xFFF)
+#define MODBUS_ADDRESS (1)
+#define USB_BUFFER_SIZE (0xFFF)
 
 extern GPIO led_pin;
 extern GPIO gen_freq;
@@ -43,7 +43,7 @@ void set_usb_tx_dma_cfg();
 void set_usb_rx_dma_cfg();
 extern uint8_t usb_buffer[USB_BUFFER_SIZE];
 
-// modbus 
+// modbus
 extern uint16_t usInputRegisters[MB_INPUT_ADR_MAX];
 extern uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX];
 void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize);
@@ -51,5 +51,6 @@ extern ModBusRTU ModBus;
 
 // Работа с АЦП
 bool get_core_voltage(uint16_t *ret_data);
+bool get_voltage(uint16_t *ret_data, uint8_t channel, uint16_t reference_voltage);
 
 #endif /* __MAIN_H__ */

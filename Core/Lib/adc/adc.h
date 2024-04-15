@@ -25,7 +25,7 @@ public:
                                ADC_CR2_DMA_Type adc_cr2_dma, ADC_CR2_RSTCAL_Type adc_cr2_rstcal, ADC_CR2_CONT_Type adc_cr2_cont, ADC_CR2_ADON_Type adc_cr2_adon);
 
     static void set_injected_sequence(ADC_TypeDef *adc_x, uint8_t injected_sequence_length, uint8_t JSQ4, uint8_t JSQ3, uint8_t JSQ2, uint8_t JSQ1);
-    static void set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_length, uint8_t conversion_number, uint8_t conversion_channel);
+    static bool set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_length, uint8_t conversion_number, uint8_t conversion_channel);
 };
 
 #endif /* __ADC_H__ */
