@@ -75,8 +75,6 @@ void adc::set_cr2_config(ADC_TypeDef *adc_x,
                          ADC_CR2_CONT_Type adc_cr2_cont,
                          ADC_CR2_ADON_Type adc_cr2_adon)
 {
-    ADC1->SQR3 = 1; // 1 преобразование - канал 0
-
     adc_x->CR2 = 0;
     adc_x->CR2 |= (adc_cr2_tsvrefe << ADC_CR2_TSVREFE_Pos);   // Temperature sensor and VREFINT enable
     adc_x->CR2 |= (0b00 << ADC_CR2_SWSTART_Pos);              // Start conversion of regular channels
@@ -120,20 +118,20 @@ void adc::set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_leng
         if ((conversion_number <= 16) && (conversion_number >= 13))
         {
             conversion_number -= 13;
-            adc_x->SQR1 &= ~(1F << (configuration_offset * conversion_number));
+            adc_x->SQR1 &= ~(0x1F << (configuration_offset * conversion_number));
             adc_x->SQR1 |= (conversion_channel << (configuration_offset * conversion_number));
         }
         else if ((conversion_number <= 12) && (conversion_number >= 7))
         {
             conversion_number -= 7;
-            adc_x->SQR1 &= ~(1F << (configuration_offset * conversion_number));
-            adc_x->SQR1 |= (conversion_channel << (configuration_offset * conversion_number));
+            adc_x->SQR2 &= ~(0x1F << (configuration_offset * conversion_number));
+            adc_x->SQR2 |= (conversion_channel << (configuration_offset * conversion_number));
         }
         else if ((conversion_number <= 6) && (conversion_number >= 1))
         {
             conversion_number -= 1;
-            adc_x->SQR1 &= ~(1F << (configuration_offset * conversion_number));
-            adc_x->SQR1 |= (conversion_channel << (configuration_offset * conversion_number));
+            adc_x->SQR3 &= ~(0x1F << (configuration_offset * conversion_number));
+            adc_x->SQR3 |= (conversion_channel << (configuration_offset * conversion_number));
         }
         else
         {
@@ -143,6 +141,15 @@ void adc::set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_leng
         adc_x->SQR1 &= ~(ADC_SQR1_L_Msk);
         adc_x->SQR1 |= (regular_sequence_length << ADC_SQR1_L_Pos);
     }
+
+    ADC1->SMPR1 |= (0b111 << ADC_SMPR1_SMP17_Pos)    // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
+                   | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
 }
 
 void adc_set_config()

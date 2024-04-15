@@ -9,7 +9,6 @@ GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
 GPIO dc_enable(GPIOB, 3);
-
 GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
 GPIO coil_response(GPIOA, 1U);
@@ -39,12 +38,9 @@ int main(void)
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
-
   AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
-
   dc_enable.clock_enable(true);
   dc_enable.set_config(GPIO::output_push_pull);
-
   usb_tx.clock_enable(true);
   usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
   usb_rx.clock_enable(true);
@@ -55,10 +51,8 @@ int main(void)
   btn_2.set_config(GPIO::input_floating);
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
-
   bat_voltage_pin.clock_enable(true);
   bat_voltage_pin.set_config(GPIO::input_analog);
-
   coil_current_pin.clock_enable(true);
   coil_current_pin.set_config(GPIO::input_analog);
   coil_response.clock_enable(true);
@@ -131,20 +125,22 @@ int main(void)
                       SCAN__SCAN_MODE_DISABLED,
                       JEOCIE__JEOC_INTERRUPT_DISABLED,
                       AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED,
-                      EOCIE__EOC_INTERRUPT_DISABLED,
+                      EOCIE__EOC_INTERRUPT_ENABLED,
                       0);
   adc::set_cr2_config(ADC1,
-                      TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
+                      TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
                       EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__TIMER_1_CC1_EVENT,
+                      EXTSEL__SWSTART,
                       JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED,
                       JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT,
-                      DMA__DMA_MODE_ENABLED,
+                      DMA__DMA_MODE_DISABLED,
                       RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                       CONT__SINGLE_CONVERSION_MODE,
                       ADON__ENABLE_ADC);
   NVIC_EnableIRQ(ADC1_2_IRQn);
+  
+  adc::set_regular_sequence(ADC1, 0, 1, 17);
 
   /* таймер настройки сэмплирования и настройка задающего таймер */
   // set_timer_config();
@@ -165,7 +161,6 @@ int main(void)
     if (usHoldingRegisters[0])
     {
       usHoldingRegisters[0] = 0;
-      // set_timer_config();
       ADC1->CR2 |= ADC_CR2_SWSTART_Msk;
     }
   }
@@ -173,14 +168,10 @@ int main(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
-  // GPIOB->BSRR = (0b01 << 11U);
-  // GPIOB->BSRR = (0b01 << 11U);
-  // GPIOB->BSRR = (0b01 << 11U);
-  // GPIOB->BSRR = (0b01 << 11U);
-  // GPIOB->BRR = (0b01 << 11U);
+  ADC1->SR = ~ADC1->SR;
 
-  // ADC1->SR = ~ADC1->SR;
+  uint32_t adc_val = ADC1->DR;
+  uint32_t core_voltage = (4915200/adc_val);
 
-  // if (ADC1->DR > usInputRegisters[1])
-  //   usInputRegisters[1] = ADC1->DR;
+  Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", core_voltage);
 }
