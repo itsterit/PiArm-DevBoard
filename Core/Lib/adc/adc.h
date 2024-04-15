@@ -4,11 +4,12 @@
 #include <stm32f103xb.h>
 #include "adc_cr1.h"
 #include "adc_cr2.h"
+#include "adc_smp.h"
 
-#define ADC_END_CONVERSION(ADCx) (ADCx->SR & ADC_SR_EOS_Msk)
-#define ADC_CLEAR_STATUS(ADCx)   (ADCx->SR = ~(ADCx->SR))
-#define ADC_START(ADCx)          (ADCx->CR2 |= ADC_CR2_SWSTART_Msk)
-#define ADC_DATA(ADCx)           (ADCx->DR)
+#define ADC_END_CONVERSION(ADCx)    (ADCx->SR & ADC_SR_EOS_Msk)
+#define ADC_CLEAR_STATUS(ADCx)      (ADCx->SR = ~(ADCx->SR))
+#define ADC_START(ADCx)             (ADCx->CR2 |= ADC_CR2_SWSTART_Msk)
+#define ADC_DATA(ADCx)              (ADCx->DR)
 
 class adc
 {
@@ -26,6 +27,7 @@ public:
 
     static void set_injected_sequence(ADC_TypeDef *adc_x, uint8_t injected_sequence_length, uint8_t JSQ4, uint8_t JSQ3, uint8_t JSQ2, uint8_t JSQ1);
     static bool set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_length, uint8_t conversion_number, uint8_t conversion_channel);
+    static bool set_sampling(ADC_TypeDef *adc_x, uint8_t channel, ADC_SAMPLING_CONFIG_Type sampling_cycles);
 };
 
 #endif /* __ADC_H__ */

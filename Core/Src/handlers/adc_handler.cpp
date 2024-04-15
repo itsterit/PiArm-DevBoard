@@ -15,19 +15,19 @@ bool get_core_voltage(uint16_t *ret_data)
     NVIC_DisableIRQ(ADC1_2_IRQn);
 
     ADC_CLEAR_STATUS(ADC1);
-    adc::set_regular_sequence(ADC1, 0, 1, 17);
-    ADC_START(ADC1);
-
-    for (uint16_t cnt = 0; cnt < 0xfff; cnt++)
+    if (adc::set_regular_sequence(ADC1, 0, 1, 17) && adc::set_sampling(ADC1, 17, SMP_239_5_cycles))
     {
-        if (ADC_END_CONVERSION(ADC1))
+        ADC_START(ADC1);
+        for (uint16_t cnt = 0; cnt < 0xfff; cnt++)
         {
-            ADC_CLEAR_STATUS(ADC1);
-            *ret_data = (4915200 / ADC_DATA(ADC1));
-            return true;
+            if (ADC_END_CONVERSION(ADC1))
+            {
+                ADC_CLEAR_STATUS(ADC1);
+                *ret_data = (4915200 / ADC_DATA(ADC1));
+                return true;
+            }
         }
     }
-
     return false;
 }
 
@@ -46,7 +46,7 @@ bool get_voltage(uint16_t *ret_data, uint8_t channel, uint16_t reference_voltage
     NVIC_DisableIRQ(ADC1_2_IRQn);
 
     ADC_CLEAR_STATUS(ADC1);
-    if (adc::set_regular_sequence(ADC1, 0, 1, channel))
+    if (adc::set_regular_sequence(ADC1, 0, 1, channel) && adc::set_sampling(ADC1, channel, SMP_239_5_cycles))
     {
         ADC_START(ADC1);
         for (uint16_t cnt = 0; cnt < 0xfff; cnt++)

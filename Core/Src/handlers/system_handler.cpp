@@ -49,12 +49,22 @@ extern "C" void SysTick_Handler(void)
             set_timer_config();
         }
     }
-    
+
     if (reboot_delay)
     {
+        if (!(reboot_delay % 100))
+        {
+            if (led_pin.get_level())
+            {
+                led_pin.reset();
+            }
+            else
+            {
+                led_pin.set();
+            }
+        }
         if (!(--reboot_delay))
         {
-            led_pin.reset();
             NVIC_SystemReset();
         }
     }

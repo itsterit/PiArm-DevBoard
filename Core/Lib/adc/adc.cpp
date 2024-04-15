@@ -109,6 +109,11 @@ void adc::set_injected_sequence(ADC_TypeDef *adc_x, uint8_t injected_sequence_le
     adc_x->JSQR |= ((JSQ1 << ADC_JSQR_JSQ1_Pos) & ADC_JSQR_JSQ1_Msk);
 }
 
+/**
+ * @brief   Установка последовательности преобразований регулярных каналов
+ * @details Передать номер ацп, количество преобразований(0 - одно преобразование)
+ *          передать номер в последовательности преобразований(начинается с 1) и канал АЦП
+ */
 bool adc::set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_length, uint8_t conversion_number, uint8_t conversion_channel)
 {
     if ((conversion_number) && !(conversion_channel & ~(ADC_SQR1_SQ16_Msk >> ADC_SQR1_SQ16_Pos)) && !(regular_sequence_length & ~(ADC_SQR1_L_Msk >> ADC_SQR1_L_Pos)))
@@ -143,52 +148,37 @@ bool adc::set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_leng
         return true;
     }
 
-    ADC1->SMPR1 |= (0b111 << ADC_SMPR1_SMP17_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
+    return false;
+}
 
-    ADC1->SMPR2 |= (0b00 << ADC_SMPR2_SMP9_Pos)     // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP8_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP7_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP6_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP5_Pos)   // Channel x Sample time selection
-                   | (0b11 << ADC_SMPR2_SMP4_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP3_Pos)   // Channel x Sample time selection
-                   | (0b01 << ADC_SMPR2_SMP2_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP1_Pos)   // Channel x Sample time selection
-                   | (0b00 << ADC_SMPR2_SMP0_Pos);  // Channel x Sample time selection
+bool adc::set_sampling(ADC_TypeDef *adc_x, uint8_t channel, ADC_SAMPLING_CONFIG_Type sampling_cycles)
+{
+    if (!(sampling_cycles & ~(ADC_SMPR1_SMP17_Msk >> ADC_SMPR1_SMP17_Pos)))
+    {
+        uint8_t configuration_offset = (ADC_SMPR1_SMP17_Pos) - (ADC_SMPR1_SMP16_Pos);
 
+        if ((channel <= 17) && (channel >= 10))
+        {
+            channel -= 10;
+            adc_x->SMPR1 &= ~(0b111 << (channel * configuration_offset));
+            adc_x->SMPR1 |= (sampling_cycles << (channel * configuration_offset));
+        }
+        if ((channel <= 9) && (channel >= 0))
+        {
+            adc_x->SMPR2 &= ~(0b111 << (channel * configuration_offset));
+            adc_x->SMPR2 |= (sampling_cycles << (channel * configuration_offset));
+        }
+        else
+        {
+            return false;
+        }
+        return true;
+    }
     return false;
 }
 
 void adc_set_config()
 {
-
-    // ADC1->SMPR1 |= (0b00 << ADC_SMPR1_SMP17_Pos)    // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP16_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP15_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP14_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP13_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP12_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP11_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR1_SMP10_Pos); // Channel x Sample time selection
-
-    // ADC1->SMPR2 |= (0b00 << ADC_SMPR2_SMP9_Pos)    // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP8_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP7_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP6_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP5_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP4_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP3_Pos)  // Channel x Sample time selection
-    //                | (0b01 << ADC_SMPR2_SMP2_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP1_Pos)  // Channel x Sample time selection
-    //                | (0b00 << ADC_SMPR2_SMP0_Pos); // Channel x Sample time selection
-
     // ADC2->JOFR1 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
     // ADC2->JOFR2 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
     // ADC2->JOFR3 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
