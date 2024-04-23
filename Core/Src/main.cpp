@@ -112,77 +112,28 @@ int main(void)
 
   Logger.LogI((char *)"\n\r--Starting--\n\r");
 
-  // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
-  //                                MSIZE_16bits, PSIZE_16bits,
-  //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-  //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-  // adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
+  uint16_t ref_voltage = 0;
+  uint16_t voltage = 0;
 
+  get_core_voltage(&ref_voltage);
+  get_voltage(&voltage, 3, ref_voltage);
 
-  if (get_core_voltage(&usInputRegisters[0]) && get_voltage(&usInputRegisters[1], 4, usInputRegisters[0]))
-  {
-    usInputRegisters[1] = usInputRegisters[1] * ((float)(5.1 + 10) / 5.1);
-
-    Logger.LogI((char *)"\n\rcore_voltage: %dmV\n\r", usInputRegisters[0]);
-    Logger.LogI((char *)"bat_voltage:  %dmV\n\r", usInputRegisters[1]);
-
-    if ((usInputRegisters[0] < 3000) || (usInputRegisters[1] < 4500))
-    {
-      led_pin.set();
-      reboot_delay = 0xFF;
-    }
-    else
-    {
-      dc_enable.set();
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      asm("nop");
-      get_voltage(&usInputRegisters[2], 3, usInputRegisters[0]);
-      usInputRegisters[2] = usInputRegisters[2] * ((float)(1 + 10) / 1);
-      Logger.LogI((char *)"dc_voltage:   %dmV\n\r", usInputRegisters[2]);
-    }
-  }
-  else
-  {
-    led_pin.set();
-    reboot_delay = 0xFF;
-  }
-
-  /* таймер настройки сэмплирования и настройка задающего таймер */
-  // set_timer_config();
-  // NVIC_SetPriority(TIM1_CC_IRQn, 1);
-  // NVIC_EnableIRQ(TIM1_CC_IRQn);
-  NVIC_SetPriority(TIM3_IRQn, 2);
-  NVIC_EnableIRQ(TIM3_IRQn);
-
-  // cur_fault_delay = 0xFFF;
-  // led_pin.set();
+  Logger.LogD((char *)"core voltage: %d\n\r", ref_voltage);
+  Logger.LogD((char *)"Dc voltage:   %d\n\r", voltage);
 
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
+
+    get_voltage(&voltage, 3, ref_voltage);
+    Logger.LogD((char *)"Dc voltage:   %d\n\r", voltage);
   }
 }
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
+  led_pin.set();
   ADC1->SR = ~ADC1->SR;
-
   uint32_t adc_val = ADC1->DR;
-  uint32_t core_voltage = (4915200 / adc_val);
-
-  Logger.LogI((char *)"ADC_SR_EOS_Msk: %d \n\r", core_voltage);
 }
