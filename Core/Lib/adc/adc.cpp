@@ -59,7 +59,7 @@ void adc::set_cr1_config(ADC_TypeDef *adc_x,
     adc_x->CR1 |= ((awdch << ADC_CR1_AWDCH_Pos) & ADC_CR1_AWDCH_Msk);       // Analog watchdog channel select bits
 }
 
-/** 
+/**
  * @brief   конфигурирование control register 2
  * @note    программный запуск вынесен отдельной функцией
  */
@@ -177,13 +177,16 @@ bool adc::set_sampling(ADC_TypeDef *adc_x, uint8_t channel, ADC_SAMPLING_CONFIG_
     return false;
 }
 
+void adc::set_analog_watchdog_threshold(ADC_TypeDef *adc_x, uint16_t high_threshold_code, uint16_t low_threshold_code)
+{
+    adc_x->HTR = high_threshold_code; // Analog watchdog high threshold
+    adc_x->LTR = low_threshold_code;  // Analog watchdog low threshold
+}
+
 void adc_set_config()
 {
     // ADC2->JOFR1 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
     // ADC2->JOFR2 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
     // ADC2->JOFR3 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
     // ADC2->JOFR4 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
-
-    // ADC2->HTR = 0x00; // Analog watchdog high threshold
-    // ADC2->LTR = 0x00; // Analog watchdog low threshold
 }

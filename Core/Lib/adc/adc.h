@@ -28,6 +28,7 @@ public:
     static void set_injected_sequence(ADC_TypeDef *adc_x, uint8_t injected_sequence_length, uint8_t JSQ4, uint8_t JSQ3, uint8_t JSQ2, uint8_t JSQ1);
     static bool set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_length, uint8_t conversion_number, uint8_t conversion_channel);
     static bool set_sampling(ADC_TypeDef *adc_x, uint8_t channel, ADC_SAMPLING_CONFIG_Type sampling_cycles);
+    static void set_analog_watchdog_threshold(ADC_TypeDef *adc_x, uint16_t high_threshold_code, uint16_t low_threshold_code);
 };
 
 #endif /* __ADC_H__ */
