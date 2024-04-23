@@ -29,6 +29,8 @@ public:
     static bool set_regular_sequence(ADC_TypeDef *adc_x, uint8_t regular_sequence_length, uint8_t conversion_number, uint8_t conversion_channel);
     static bool set_sampling(ADC_TypeDef *adc_x, uint8_t channel, ADC_SAMPLING_CONFIG_Type sampling_cycles);
     static void set_analog_watchdog_threshold(ADC_TypeDef *adc_x, uint16_t high_threshold_code, uint16_t low_threshold_code);
+    
+    static uint16_t get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv);
 };
 
 #endif /* __ADC_H__ */

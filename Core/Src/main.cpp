@@ -142,7 +142,9 @@ int main(void)
                       ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                       CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
-  adc::set_analog_watchdog_threshold(ADC1, 3000, 2800);
+  adc::set_analog_watchdog_threshold(ADC1,
+                                     adc::get_adc_code(ref_voltage, 2200),
+                                     adc::get_adc_code(ref_voltage, 2100));
   ADC_START(ADC1);
 
   while (true)
@@ -152,7 +154,12 @@ int main(void)
 
     led_pin.reset();
     if (ADC1->SR & ADC_SR_AWD)
+    {
+      uint16_t ret_data = (ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096));
+      Logger.LogD((char *)"Dc voltage:   %d\n\r", ret_data);
+
       led_pin.set();
+    }
     ADC1->SR &= ~ADC_SR_AWD;
   }
 }
