@@ -39,8 +39,15 @@ extern "C" void HardFault_Handler(void)
  * @note    В большинстве своем для работы в бесконечном цикле
  *          проверяются статус флаги.
  */
+uint16_t cnt = 0;
 extern "C" void SysTick_Handler(void)
 {
+    if (cnt++ >= 2500)
+    {
+        cnt = 0;
+        ADC1->CR2 |= (ADC_CR2_JSWSTART_Msk);
+    }
+
     if (cur_fault_delay)
     {
         if (!(--cur_fault_delay))
