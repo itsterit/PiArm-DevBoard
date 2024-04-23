@@ -117,17 +117,42 @@ int main(void)
 
   get_core_voltage(&ref_voltage);
   get_voltage(&voltage, 3, ref_voltage);
-
   Logger.LogD((char *)"core voltage: %d\n\r", ref_voltage);
   Logger.LogD((char *)"Dc voltage:   %d\n\r", voltage);
+
+  // {
+  //   ADC1->CR1 = 0x00;
+  //   ADC1->CR2 = 0x00;
+
+  //   ADC1->HTR = 100;
+  //   ADC1->LTR = 200;
+  //   ADC1->CR1 = (ADC_CR1_AWDEN_Msk | ADC_CR1_AWDSGL_Msk | (3 << ADC_CR1_AWDCH_Pos) | ADC_CR1_SCAN);
+  //   ADC1->CR2 = (ADC_CR2_EXTSEL_Msk | ADC_CR2_ADON);
+  //   ADC1->CR2 |= (ADC_CR2_SWSTART_Msk);
+  // }
+
+  adc::enable(ADC1);
+  adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+                      DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+                      DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+                      AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED, JEOCIE__JEOC_INTERRUPT_DISABLED,
+                      AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 3);
+  adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED, EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
+                      EXTSEL__SWSTART, JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED, JEXTSEL__JSWSTART,
+                      ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+                      CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
+  ADC1->HTR = 3000; 
+  ADC_START(ADC1);
 
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 
-    get_voltage(&voltage, 3, ref_voltage);
-    Logger.LogD((char *)"Dc voltage:   %d\n\r", voltage);
+    led_pin.reset();
+    if (ADC1->SR & ADC_SR_AWD)
+      led_pin.set();
+    ADC1->SR &= ~ADC_SR_AWD;
   }
 }
 
