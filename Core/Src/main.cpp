@@ -171,15 +171,13 @@ extern "C" void ADC1_2_IRQHandler(void)
     if (ADC1->SR & ADC_SR_AWD_Msk)
     {
       led_pin.set();
-      Logger.LogE((char *)"DC err!! (%d)\n\r", (uint16_t)(ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096)) );
+      Logger.LogE((char *)"DC err!! (%d)\n\r", (uint16_t)(ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096)));
     }
     else
     {
-      Logger.LogD((char *)"voltage_0    (%d)\n\r", (uint16_t)(ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096)) );
-      Logger.LogD((char *)"voltage_1:   %d\n\r", ADC1->JDR1);
-      Logger.LogD((char *)"voltage_2:   %d\n\r", ADC1->JDR2);
-      Logger.LogD((char *)"voltage_3:   %d\n\r", ADC1->JDR3);
-      Logger.LogD((char *)"voltage_4:   %d\n\r\n\r", ADC1->JDR4);
+      Logger.LogD((char *)"voltage_0    (%d)\n\r", (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)));
+      Logger.LogD((char *)"voltage_1    (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
+      Logger.LogD((char *)"voltage_2    (%d)\n\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
     }
   }
   ADC1->SR = ~ADC1->SR;
