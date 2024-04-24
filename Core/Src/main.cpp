@@ -31,6 +31,8 @@ uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
+uint16_t ref_voltage = 0;
+uint16_t voltage = 0;
 int main(void)
 {
   gen_freq.clock_enable(true);
@@ -109,9 +111,6 @@ int main(void)
 
   Logger.LogI((char *)"\n\r--Starting--\n\r");
 
-  uint16_t ref_voltage = 0;
-  uint16_t voltage = 0;
-
   get_core_voltage(&ref_voltage);
   get_voltage(&voltage, 3, ref_voltage);
   Logger.LogD((char *)"core voltage: %d\n\r", ref_voltage);
@@ -132,8 +131,8 @@ int main(void)
   adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
                       DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_ENABLED,
                       DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                      AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED, JEOCIE__JEOC_INTERRUPT_ENABLED,
-                      AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 3);
+                      AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
+                      JEOCIE__JEOC_INTERRUPT_ENABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 3);
 
   adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED, EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
                       EXTSEL__SWSTART, JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
@@ -145,7 +144,8 @@ int main(void)
                                      adc::get_adc_code(ref_voltage, 2000));
 
   adc::set_sampling(ADC1, 17, SMP_239_5_cycles);
-  adc::set_sampling(ADC1, 4, SMP_239_5_cycles);
+  adc::set_sampling(ADC1, 4, SMP_7_5_cycles);
+  adc::set_sampling(ADC1, 3, SMP_7_5_cycles);
 
   adc::set_injected_sequence(ADC1, 1,
                              4, 17, 0, 0);
@@ -155,7 +155,7 @@ int main(void)
 
   SysTick_Config(72000);
   NVIC_EnableIRQ(SysTick_IRQn);
-  
+
   while (true)
   {
     if (!(btn_2.get_level()))
@@ -168,19 +168,19 @@ int main(void)
 extern "C" void ADC1_2_IRQHandler(void)
 {
   {
-    // Ошибка - неисправен dc-dc преобразователь
-    // if (ADC1->SR & ADC_SR_AWD_Msk)
-    // {
-    //   ADC1->SR &= ~ADC_SR_AWD;
-    //   led_pin.set();
-    //   Logger.LogE((char *)"voltage_1:   %d\n\r", ADC1->DR);
-    // }
-
-    Logger.LogD((char *)"voltage_0:   %d\n\r", ADC1->DR);
-    Logger.LogD((char *)"voltage_1:   %d\n\r", ADC1->JDR1);
-    Logger.LogD((char *)"voltage_2:   %d\n\r", ADC1->JDR2);
-    Logger.LogD((char *)"voltage_3:   %d\n\r", ADC1->JDR3);
-    Logger.LogD((char *)"voltage_4:   %d\n\r\n\r", ADC1->JDR4);
+    if (ADC1->SR & ADC_SR_AWD_Msk)
+    {
+      led_pin.set();
+      Logger.LogE((char *)"DC err!! (%d)\n\r", (uint16_t)(ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096)) );
+    }
+    else
+    {
+      Logger.LogD((char *)"voltage_0    (%d)\n\r", (uint16_t)(ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096)) );
+      Logger.LogD((char *)"voltage_1:   %d\n\r", ADC1->JDR1);
+      Logger.LogD((char *)"voltage_2:   %d\n\r", ADC1->JDR2);
+      Logger.LogD((char *)"voltage_3:   %d\n\r", ADC1->JDR3);
+      Logger.LogD((char *)"voltage_4:   %d\n\r\n\r", ADC1->JDR4);
+    }
   }
   ADC1->SR = ~ADC1->SR;
 }
