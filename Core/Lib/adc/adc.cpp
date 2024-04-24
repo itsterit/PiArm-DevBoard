@@ -183,7 +183,7 @@ void adc::set_analog_watchdog_threshold(ADC_TypeDef *adc_x, uint16_t high_thresh
     adc_x->LTR = low_threshold_code;  // Analog watchdog low threshold
 }
 
-uint16_t adc::get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv)
+uint16_t get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv)
 {
     if ((refv_mv < 3500) && (in_voltage_mv < 3500))
     {
@@ -196,10 +196,7 @@ uint16_t adc::get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv)
     return 0;
 }
 
-void adc_set_config()
+uint16_t get_voltage_divider_uin(uint16_t u_out_mv, uint32_t r1_high_om, uint32_t r2_low_om)
 {
-    // ADC2->JOFR1 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
-    // ADC2->JOFR2 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
-    // ADC2->JOFR3 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
-    // ADC2->JOFR4 |= (0b00 << ADC_JOFR1_JOFFSET1_Pos); // Data offset for injected channel x
+    return (uint16_t)(((u_out_mv * r1_high_om) / r2_low_om) + u_out_mv);
 }

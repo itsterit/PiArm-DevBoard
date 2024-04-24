@@ -140,8 +140,8 @@ int main(void)
                       CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
   adc::set_analog_watchdog_threshold(ADC1,
-                                     adc::get_adc_code(ref_voltage, 2200),
-                                     adc::get_adc_code(ref_voltage, 2000));
+                                     get_adc_code(ref_voltage, 2200),
+                                     get_adc_code(ref_voltage, 2000));
 
   adc::set_sampling(ADC1, 17, SMP_239_5_cycles);
   adc::set_sampling(ADC1, 4, SMP_7_5_cycles);
@@ -172,12 +172,18 @@ extern "C" void ADC1_2_IRQHandler(void)
     {
       led_pin.set();
       Logger.LogE((char *)"DC err!! (%d)\n\r", (uint16_t)(ADC_DATA(ADC1) * (float)((float)ref_voltage / 4096)));
+      NVIC_SystemReset();
     }
     else
     {
       Logger.LogD((char *)"voltage_0    (%d)\n\r", (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)));
       Logger.LogD((char *)"voltage_1    (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
-      Logger.LogD((char *)"voltage_2    (%d)\n\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
+      // Logger.LogD((char *)"voltage_2    (%d)\n\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
+      Logger.LogD((char *)"bat_voltage  (%d)\n\n\r",
+                  get_voltage_divider_uin(
+                      (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)),
+                      10000,
+                      5100));
     }
   }
   ADC1->SR = ~ADC1->SR;
