@@ -11,6 +11,7 @@
 #define ADC_START(ADCx) (ADCx->CR2 |= ADC_CR2_SWSTART_Msk)
 #define ADC_DATA(ADCx) (ADCx->DR)
 
+uint16_t get_voltage_divider_uout(uint16_t u_in_mv, uint32_t r1_high_om, uint32_t r2_low_om);
 uint16_t get_voltage_divider_uin(uint16_t u_out_mv, uint32_t r1_high_om, uint32_t r2_low_om);
 uint16_t get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv);
 
