@@ -50,7 +50,8 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize);
 extern ModBusRTU ModBus;
 
 // Работа с АЦП
+extern volatile uint16_t ref_voltage;
 bool get_core_voltage(uint16_t *ret_data);
-bool get_voltage(uint16_t *ret_data, uint8_t channel, uint16_t reference_voltage);
+void adc_start_system_monitor();
 
 #endif /* __MAIN_H__ */
