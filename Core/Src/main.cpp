@@ -63,8 +63,6 @@ int main(void)
   dc_check.clock_enable(true);
   dc_check.set_config(GPIO::input_analog);
 
-  dc_enable.set();
-
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
   if (clock_control::hse::ready())
@@ -115,6 +113,7 @@ int main(void)
   adc_start_system_monitor();
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
+  dc_enable.set();
   led_pin.set();
   cur_fault_delay = 6000;
   SysTick_Config(72000);
@@ -122,12 +121,20 @@ int main(void)
   NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_EnableIRQ(TIM3_IRQn);
 
-
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-    // led_pin.reset();
+
+    if (ADC1->SR & ADC_SR_JEOS_Msk)
+    {
+      Logger.LogD((char *)"Coil_cur   (%d)\n\r", (uint16_t)(coil_current * (float)((float)ref_voltage / 4096)));
+      Logger.LogD((char *)"ref        (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
+      Logger.LogD((char *)"bat        (%d)\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
+      Logger.LogD((char *)"dc         (%d)\n\n\r", (uint16_t)(ADC1->JDR3 * (float)((float)ref_voltage / 4096)));
+
+      ADC1->SR = ~ADC1->SR;
+    }
   }
 }
 
@@ -144,13 +151,5 @@ extern "C" void ADC1_2_IRQHandler(void)
     led_pin.set();
     led_pin.reset();
   }
-  else
-  {
-    Logger.LogD((char *)"Coil_cur   (%d)\n\r", (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)));
-    Logger.LogD((char *)"ref        (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
-    Logger.LogD((char *)"bat        (%d)\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
-    Logger.LogD((char *)"dc         (%d)\n\n\r", (uint16_t)(ADC1->JDR3 * (float)((float)ref_voltage / 4096)));
-  }
   ADC1->SR = ~ADC1->SR;
-  // Logger.LogD((char *)"ADC_DATA: %d\n\r", ADC_DATA(ADC1));
 }

@@ -1,6 +1,7 @@
 #include <main.h>
 
 volatile uint16_t ref_voltage = 0;
+volatile uint16_t coil_current = 0;
 
 bool get_core_voltage(uint16_t *ret_data)
 {
@@ -37,10 +38,10 @@ void adc_start_system_monitor()
 {
     adc::enable(ADC1);
     adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                        DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_ENABLED,
+                        DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                         DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                        AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
-                        JEOCIE__JEOC_INTERRUPT_ENABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 2);
+                        AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_ENABLED,
+                        JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 2);
 
     adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
                         EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
@@ -49,9 +50,9 @@ void adc_start_system_monitor()
                         CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
     adc::set_sampling(ADC1, 2, SMP_7_5_cycles);    // Ток катушки
-    adc::set_sampling(ADC1, 3, SMP_1_5_cycles);    // Преобразователь
+    adc::set_sampling(ADC1, 3, SMP_7_5_cycles);    // Преобразователь
     adc::set_sampling(ADC1, 4, SMP_7_5_cycles);    // Акб
-    adc::set_sampling(ADC1, 17, SMP_239_5_cycles); // Опора
+    adc::set_sampling(ADC1, 17, SMP_7_5_cycles); // Опора
 
     adc::set_injected_sequence(ADC1, 2,
                                3, 4, 17, 0);

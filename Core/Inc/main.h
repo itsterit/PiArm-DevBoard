@@ -51,6 +51,7 @@ extern ModBusRTU ModBus;
 
 // Работа с АЦП
 extern volatile uint16_t ref_voltage;
+extern volatile uint16_t coil_current;
 bool get_core_voltage(uint16_t *ret_data);
 void adc_start_system_monitor();
 
