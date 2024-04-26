@@ -136,10 +136,10 @@ int main(void)
                       CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
   adc::set_analog_watchdog_threshold(ADC1,
-                                     get_adc_code(ref_voltage, 100),
+                                     get_adc_code(ref_voltage, 200), // 1.5A
                                      0);
   adc::set_regular_sequence(ADC1, 0, 1, 2);
-  adc::set_sampling(ADC1, 2, SMP_1_5_cycles);
+  adc::set_sampling(ADC1, 2, SMP_7_5_cycles);
   ADC_START(ADC1);
 
   // NVIC_EnableIRQ(TIM1_UP_IRQn);
