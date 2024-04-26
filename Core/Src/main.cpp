@@ -64,6 +64,8 @@ int main(void)
   dc_check.clock_enable(true);
   dc_check.set_config(GPIO::input_analog);
 
+  dc_enable.set();
+
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
   if (clock_control::hse::ready())
@@ -109,7 +111,6 @@ int main(void)
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  dc_enable.set();
   Logger.LogI((char *)"\n\r--Starting--\n\r");
 
   get_core_voltage(&ref_voltage);
@@ -118,97 +119,63 @@ int main(void)
   Logger.LogD((char *)"Dc voltage:   %d\n\r",
               get_voltage_divider_uin(
                   (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)),
-                  10000,
-                  1000));
-
-  // {
-  //   ADC1->CR1 = 0x00;
-  //   ADC1->CR2 = 0x00;
-
-  //   ADC1->HTR = 100;
-  //   ADC1->LTR = 200;
-  //   ADC1->CR1 = (ADC_CR1_AWDEN_Msk | ADC_CR1_AWDSGL_Msk | (3 << ADC_CR1_AWDCH_Pos) | ADC_CR1_SCAN);
-  //   ADC1->CR2 = (ADC_CR2_EXTSEL_Msk | ADC_CR2_ADON);
-  //   ADC1->CR2 |= (ADC_CR2_SWSTART_Msk);
-  // }
+                  500,
+                  100));
 
   adc::enable(ADC1);
   adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
                       DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                       DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                      AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_ENABLED,
-                      JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 3);
+                      AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
+                      JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 2);
 
-  adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED, EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED,
-                      EXTSEL__SWSTART, JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
+  adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
+                      EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
+                      JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
                       ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                       CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
-  Logger.LogD((char *)"get_voltage_divider_uout: %d\n\r", get_voltage_divider_uout(15000, 10000, 1000));
-
-  // adc::set_analog_watchdog_threshold(ADC1,
-  //                                    get_adc_code(ref_voltage, get_voltage_divider_uout(14000, 10000, 1000)),
-  //                                    get_adc_code(ref_voltage, get_voltage_divider_uout(12000, 10000, 1000)));
   adc::set_analog_watchdog_threshold(ADC1,
-                                     get_adc_code(ref_voltage, 1400),
-                                     get_adc_code(ref_voltage, 1100));
-
-  adc::set_sampling(ADC1, 17, SMP_239_5_cycles);
-  adc::set_sampling(ADC1, 4, SMP_7_5_cycles);
-  adc::set_sampling(ADC1, 3, SMP_1_5_cycles);
-
-  adc::set_injected_sequence(ADC1, 1,
-                             4, 17, 0, 0);
-
+                                     get_adc_code(ref_voltage, 100),
+                                     0);
+  adc::set_regular_sequence(ADC1, 0, 1, 2);
+  adc::set_sampling(ADC1, 2, SMP_1_5_cycles);
   ADC_START(ADC1);
-  NVIC_EnableIRQ(ADC1_2_IRQn);
 
+  // NVIC_EnableIRQ(TIM1_UP_IRQn);
+  // NVIC_SetPriority(TIM1_CC_IRQn, 1);
+  NVIC_EnableIRQ(TIM1_CC_IRQn);
+  // NVIC_SetPriority(TIM3_IRQn, 2);
+  NVIC_EnableIRQ(TIM3_IRQn);
+
+  led_pin.set();
+  cur_fault_delay = 6000;
   SysTick_Config(72000);
   NVIC_EnableIRQ(SysTick_IRQn);
+
+  NVIC_EnableIRQ(ADC1_2_IRQn);
 
   while (true)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-
-    led_pin.reset();
+    // led_pin.reset();
   }
 }
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
+  if (ADC1->SR & ADC_SR_AWD_Msk)
   {
-    if (ADC1->SR & ADC_SR_AWD_Msk)
-    {
-      led_pin.set();
-      // Logger.LogE((char *)"dc_voltage   (%d)\n\r",
-      //             get_voltage_divider_uin(
-      //                 (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)),
-      //                 10000,
-      //                 1000));
-      Logger.LogE((char *)"voltage_0    (%d)\n\r", (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)));
-      // NVIC_SystemReset();
-
-      ADC1->SR |= ADC_SR_AWD_Msk;
-      uint16_t test = ADC1->DR;
-    }
-    else
-    {
-      Logger.LogD((char *)"dc_voltage   (%d)\n\r",
-                  get_voltage_divider_uin(
-                      (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)),
-                      10000,
-                      1000));
-      // Logger.LogD((char *)"dc_voltage   (%d)\n\r", (uint16_t)(ADC1->DR * (float)((float)ref_voltage / 4096)));
-
-      Logger.LogD((char *)"voltage_1    (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
-
-      Logger.LogD((char *)"bat_voltage  (%d)\n\n\r",
-                  get_voltage_divider_uin(
-                      (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)),
-                      10000,
-                      5100));
-    }
+    led_pin.set();
+    led_pin.set();
+    led_pin.set();
+    led_pin.set();
+    led_pin.set();
+    led_pin.set();
+    led_pin.set();
+    led_pin.reset();
   }
   ADC1->SR = ~ADC1->SR;
+  // Logger.LogD((char *)"ADC_DATA: %d\n\r", ADC_DATA(ADC1));
 }

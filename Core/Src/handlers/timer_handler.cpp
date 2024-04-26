@@ -55,8 +55,8 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 
 extern "C" void TIM1_CC_IRQHandler(void)
 {
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
+    // GPIOB->BSRR = (0b01 << 11U);
+    // GPIOB->BRR = (0b01 << 11U);
 
     TIM1->SR = ~TIM1->SR;
 }
@@ -78,11 +78,11 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
-            adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
-                                           MSIZE_16bits, PSIZE_16bits,
-                                           MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-                                           TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-            adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
+            // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
+            //                                MSIZE_16bits, PSIZE_16bits,
+            //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
+            //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+            // adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
 
         }
     }
