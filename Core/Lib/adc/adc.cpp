@@ -205,3 +205,13 @@ uint16_t get_voltage_divider_uout(uint16_t u_in_mv, uint32_t r1_high_om, uint32_
 {
     return (uint16_t)((float)(u_in_mv / (float)(r1_high_om + r2_low_om + 1)) * r2_low_om);
 }
+
+uint16_t get_adc_voltage(uint16_t refv_mv, uint16_t adc_code)
+{
+    return (uint16_t)(adc_code * (float)((float)refv_mv / 4096));
+}
+
+uint16_t get_adc_ref_voltage(uint16_t adc_code)
+{
+    return (uint16_t)(4915200 / ADC1->JDR1);
+}

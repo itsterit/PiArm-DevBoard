@@ -113,9 +113,6 @@ int main(void)
   adc_start_system_monitor();
   NVIC_EnableIRQ(ADC1_2_IRQn);
 
-  dc_enable.set();
-  led_pin.set();
-  cur_fault_delay = 6000;
   SysTick_Config(72000);
   NVIC_EnableIRQ(SysTick_IRQn);
   NVIC_EnableIRQ(TIM1_CC_IRQn);
