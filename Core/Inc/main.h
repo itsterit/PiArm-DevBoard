@@ -54,5 +54,6 @@ extern volatile uint16_t ref_voltage;
 extern volatile uint16_t coil_current;
 bool get_core_voltage(uint16_t *ret_data);
 void adc_start_system_monitor();
+void system_monitor_handler();
 
 #endif /* __MAIN_H__ */

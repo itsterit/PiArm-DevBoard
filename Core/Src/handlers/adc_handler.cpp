@@ -1,5 +1,10 @@
 #include <main.h>
 
+#define COIL_CURRENT_ADC_CHANNEL (2)
+#define VOLTAGE_CONVERTER_ADC_CHANNEL (3)
+#define BATTERY_VOLTAGE_ADC_CHANNEL (4)
+#define REFERENCE_VOLTAGE_ADC_CHANNEL (17)
+
 volatile uint16_t ref_voltage = 0;
 volatile uint16_t coil_current = 0;
 
@@ -49,10 +54,10 @@ void adc_start_system_monitor()
                         ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                         CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
-    adc::set_sampling(ADC1, 2, SMP_7_5_cycles);    // Ток катушки
-    adc::set_sampling(ADC1, 3, SMP_7_5_cycles);    // Преобразователь
-    adc::set_sampling(ADC1, 4, SMP_7_5_cycles);    // Акб
-    adc::set_sampling(ADC1, 17, SMP_7_5_cycles); // Опора
+    adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_7_5_cycles);      // Ток катушки
+    adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_7_5_cycles); // Преобразователь
+    adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_7_5_cycles);   // Акб
+    adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_7_5_cycles); // Опора
 
     adc::set_injected_sequence(ADC1, 2,
                                3, 4, 17, 0);
@@ -62,4 +67,40 @@ void adc_start_system_monitor()
                                        0);
     adc::set_regular_sequence(ADC1, 0, 1, 2);
     ADC_START(ADC1);
+}
+
+void system_monitor_handler()
+{
+    if (ADC1->SR & ADC_SR_JEOS_Msk)
+    {
+        Logger.LogD((char *)"Coil_cur   (%d)\n\r", (uint16_t)(coil_current * (float)((float)ref_voltage / 4096)));
+        Logger.LogD((char *)"ref        (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
+        Logger.LogD((char *)"bat        (%d)\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
+        Logger.LogD((char *)"dc         (%d)\n\n\r", (uint16_t)(ADC1->JDR3 * (float)((float)ref_voltage / 4096)));
+
+        ADC1->SR = ~ADC1->SR;
+    }
+}
+
+/**
+ * @brief   Превышение тока катушки
+ * 
+ * @details Временно отключить генерацию
+*/
+extern "C" void ADC1_2_IRQHandler(void)
+{
+    __disable_irq();
+    {
+        GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+        GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
+        GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
+
+        while (cur_fault.get_level() == 0)
+            asm("NOP");
+
+        ADC1->SR = ~ADC1->SR;
+        cur_fault_delay = 0xFF;
+        led_pin.set();
+    }
+    __enable_irq();
 }

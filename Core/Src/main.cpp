@@ -126,30 +126,6 @@ int main(void)
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 
-    if (ADC1->SR & ADC_SR_JEOS_Msk)
-    {
-      Logger.LogD((char *)"Coil_cur   (%d)\n\r", (uint16_t)(coil_current * (float)((float)ref_voltage / 4096)));
-      Logger.LogD((char *)"ref        (%d)\n\r", (uint16_t)(ADC1->JDR1 * (float)((float)ref_voltage / 4096)));
-      Logger.LogD((char *)"bat        (%d)\n\r", (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)));
-      Logger.LogD((char *)"dc         (%d)\n\n\r", (uint16_t)(ADC1->JDR3 * (float)((float)ref_voltage / 4096)));
-
-      ADC1->SR = ~ADC1->SR;
-    }
+    system_monitor_handler();
   }
-}
-
-extern "C" void ADC1_2_IRQHandler(void)
-{
-  if (ADC1->SR & ADC_SR_AWD_Msk)
-  {
-    led_pin.set();
-    led_pin.set();
-    led_pin.set();
-    led_pin.set();
-    led_pin.set();
-    led_pin.set();
-    led_pin.set();
-    led_pin.reset();
-  }
-  ADC1->SR = ~ADC1->SR;
 }
