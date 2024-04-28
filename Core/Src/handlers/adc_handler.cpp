@@ -12,25 +12,13 @@
 #define REFERENCE_VOLTAGE_HIGH (3400)
 #define REFERENCE_VOLTAGE_LOW (3200)
 
-#define BAT_VOLTAGE_HIGH (4200)
-#define BAT_VOLTAGE_LOW (5200)
+#define BAT_VOLTAGE_HIGH (5500)
+#define BAT_VOLTAGE_LOW (4500)
 
 #define DC_VOLTAGE_HIGH (14000)
 #define DC_VOLTAGE_LOW (12000)
 
-typedef enum
-{
-    OK = 0b01,
-    ERR = 0b00,
-} VOLTAGE_MONITOR_STATUS_Type;
-struct SYSTEM_MONITOR_STATUS
-{
-    VOLTAGE_MONITOR_STATUS_Type reference_voltage_status = ERR;
-    VOLTAGE_MONITOR_STATUS_Type bat_voltage_status = ERR;
-    VOLTAGE_MONITOR_STATUS_Type dc_voltage_status = ERR;
-    VOLTAGE_MONITOR_STATUS_Type start_status = ERR;
-} system_monitor_status;
-
+volatile bool system_started_flag = 0;
 volatile float alpha_smooth = 1;
 volatile uint16_t ref_voltage = 0;
 volatile uint16_t coil_current = 0;
@@ -81,10 +69,10 @@ void adc_start_system_monitor()
                         ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                         CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
-    adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_7_5_cycles);       // Ток катушки
-    adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_7_5_cycles);  // Преобразователь
-    adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_7_5_cycles);    // Акб
-    adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_71_5_cycles); // Опора
+    adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_1_5_cycles);        // Ток катушки
+    adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_7_5_cycles);   // Преобразователь
+    adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_7_5_cycles);     // Акб
+    adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles); // Опора
 
     adc::set_injected_sequence(ADC1, 2,
                                3, 4, 17, 0);
@@ -100,22 +88,9 @@ void system_monitor_handler()
 {
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {
+        ADC1->SR = ~ADC1->SR;
         {
-            // Проверка напряжений
-            if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
-            {
-                system_monitor_status.reference_voltage_status = OK;
-            }
-            if ((BAT_VOLTAGE_LOW < usInputRegisters[INPUT_REG_BAT_VOLTAGE]) && (usInputRegisters[INPUT_REG_BAT_VOLTAGE] < BAT_VOLTAGE_HIGH))
-            {
-                system_monitor_status.bat_voltage_status = OK;
-            }
-            if ((DC_VOLTAGE_LOW < usInputRegisters[INPUT_REG_DC_VOLTAGE]) && (usInputRegisters[INPUT_REG_DC_VOLTAGE] < DC_VOLTAGE_HIGH))
-            {
-                system_monitor_status.dc_voltage_status = OK;
-            }
-
-            // Усреднение напряжений
+            // Получение напряжений
             usInputRegisters[INPUT_REG_REF_VOLTAGE] = smooth_value(
                 alpha_smooth,
                 get_adc_ref_voltage(ADC1->JDR1),
@@ -133,17 +108,41 @@ void system_monitor_handler()
                 (get_adc_voltage(ref_voltage, coil_current) / COIL_CURRENT_SHUNT),
                 usInputRegisters[INPUT_REG_COIL_CUR]);
 
-            // Если все работает - запускаем генерацию
-            if ((system_monitor_status.reference_voltage_status == OK) && (system_monitor_status.bat_voltage_status == OK) && (system_monitor_status.dc_voltage_status == OK) &&
-                (system_monitor_status.start_status == ERR))
+            if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
             {
-                alpha_smooth = ALPHA_SMOOTH_VALUE;
-                system_monitor_status.start_status = OK;
-                led_pin.set();
-                cur_fault_delay = 6000;
+                if ((BAT_VOLTAGE_LOW < usInputRegisters[INPUT_REG_BAT_VOLTAGE]) && (usInputRegisters[INPUT_REG_BAT_VOLTAGE] < BAT_VOLTAGE_HIGH))
+                {
+                    if (dc_enable.get_level())
+                    {
+                        if ((DC_VOLTAGE_LOW < usInputRegisters[INPUT_REG_DC_VOLTAGE]) && (usInputRegisters[INPUT_REG_DC_VOLTAGE] < DC_VOLTAGE_HIGH))
+                        {
+                            if (!system_started_flag)
+                            {
+                                system_started_flag = 1;
+                                alpha_smooth = ALPHA_SMOOTH_VALUE;
+                                cur_fault_delay = 1000;
+                            }
+                        }
+                        else
+                        {
+                            system_started_flag = 0;
+                            goto system_error;
+                        }
+                    }
+                    dc_enable.set();
+                    return;
+                }
             }
+
+        system_error:
+            GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+            GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
+            GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
+            
+            dc_enable.reset();
+            led_pin.set();
+            cur_fault_delay = 2000;
         }
-        ADC1->SR = ~ADC1->SR;
     }
 }
 

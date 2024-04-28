@@ -108,7 +108,6 @@ int main(void)
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  dc_enable.set();
   Logger.LogI((char *)"\n\r--Starting--\n\r");
   get_core_voltage((uint16_t *)&ref_voltage);
   adc_start_system_monitor();
@@ -123,7 +122,7 @@ int main(void)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-
+      
     system_monitor_handler();
   }
 }
