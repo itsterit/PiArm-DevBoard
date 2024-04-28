@@ -2,7 +2,6 @@
 
 #define ALPHA_SMOOTH_VALUE (0.2)
 
-
 #define COIL_CURRENT_SHUNT (0.2)
 
 #define COIL_CURRENT_ADC_CHANNEL (2)
@@ -32,6 +31,7 @@ struct SYSTEM_MONITOR_STATUS
     VOLTAGE_MONITOR_STATUS_Type start_status = ERR;
 } system_monitor_status;
 
+volatile float alpha_smooth = 1;
 volatile uint16_t ref_voltage = 0;
 volatile uint16_t coil_current = 0;
 
@@ -101,23 +101,6 @@ void system_monitor_handler()
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {
         {
-            usInputRegisters[INPUT_REG_REF_VOLTAGE] = smooth_value(
-                ALPHA_SMOOTH_VALUE,
-                get_adc_ref_voltage(ADC1->JDR1),
-                usInputRegisters[INPUT_REG_REF_VOLTAGE]);
-            usInputRegisters[INPUT_REG_BAT_VOLTAGE] = smooth_value(
-                ALPHA_SMOOTH_VALUE,
-                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR2), 10000, 5100),
-                usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
-            usInputRegisters[INPUT_REG_DC_VOLTAGE] = smooth_value(
-                ALPHA_SMOOTH_VALUE,
-                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR3), 1000, 100),
-                usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-            usInputRegisters[INPUT_REG_COIL_CUR] = smooth_value(
-                ALPHA_SMOOTH_VALUE,
-                (get_adc_voltage(ref_voltage, coil_current) / COIL_CURRENT_SHUNT),
-                usInputRegisters[INPUT_REG_COIL_CUR]);
-
             if (REFERENCE_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_REF_VOLTAGE] <= REFERENCE_VOLTAGE_HIGH)
             {
                 system_monitor_status.reference_voltage_status = OK;
@@ -133,9 +116,28 @@ void system_monitor_handler()
             ADC1->SR = ~ADC1->SR;
         }
         {
+            usInputRegisters[INPUT_REG_REF_VOLTAGE] = smooth_value(
+                alpha_smooth,
+                get_adc_ref_voltage(ADC1->JDR1),
+                usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+            usInputRegisters[INPUT_REG_BAT_VOLTAGE] = smooth_value(
+                alpha_smooth,
+                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR2), 10000, 5100),
+                usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
+            usInputRegisters[INPUT_REG_DC_VOLTAGE] = smooth_value(
+                alpha_smooth,
+                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR3), 1000, 100),
+                usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+            usInputRegisters[INPUT_REG_COIL_CUR] = smooth_value(
+                alpha_smooth,
+                (get_adc_voltage(ref_voltage, coil_current) / COIL_CURRENT_SHUNT),
+                usInputRegisters[INPUT_REG_COIL_CUR]);
+        }
+        {
             if ((system_monitor_status.reference_voltage_status == OK) && (system_monitor_status.bat_voltage_status == OK) && (system_monitor_status.dc_voltage_status == OK) &&
                 (system_monitor_status.start_status == ERR))
             {
+                alpha_smooth = ALPHA_SMOOTH_VALUE;
                 system_monitor_status.start_status = OK;
                 led_pin.set();
                 cur_fault_delay = 6000;
