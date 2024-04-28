@@ -1,5 +1,10 @@
 #include <main.h>
 
+#define ALPHA_SMOOTH_VALUE (0.2)
+
+
+#define COIL_CURRENT_SHUNT (0.2)
+
 #define COIL_CURRENT_ADC_CHANNEL (2)
 #define VOLTAGE_CONVERTER_ADC_CHANNEL (3)
 #define BATTERY_VOLTAGE_ADC_CHANNEL (4)
@@ -24,6 +29,7 @@ struct SYSTEM_MONITOR_STATUS
     VOLTAGE_MONITOR_STATUS_Type reference_voltage_status = ERR;
     VOLTAGE_MONITOR_STATUS_Type bat_voltage_status = ERR;
     VOLTAGE_MONITOR_STATUS_Type dc_voltage_status = ERR;
+    VOLTAGE_MONITOR_STATUS_Type start_status = ERR;
 } system_monitor_status;
 
 volatile uint16_t ref_voltage = 0;
@@ -95,35 +101,42 @@ void system_monitor_handler()
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {
         {
-            usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
-            usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR2), 10000, 5100);
-            usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR3), 1000, 100);
+            usInputRegisters[INPUT_REG_REF_VOLTAGE] = smooth_value(
+                ALPHA_SMOOTH_VALUE,
+                get_adc_ref_voltage(ADC1->JDR1),
+                usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+            usInputRegisters[INPUT_REG_BAT_VOLTAGE] = smooth_value(
+                ALPHA_SMOOTH_VALUE,
+                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR2), 10000, 5100),
+                usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
+            usInputRegisters[INPUT_REG_DC_VOLTAGE] = smooth_value(
+                ALPHA_SMOOTH_VALUE,
+                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR3), 1000, 100),
+                usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+            usInputRegisters[INPUT_REG_COIL_CUR] = smooth_value(
+                ALPHA_SMOOTH_VALUE,
+                (get_adc_voltage(ref_voltage, coil_current) / COIL_CURRENT_SHUNT),
+                usInputRegisters[INPUT_REG_COIL_CUR]);
 
-            // if (REFERENCE_VOLTAGE_LOW <= ref_voltage <= REFERENCE_VOLTAGE_HIGH)
-            // {
-            //     system_monitor_status.reference_voltage_status = OK;
-            // }
-            // if (BAT_VOLTAGE_LOW <= (uint16_t)(ADC1->JDR2 * (float)((float)ref_voltage / 4096)) <= BAT_VOLTAGE_HIGH)
-            // {
-            //     dc_enable.set();
-            //     system_monitor_status.bat_voltage_status = OK;
-            // }
-            // if (DC_VOLTAGE_LOW <= (uint16_t)(ADC1->JDR3 * (float)((float)ref_voltage / 4096)) <= DC_VOLTAGE_HIGH)
-            // {
-            //     system_monitor_status.dc_voltage_status = OK;
-            // }
-
-            // Logger.LogD((char *)"Coil_cur   (%d)\n\r", (uint16_t)(coil_current * (float)((float)ref_voltage / 4096)));
-            // Logger.LogD((char *)"ref        (%d)\n\r", usInputRegisters[INPUT_REG_REF_VOLTAGE]);
-            // Logger.LogD((char *)"bat        (%d)\n\r", usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
-            // Logger.LogD((char *)"dc         (%d)\n\n\r", usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+            if (REFERENCE_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_REF_VOLTAGE] <= REFERENCE_VOLTAGE_HIGH)
+            {
+                system_monitor_status.reference_voltage_status = OK;
+            }
+            if (BAT_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_BAT_VOLTAGE] <= BAT_VOLTAGE_HIGH)
+            {
+                system_monitor_status.bat_voltage_status = OK;
+            }
+            if (DC_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_DC_VOLTAGE] <= DC_VOLTAGE_HIGH)
+            {
+                system_monitor_status.dc_voltage_status = OK;
+            }
             ADC1->SR = ~ADC1->SR;
         }
         {
-            if ((system_monitor_status.reference_voltage_status == OK) &&
-                (system_monitor_status.bat_voltage_status == OK) &&
-                (system_monitor_status.dc_voltage_status == OK))
+            if ((system_monitor_status.reference_voltage_status == OK) && (system_monitor_status.bat_voltage_status == OK) && (system_monitor_status.dc_voltage_status == OK) &&
+                (system_monitor_status.start_status == ERR))
             {
+                system_monitor_status.start_status = OK;
                 led_pin.set();
                 cur_fault_delay = 6000;
             }

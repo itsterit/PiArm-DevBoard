@@ -16,6 +16,7 @@ uint16_t get_voltage_divider_uin(uint16_t u_out_mv, uint32_t r1_high_om, uint32_
 uint16_t get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv);
 uint16_t get_adc_voltage(uint16_t refv_mv, uint16_t adc_code);
 uint16_t get_adc_ref_voltage(uint16_t adc_code);
+uint16_t smooth_value(float alpha, uint16_t value, uint16_t prev_value);
 
 class adc
 {

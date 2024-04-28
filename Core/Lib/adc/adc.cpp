@@ -215,3 +215,8 @@ uint16_t get_adc_ref_voltage(uint16_t adc_code)
 {
     return (uint16_t)(4915200 / ADC1->JDR1);
 }
+
+uint16_t smooth_value(float alpha, uint16_t value, uint16_t prev_value)
+{
+    return (alpha * value) + ((1 - alpha) * prev_value);
+}
