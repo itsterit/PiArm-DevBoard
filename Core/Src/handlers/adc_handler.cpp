@@ -101,6 +101,7 @@ void system_monitor_handler()
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {
         {
+            // Проверка напряжений
             if (REFERENCE_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_REF_VOLTAGE] <= REFERENCE_VOLTAGE_HIGH)
             {
                 system_monitor_status.reference_voltage_status = OK;
@@ -113,9 +114,8 @@ void system_monitor_handler()
             {
                 system_monitor_status.dc_voltage_status = OK;
             }
-            ADC1->SR = ~ADC1->SR;
-        }
-        {
+
+            // Усреднение напряжений
             usInputRegisters[INPUT_REG_REF_VOLTAGE] = smooth_value(
                 alpha_smooth,
                 get_adc_ref_voltage(ADC1->JDR1),
@@ -132,8 +132,8 @@ void system_monitor_handler()
                 alpha_smooth,
                 (get_adc_voltage(ref_voltage, coil_current) / COIL_CURRENT_SHUNT),
                 usInputRegisters[INPUT_REG_COIL_CUR]);
-        }
-        {
+
+            // Если все работает - запускаем генерацию
             if ((system_monitor_status.reference_voltage_status == OK) && (system_monitor_status.bat_voltage_status == OK) && (system_monitor_status.dc_voltage_status == OK) &&
                 (system_monitor_status.start_status == ERR))
             {
@@ -143,6 +143,7 @@ void system_monitor_handler()
                 cur_fault_delay = 6000;
             }
         }
+        ADC1->SR = ~ADC1->SR;
     }
 }
 
