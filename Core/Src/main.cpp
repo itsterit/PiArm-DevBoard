@@ -14,7 +14,6 @@ GPIO coil_current_pin(GPIOA, 2U);
 GPIO coil_response(GPIOA, 1U);
 GPIO dc_check(GPIOA, 3U);
 
-uint16_t reboot_delay = 0;
 uint16_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
@@ -122,7 +121,7 @@ int main(void)
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-      
+
     system_monitor_handler();
   }
 }

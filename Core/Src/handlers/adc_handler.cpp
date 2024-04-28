@@ -105,7 +105,7 @@ void system_monitor_handler()
                 usInputRegisters[INPUT_REG_DC_VOLTAGE]);
             usInputRegisters[INPUT_REG_COIL_CUR] = smooth_value(
                 alpha_smooth,
-                (get_adc_voltage(ref_voltage, coil_current) / COIL_CURRENT_SHUNT),
+                (get_adc_voltage(ref_voltage, coil_current)),
                 usInputRegisters[INPUT_REG_COIL_CUR]);
 
             if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
@@ -118,10 +118,11 @@ void system_monitor_handler()
                         {
                             if (!system_started_flag)
                             {
-                                system_started_flag = 1;
                                 alpha_smooth = ALPHA_SMOOTH_VALUE;
                                 cur_fault_delay = 1000;
                             }
+                            system_started_flag = 1;
+                            return;
                         }
                         else
                         {
@@ -135,13 +136,12 @@ void system_monitor_handler()
             }
 
         system_error:
-            GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
-            GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
-            GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
-            
+            gen_freq.clock_enable(true);
+            gen_freq.set_config(GPIO::output_push_pull);
+            gen_freq.set();
+
             dc_enable.reset();
             led_pin.set();
-            cur_fault_delay = 2000;
         }
     }
 }

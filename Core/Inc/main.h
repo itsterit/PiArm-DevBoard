@@ -25,7 +25,6 @@ extern GPIO gen_freq;
 extern GPIO dc_enable;
 
 extern uint16_t cur_fault_delay;
-extern uint16_t reboot_delay;
 extern GPIO cur_fault;
 
 // Работа с таймерами
