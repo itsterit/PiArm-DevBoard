@@ -108,6 +108,8 @@ void system_monitor_handler()
                 (get_adc_voltage(ref_voltage, coil_current)),
                 usInputRegisters[INPUT_REG_COIL_CUR]);
 
+            Logger.LogD((char *)"%d\n\r", usInputRegisters[INPUT_REG_COIL_CUR]);
+
             if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
             {
                 if ((BAT_VOLTAGE_LOW < usInputRegisters[INPUT_REG_BAT_VOLTAGE]) && (usInputRegisters[INPUT_REG_BAT_VOLTAGE] < BAT_VOLTAGE_HIGH))
@@ -140,6 +142,7 @@ void system_monitor_handler()
             gen_freq.set_config(GPIO::output_push_pull);
             gen_freq.set();
 
+            alpha_smooth = 1;
             dc_enable.reset();
             led_pin.set();
         }
