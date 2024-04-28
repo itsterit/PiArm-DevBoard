@@ -102,15 +102,15 @@ void system_monitor_handler()
     {
         {
             // Проверка напряжений
-            if (REFERENCE_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_REF_VOLTAGE] <= REFERENCE_VOLTAGE_HIGH)
+            if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
             {
                 system_monitor_status.reference_voltage_status = OK;
             }
-            if (BAT_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_BAT_VOLTAGE] <= BAT_VOLTAGE_HIGH)
+            if ((BAT_VOLTAGE_LOW < usInputRegisters[INPUT_REG_BAT_VOLTAGE]) && (usInputRegisters[INPUT_REG_BAT_VOLTAGE] < BAT_VOLTAGE_HIGH))
             {
                 system_monitor_status.bat_voltage_status = OK;
             }
-            if (DC_VOLTAGE_LOW <= usInputRegisters[INPUT_REG_DC_VOLTAGE] <= DC_VOLTAGE_HIGH)
+            if ((DC_VOLTAGE_LOW < usInputRegisters[INPUT_REG_DC_VOLTAGE]) && (usInputRegisters[INPUT_REG_DC_VOLTAGE] < DC_VOLTAGE_HIGH))
             {
                 system_monitor_status.dc_voltage_status = OK;
             }
