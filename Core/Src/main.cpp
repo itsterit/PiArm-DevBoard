@@ -37,6 +37,8 @@ int main(void)
   gen_freq.set_config(GPIO::output_push_pull);
   gen_freq.set();
 
+  dc_enable.set();
+  
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
@@ -61,6 +63,7 @@ int main(void)
   coil_response.set_config(GPIO::input_analog);
   dc_check.clock_enable(true);
   dc_check.set_config(GPIO::input_analog);
+
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);

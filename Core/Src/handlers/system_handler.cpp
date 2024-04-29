@@ -42,7 +42,7 @@ extern "C" void HardFault_Handler(void)
 uint16_t cnt = 0;
 extern "C" void SysTick_Handler(void)
 {
-    if (cnt++ >= 250)
+    if (cnt++ >= 500)
     {
         cnt = 0;
         ADC1->CR2 |= (ADC_CR2_JSWSTART_Msk);
