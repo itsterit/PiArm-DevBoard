@@ -1,6 +1,6 @@
 #include <main.h>
 
-#define ALPHA_SMOOTH_VALUE (0.2)
+#define ALPHA_SMOOTH_VALUE (0.3)
 
 #define COIL_CURRENT_SHUNT (0.2)
 
@@ -9,14 +9,14 @@
 #define BATTERY_VOLTAGE_ADC_CHANNEL (4)
 #define REFERENCE_VOLTAGE_ADC_CHANNEL (17)
 
-#define REFERENCE_VOLTAGE_HIGH (3400)
-#define REFERENCE_VOLTAGE_LOW (3200)
+#define REFERENCE_VOLTAGE_HIGH (3500)
+#define REFERENCE_VOLTAGE_LOW (3100)
 
-#define BAT_VOLTAGE_HIGH (5500)
-#define BAT_VOLTAGE_LOW (4500)
+#define BAT_VOLTAGE_HIGH (6000)
+#define BAT_VOLTAGE_LOW (3200)
 
-#define DC_VOLTAGE_HIGH (14000)
-#define DC_VOLTAGE_LOW (12000)
+#define DC_VOLTAGE_HIGH (15000)
+#define DC_VOLTAGE_LOW (11000)
 
 volatile bool system_started_flag = 0;
 volatile float alpha_smooth = 1;
@@ -69,9 +69,9 @@ void adc_start_system_monitor()
                         ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                         CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
-    adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_1_5_cycles);        // Ток катушки
-    adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_7_5_cycles);   // Преобразователь
-    adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_7_5_cycles);     // Акб
+    adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_7_5_cycles);        // Ток катушки
+    adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_239_5_cycles); // Преобразователь
+    adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles);   // Акб
     adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles); // Опора
 
     adc::set_injected_sequence(ADC1, 2,
@@ -97,18 +97,16 @@ void system_monitor_handler()
                 usInputRegisters[INPUT_REG_REF_VOLTAGE]);
             usInputRegisters[INPUT_REG_BAT_VOLTAGE] = smooth_value(
                 alpha_smooth,
-                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR2), 10000, 5100),
+                get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100),
                 usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
             usInputRegisters[INPUT_REG_DC_VOLTAGE] = smooth_value(
                 alpha_smooth,
-                get_voltage_divider_uin(get_adc_voltage(ref_voltage, ADC1->JDR3), 1000, 100),
+                get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100),
                 usInputRegisters[INPUT_REG_DC_VOLTAGE]);
             usInputRegisters[INPUT_REG_COIL_CUR] = smooth_value(
                 alpha_smooth,
-                (get_adc_voltage(ref_voltage, coil_current)),
+                (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], coil_current) / COIL_CURRENT_SHUNT),
                 usInputRegisters[INPUT_REG_COIL_CUR]);
-
-            Logger.LogD((char *)"%d\n\r", usInputRegisters[INPUT_REG_COIL_CUR]);
 
             if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
             {
@@ -136,14 +134,12 @@ void system_monitor_handler()
                     return;
                 }
             }
+            dc_enable.reset();
 
         system_error:
             gen_freq.clock_enable(true);
             gen_freq.set_config(GPIO::output_push_pull);
             gen_freq.set();
-
-            alpha_smooth = 1;
-            dc_enable.reset();
             led_pin.set();
         }
     }
