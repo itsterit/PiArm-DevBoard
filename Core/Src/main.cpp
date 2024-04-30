@@ -33,20 +33,17 @@ ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0])
 uint16_t voltage = 0;
 int main(void)
 {
+  clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
   gen_freq.clock_enable(true);
   gen_freq.set_config(GPIO::output_push_pull);
+#if INVERT_GENERATOR_SIGNAL
   gen_freq.set();
-
+#else
+  gen_freq.reset();
+#endif
   dc_enable.clock_enable(true);
   dc_enable.set_config(GPIO::output_push_pull);
   dc_enable.set();
-
-  adc_start_system_monitor();
-  ADC_INJ_START(ADC1);
-  while (1)
-  {
-    system_monitor_handler(&usInputRegisters[INPUT_REG_REF_VOLTAGE], &usInputRegisters[INPUT_REG_BAT_VOLTAGE], &usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-  }
 
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
@@ -128,8 +125,8 @@ int main(void)
 
   while (true)
   {
-    if (!(btn_2.get_level()))
-      NVIC_SystemReset();
+    // if (!(btn_2.get_level()))
+    //   NVIC_SystemReset();
 
     // system_monitor_handler();
   }
