@@ -37,14 +37,21 @@ int main(void)
   gen_freq.set_config(GPIO::output_push_pull);
   gen_freq.set();
 
+  dc_enable.clock_enable(true);
+  dc_enable.set_config(GPIO::output_push_pull);
   dc_enable.set();
-  
+
+  adc_start_system_monitor();
+  ADC_INJ_START(ADC1);
+  while (1)
+  {
+    system_monitor_handler(&usInputRegisters[INPUT_REG_REF_VOLTAGE], &usInputRegisters[INPUT_REG_BAT_VOLTAGE], &usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+  }
+
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
   led_pin.set_config(GPIO::output_push_pull);
   AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
-  dc_enable.clock_enable(true);
-  dc_enable.set_config(GPIO::output_push_pull);
   usb_tx.clock_enable(true);
   usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
   usb_rx.clock_enable(true);
@@ -63,7 +70,6 @@ int main(void)
   coil_response.set_config(GPIO::input_analog);
   dc_check.clock_enable(true);
   dc_check.set_config(GPIO::input_analog);
-
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -125,6 +131,6 @@ int main(void)
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
 
-    system_monitor_handler();
+    // system_monitor_handler();
   }
 }

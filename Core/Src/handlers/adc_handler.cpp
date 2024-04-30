@@ -84,37 +84,23 @@ void adc_start_system_monitor()
     ADC_START(ADC1);
 }
 
-void system_monitor_handler()
+get_system_status system_monitor_handler(uint16_t *ref_voltage, uint16_t *bat_voltage, uint16_t *dc_voltage)
 {
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {
         ADC1->SR = ~ADC1->SR;
         {
-            // Получение напряжений
-            usInputRegisters[INPUT_REG_REF_VOLTAGE] = smooth_value(
-                alpha_smooth,
-                get_adc_ref_voltage(ADC1->JDR1),
-                usInputRegisters[INPUT_REG_REF_VOLTAGE]);
-            usInputRegisters[INPUT_REG_BAT_VOLTAGE] = smooth_value(
-                alpha_smooth,
-                get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100),
-                usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
-            usInputRegisters[INPUT_REG_DC_VOLTAGE] = smooth_value(
-                alpha_smooth,
-                get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100),
-                usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-            usInputRegisters[INPUT_REG_COIL_CUR] = smooth_value(
-                alpha_smooth,
-                (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], coil_current) / COIL_CURRENT_SHUNT),
-                usInputRegisters[INPUT_REG_COIL_CUR]);
+            *ref_voltage = smooth_value(alpha_smooth, get_adc_ref_voltage(ADC1->JDR1), *ref_voltage);
+            *bat_voltage = smooth_value(alpha_smooth, get_voltage_divider_uin(get_adc_voltage(*ref_voltage, ADC1->JDR2), 10000, 5100), *bat_voltage);
+            *dc_voltage = smooth_value(alpha_smooth, get_voltage_divider_uin(get_adc_voltage(*ref_voltage, ADC1->JDR3), 1000, 100), *dc_voltage);
 
-            if ((REFERENCE_VOLTAGE_LOW < usInputRegisters[INPUT_REG_REF_VOLTAGE]) && (usInputRegisters[INPUT_REG_REF_VOLTAGE] < REFERENCE_VOLTAGE_HIGH))
+            if ((REFERENCE_VOLTAGE_LOW < *ref_voltage) && (*ref_voltage < REFERENCE_VOLTAGE_HIGH))
             {
-                if ((BAT_VOLTAGE_LOW < usInputRegisters[INPUT_REG_BAT_VOLTAGE]) && (usInputRegisters[INPUT_REG_BAT_VOLTAGE] < BAT_VOLTAGE_HIGH))
+                if ((BAT_VOLTAGE_LOW < *bat_voltage) && (*bat_voltage < BAT_VOLTAGE_HIGH))
                 {
                     if (dc_enable.get_level())
                     {
-                        if ((DC_VOLTAGE_LOW < usInputRegisters[INPUT_REG_DC_VOLTAGE]) && (usInputRegisters[INPUT_REG_DC_VOLTAGE] < DC_VOLTAGE_HIGH))
+                        if ((DC_VOLTAGE_LOW < *dc_voltage) && (*dc_voltage < DC_VOLTAGE_HIGH))
                         {
                             if (!system_started_flag)
                             {
@@ -122,7 +108,7 @@ void system_monitor_handler()
                                 cur_fault_delay = 1000;
                             }
                             system_started_flag = 1;
-                            return;
+                            return SYSTEM_OK;
                         }
                         else
                         {
@@ -131,7 +117,7 @@ void system_monitor_handler()
                         }
                     }
                     dc_enable.set();
-                    return;
+                    return CHECK_SYSTEM;
                 }
             }
             dc_enable.reset();
@@ -141,8 +127,10 @@ void system_monitor_handler()
             gen_freq.set_config(GPIO::output_push_pull);
             gen_freq.set();
             led_pin.set();
+            return BAT_VOLTAGE_ERR;
         }
     }
+    return CHECK_SYSTEM;
 }
 
 /**

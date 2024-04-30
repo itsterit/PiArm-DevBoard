@@ -9,6 +9,7 @@
 #define ADC_END_CONVERSION(ADCx) (ADCx->SR & ADC_SR_EOS_Msk)
 #define ADC_CLEAR_STATUS(ADCx) (ADCx->SR = ~(ADCx->SR))
 #define ADC_START(ADCx) (ADCx->CR2 |= ADC_CR2_SWSTART_Msk)
+#define ADC_INJ_START(ADCx) (ADCx->CR2 |= ADC_CR2_JSWSTART_Msk)
 #define ADC_DATA(ADCx) (ADCx->DR)
 
 uint16_t get_voltage_divider_uout(uint16_t u_in_mv, uint32_t r1_high_om, uint32_t r2_low_om);

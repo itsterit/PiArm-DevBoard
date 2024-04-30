@@ -185,7 +185,7 @@ void adc::set_analog_watchdog_threshold(ADC_TypeDef *adc_x, uint16_t high_thresh
 
 uint16_t get_adc_code(uint16_t refv_mv, uint16_t in_voltage_mv)
 {
-    if ((refv_mv < 3500) && (in_voltage_mv < 3500))
+    if ((refv_mv < 3500) && (refv_mv > 3200) && (in_voltage_mv < 3500) && in_voltage_mv)
     {
         uint16_t ret_code = (4096 * in_voltage_mv) / refv_mv;
         if (!(ret_code & ~0xFFF))

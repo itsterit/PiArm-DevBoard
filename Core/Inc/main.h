@@ -15,10 +15,10 @@
 #define MODBUS_ADDRESS (1)
 #define USB_BUFFER_SIZE (0xFFF)
 
-#define INPUT_REG_REF_VOLTAGE       (0)
-#define INPUT_REG_BAT_VOLTAGE       (1)
-#define INPUT_REG_DC_VOLTAGE        (2)
-#define INPUT_REG_COIL_CUR          (3)
+#define INPUT_REG_REF_VOLTAGE (0)
+#define INPUT_REG_BAT_VOLTAGE (1)
+#define INPUT_REG_DC_VOLTAGE (2)
+#define INPUT_REG_COIL_CUR (3)
 
 extern GPIO led_pin;
 extern GPIO gen_freq;
@@ -55,10 +55,18 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize);
 extern ModBusRTU ModBus;
 
 // Работа с АЦП
+typedef enum
+{
+    BAT_VOLTAGE_ERR,
+    DC_VOLTAGE_ERR,
+    SYSTEM_OK,
+    CHECK_SYSTEM,
+} get_system_status;
+
 extern volatile uint16_t ref_voltage;
 extern volatile uint16_t coil_current;
 bool get_core_voltage(uint16_t *ret_data);
 void adc_start_system_monitor();
-void system_monitor_handler();
+get_system_status system_monitor_handler(uint16_t *ref_voltage, uint16_t *bat_voltage, uint16_t *dc_voltage);
 
 #endif /* __MAIN_H__ */
