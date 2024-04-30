@@ -33,17 +33,28 @@ ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0])
 uint16_t voltage = 0;
 int main(void)
 {
-  clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
-  gen_freq.clock_enable(true);
-  gen_freq.set_config(GPIO::output_push_pull);
+  /**
+   * @brief   Проверка напряжений и запуск dc-dc
+   * 
+   * @details Проверка напряжения батареи, за которой следует 
+   *          запуск преобразователя и последующая его проверка
+   * @note    При запуске преобразователя происходит просадка напряжения,
+   *          для ее минимизации его запуск инициируется когда потребление 
+   *          процессора минимально
+  */
+  {
+    clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
+    gen_freq.clock_enable(true);
+    gen_freq.set_config(GPIO::output_push_pull);
 #if INVERT_GENERATOR_SIGNAL
-  gen_freq.set();
+    gen_freq.set();
 #else
-  gen_freq.reset();
+    gen_freq.reset();
 #endif
-  dc_enable.clock_enable(true);
-  dc_enable.set_config(GPIO::output_push_pull);
-  dc_enable.set();
+    dc_enable.clock_enable(true);
+    dc_enable.set_config(GPIO::output_push_pull);
+    dc_enable.set();
+  }
 
   /* конфижим ноги проца */
   led_pin.clock_enable(true);
