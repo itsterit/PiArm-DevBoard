@@ -23,6 +23,10 @@ volatile float alpha_smooth = 1;
 volatile uint16_t ref_voltage = 0;
 volatile uint16_t coil_current = 0;
 
+/**
+ * @brief   Получение опорного напряжения
+ * @retval  Вернем true, если получили опорное напряжение
+ */
 bool get_core_voltage(uint16_t *ret_data)
 {
     adc::enable(ADC1);
@@ -54,83 +58,61 @@ bool get_core_voltage(uint16_t *ret_data)
     return false;
 }
 
-void adc_start_system_monitor()
+bool adc_start_system_monitor(uint16_t rev_mv)
 {
-    adc::enable(ADC1);
-    adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                        DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                        DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                        AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_ENABLED,
-                        JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 2);
-
-    adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
-                        EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
-                        JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
-                        ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                        CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
-
-    adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_7_5_cycles);        // Ток катушки
-    adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_239_5_cycles); // Преобразователь
-    adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles);   // Акб
-    adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles); // Опора
-
-    adc::set_injected_sequence(ADC1, 2,
-                               3, 4, 17, 0);
-
-    adc::set_analog_watchdog_threshold(ADC1,
-                                       get_adc_code(ref_voltage, 200), // 1.5A
-                                       0);
-    adc::set_regular_sequence(ADC1, 0, 1, 2);
-    ADC_START(ADC1);
-}
-
-get_system_status system_monitor_handler(uint16_t *ref_voltage, uint16_t *bat_voltage, uint16_t *dc_voltage)
-{
-    if (ADC1->SR & ADC_SR_JEOS_Msk)
+    // включить тактирование
+    if (adc::enable(ADC1))
     {
-        ADC1->SR = ~ADC1->SR;
+        // конфигурация
+        adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+                            DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+                            DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+                            AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_ENABLED,
+                            JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 2);
+
+        adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
+                            EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
+                            JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
+                            ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+                            CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
+
+        // установка времени и порядка сэмплирования и настройка watchdog`а по току катушки
+        if (adc::set_sampling(ADC1, COIL_CURRENT_ADC_CHANNEL, SMP_7_5_cycles) &&        // Ток катушки      - 2й канал, по watchdog`у без инжектируемого преобразования
+            adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_239_5_cycles) && // Преобразователь  - 3й канал
+            adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles) &&   // Акб              - 4й канал
+            adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles))   // Опора            - 17й канал
         {
-            *ref_voltage = smooth_value(alpha_smooth, get_adc_ref_voltage(ADC1->JDR1), *ref_voltage);
-            *bat_voltage = smooth_value(alpha_smooth, get_voltage_divider_uin(get_adc_voltage(*ref_voltage, ADC1->JDR2), 10000, 5100), *bat_voltage);
-            *dc_voltage = smooth_value(alpha_smooth, get_voltage_divider_uin(get_adc_voltage(*ref_voltage, ADC1->JDR3), 1000, 100), *dc_voltage);
-
-            if ((REFERENCE_VOLTAGE_LOW < *ref_voltage) && (*ref_voltage < REFERENCE_VOLTAGE_HIGH))
+            if (get_adc_code(rev_mv, 200))
             {
-                if ((BAT_VOLTAGE_LOW < *bat_voltage) && (*bat_voltage < BAT_VOLTAGE_HIGH))
-                {
-                    if (dc_enable.get_level())
-                    {
-                        if ((DC_VOLTAGE_LOW < *dc_voltage) && (*dc_voltage < DC_VOLTAGE_HIGH))
-                        {
-                            if (!system_started_flag)
-                            {
-                                alpha_smooth = ALPHA_SMOOTH_VALUE;
-                                cur_fault_delay = 1000;
-                            }
-                            system_started_flag = 1;
-                            return SYSTEM_OK;
-                        }
-                        else
-                        {
-                            system_started_flag = 0;
-                            goto system_error;
-                        }
-                    }
-                    dc_enable.set();
-                    return CHECK_SYSTEM;
-                }
+                adc::set_injected_sequence(ADC1, 2, VOLTAGE_CONVERTER_ADC_CHANNEL, BATTERY_VOLTAGE_ADC_CHANNEL, REFERENCE_VOLTAGE_ADC_CHANNEL, 0);
+                adc::set_analog_watchdog_threshold(ADC1, get_adc_code(rev_mv, 200), 0);
+                adc::set_regular_sequence(ADC1, 0, 1, 2);
+                return 1;
             }
-            dc_enable.reset();
-
-        system_error:
-            gen_freq.clock_enable(true);
-            gen_freq.set_config(GPIO::output_push_pull);
-            gen_freq.set();
-            led_pin.set();
-            return BAT_VOLTAGE_ERR;
         }
     }
-    return CHECK_SYSTEM;
+    return 0;
+}
+// ADC_START(ADC1);
+
+get_system_status system_monitor_handler(uint16_t ref_voltage, uint16_t bat_voltage, uint16_t dc_voltage)
+{
+    ADC_CLEAR_STATUS(ADC1);
+    if ((REFERENCE_VOLTAGE_LOW < ref_voltage) && (ref_voltage < REFERENCE_VOLTAGE_HIGH))
+    {
+        if ((BAT_VOLTAGE_LOW < bat_voltage) && (bat_voltage < BAT_VOLTAGE_HIGH))
+        {
+            if ((DC_VOLTAGE_LOW < dc_voltage) && (dc_voltage < DC_VOLTAGE_HIGH))
+            {
+                return SYSTEM_OK;
+            }
+            else
+            {
+                return DC_VOLTAGE_ERR;
+            }
+        }
+    }
+    return BAT_VOLTAGE_ERR;
 }
 
 /**

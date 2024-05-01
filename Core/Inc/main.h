@@ -66,7 +66,7 @@ typedef enum
 extern volatile uint16_t ref_voltage;
 extern volatile uint16_t coil_current;
 bool get_core_voltage(uint16_t *ret_data);
-void adc_start_system_monitor();
-get_system_status system_monitor_handler(uint16_t *ref_voltage, uint16_t *bat_voltage, uint16_t *dc_voltage);
+bool adc_start_system_monitor(uint16_t rev_mv);
+get_system_status system_monitor_handler(uint16_t ref_voltage, uint16_t bat_voltage, uint16_t dc_voltage);
 
 #endif /* __MAIN_H__ */
