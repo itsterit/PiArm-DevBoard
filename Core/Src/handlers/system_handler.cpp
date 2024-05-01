@@ -44,13 +44,21 @@ extern "C" void SysTick_Handler(void)
 {
     if (dc_startup)
     {
-        if (dc_startup && dc_startup < 500)
-            led_pin.reset();
-
         if (--dc_startup == 0)
         {
-            if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
+            SysTick->CTRL = 0x00;
+            SysTick->VAL = 0x00;
+            SysTick->LOAD = 0x00;
+            NVIC_DisableIRQ(SysTick_IRQn);
+            if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == SYSTEM_OK)
+                led_pin.set();
+            else
             {
+                led_pin.reset();
+                dc_enable.reset();
+                ADC1->CR2 &= ~(ADC_CR2_ADON_Msk);
+                ADC2->CR2 &= ~(ADC_CR2_ADON_Msk);
+                
                 NVIC_SystemReset();
             }
         }

@@ -42,75 +42,42 @@ int main(void)
    *          для ее минимизации его запуск инициируется когда потребление
    *          процессора минимально
    */
-  {
-    clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
-    gen_freq.clock_enable(true);
-    gen_freq.set_config(GPIO::output_push_pull);
+  clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
+  gen_freq.clock_enable(true);
+  gen_freq.set_config(GPIO::output_push_pull);
+  led_pin.clock_enable(true);
+  led_pin.set_config(GPIO::output_push_pull);
+  AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
+  dc_enable.clock_enable(true);
+  dc_enable.set_config(GPIO::output_push_pull);
+  gen_freq.reset();
 #if INVERT_GENERATOR_SIGNAL
-    gen_freq.set();
-#else
-    gen_freq.reset();
+  gen_freq.set();
 #endif
-    led_pin.clock_enable(true);
-    led_pin.set_config(GPIO::output_push_pull);
-    AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
-    dc_enable.clock_enable(true);
-    dc_enable.set_config(GPIO::output_push_pull);
-
-    btn_2.clock_enable(true);
-    btn_2.set_config(GPIO::input_floating);
-
-    led_pin.set();
+  {
+    dc_startup = 2000;
+    dc_enable.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
     {
-      dc_startup = 3000;
       SysTick_Config(128);
       NVIC_EnableIRQ(SysTick_IRQn);
 
-      // Проверка батареи
-      while (true)
+      while (dc_startup)
       {
         if (ADC1->SR & ADC_SR_JEOS_Msk)
         {
-          // Получение напряжений
+          ADC_CLEAR_STATUS(ADC1);
           usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
           usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100);
-          if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != BAT_VOLTAGE_ERR)
-          {
-            dc_enable.set();
-            break;
-          }
-        }
-        ADC_INJ_START(ADC1);
-      }
-
-      // Проверка преобразователя
-      while (true)
-      {
-        if (ADC1->SR & ADC_SR_JEOS_Msk)
-        {
-          // Получение напряжений
-          usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
           usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100);
-          if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == SYSTEM_OK)
-          {
-            if (!(btn_2.get_level()))
-            {
-              dc_enable.set();
-              led_pin.set();
-            }
-            // NVIC_DisableIRQ(SysTick_IRQn);
-            // SysTick->CTRL = 0;
-            // dc_startup = 0;
-            // break;
-          }
         }
         ADC_INJ_START(ADC1);
       }
     }
+    else
+      NVIC_SystemReset();
   }
-  NVIC_SystemReset();
 
   /* конфижим ноги проца */
   usb_tx.clock_enable(true);
@@ -129,6 +96,8 @@ int main(void)
   coil_response.set_config(GPIO::input_analog);
   dc_check.clock_enable(true);
   dc_check.set_config(GPIO::input_analog);
+  btn_2.clock_enable(true);
+  btn_2.set_config(GPIO::input_floating);
 
   /* конфижим тактирование проца */
   clock_control::hse::enable(true);
@@ -187,10 +156,10 @@ int main(void)
 
   while (true)
   {
-    // if (!(btn_2.get_level()))
-    //   NVIC_SystemReset();
     if (!(btn_2.get_level()))
-      led_pin.set();
+      NVIC_SystemReset();
+    // if (!(btn_2.get_level()))
+    //   led_pin.set();
 
     // system_monitor_handler();
   }
