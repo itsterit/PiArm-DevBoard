@@ -45,16 +45,10 @@ extern "C" void SysTick_Handler(void)
     if (cnt++ >= 500)
     {
         cnt = 0;
-        ADC1->CR2 |= (ADC_CR2_JSWSTART_Msk);
-    }
-
-    if (cur_fault_delay)
-    {
-        if (!(--cur_fault_delay))
-        {
-            led_pin.reset();
-            set_timer_config();
-        }
+        // if (led_pin.get_level())
+        //     led_pin.reset();
+        // else
+        led_pin.set();
     }
 }
 

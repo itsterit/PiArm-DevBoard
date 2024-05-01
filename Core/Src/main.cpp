@@ -44,7 +44,6 @@ int main(void)
    */
   {
     clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
-
     gen_freq.clock_enable(true);
     gen_freq.set_config(GPIO::output_push_pull);
 #if INVERT_GENERATOR_SIGNAL
@@ -58,9 +57,14 @@ int main(void)
     dc_enable.clock_enable(true);
     dc_enable.set_config(GPIO::output_push_pull);
 
+    btn_2.clock_enable(true);
+    btn_2.set_config(GPIO::input_floating);
+
+    led_pin.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
     {
+      // Проверка батареи
       ADC_INJ_START(ADC1);
       while (true)
       {
@@ -69,23 +73,41 @@ int main(void)
           // Получение напряжений
           usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
           usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100);
-          usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100);
           if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == BAT_VOLTAGE_ERR)
           {
             // Не работает батарея
           }
-          else
-          {
-            if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == SYSTEM_OK)
-            {
-              led_pin.reset();
-              break;
-            }
-            led_pin.set();
-            dc_enable.set();
-          }
-          ADC_INJ_START(ADC1);
+          break;
         }
+        ADC_INJ_START(ADC1);
+      }
+
+      // Проверка преобразователя
+      ADC_INJ_START(ADC1);
+      dc_enable.set();
+      SysTick_Config(128);
+      NVIC_EnableIRQ(SysTick_IRQn);
+
+      while (true)
+      {
+        if (ADC1->SR & ADC_SR_JEOS_Msk)
+        {
+          // Получение напряжений
+          usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
+          usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100);
+          if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == SYSTEM_OK)
+          {
+            if (!(btn_2.get_level()))
+            {
+              // SysTick->CTRL = 0;
+              // NVIC_DisableIRQ(SysTick_IRQn);
+              led_pin.reset();
+            }
+            // led_pin.reset();
+            // break;
+          }
+        }
+        ADC_INJ_START(ADC1);
       }
     }
   }
@@ -97,8 +119,6 @@ int main(void)
   usb_rx.set_config(GPIO::alternate_push_pull, GPIO::alternate_input_pull_up);
   btn_3.clock_enable(true);
   btn_3.set_config(GPIO::input_floating);
-  btn_2.clock_enable(true);
-  btn_2.set_config(GPIO::input_floating);
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
   bat_voltage_pin.clock_enable(true);
