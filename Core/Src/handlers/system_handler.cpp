@@ -50,15 +50,18 @@ extern "C" void SysTick_Handler(void)
             SysTick->VAL = 0x00;
             SysTick->LOAD = 0x00;
             NVIC_DisableIRQ(SysTick_IRQn);
-            if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == SYSTEM_OK)
-                led_pin.set();
-            else
+
+            if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
             {
                 led_pin.reset();
                 dc_enable.reset();
                 ADC1->CR2 &= ~(ADC_CR2_ADON_Msk);
                 ADC2->CR2 &= ~(ADC_CR2_ADON_Msk);
                 
+                while (1)
+                {
+                    /* code */
+                }
                 NVIC_SystemReset();
             }
         }

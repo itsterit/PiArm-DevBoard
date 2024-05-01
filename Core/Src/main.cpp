@@ -44,23 +44,24 @@ int main(void)
    */
   clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
   gen_freq.clock_enable(true);
-  gen_freq.set_config(GPIO::output_push_pull);
   led_pin.clock_enable(true);
+  dc_enable.clock_enable(true);
+  gen_freq.set_config(GPIO::output_push_pull);
   led_pin.set_config(GPIO::output_push_pull);
   AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
-  dc_enable.clock_enable(true);
   dc_enable.set_config(GPIO::output_push_pull);
   gen_freq.reset();
 #if INVERT_GENERATOR_SIGNAL
   gen_freq.set();
 #endif
-  bat_voltage_pin.clock_enable(true);
-  bat_voltage_pin.set_config(GPIO::input_analog);
   dc_check.clock_enable(true);
+  bat_voltage_pin.clock_enable(true);
   dc_check.set_config(GPIO::input_analog);
+  bat_voltage_pin.set_config(GPIO::input_analog);
   {
     dc_startup = 2000;
     dc_enable.set();
+    led_pin.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
     {
