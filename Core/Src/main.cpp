@@ -54,6 +54,10 @@ int main(void)
 #if INVERT_GENERATOR_SIGNAL
   gen_freq.set();
 #endif
+  bat_voltage_pin.clock_enable(true);
+  bat_voltage_pin.set_config(GPIO::input_analog);
+  dc_check.clock_enable(true);
+  dc_check.set_config(GPIO::input_analog);
   {
     dc_startup = 2000;
     dc_enable.set();
@@ -88,14 +92,11 @@ int main(void)
   btn_3.set_config(GPIO::input_floating);
   btn_1.clock_enable(true);
   btn_1.set_config(GPIO::input_floating);
-  bat_voltage_pin.clock_enable(true);
-  bat_voltage_pin.set_config(GPIO::input_analog);
+
   coil_current_pin.clock_enable(true);
   coil_current_pin.set_config(GPIO::input_analog);
   coil_response.clock_enable(true);
   coil_response.set_config(GPIO::input_analog);
-  dc_check.clock_enable(true);
-  dc_check.set_config(GPIO::input_analog);
   btn_2.clock_enable(true);
   btn_2.set_config(GPIO::input_floating);
 
