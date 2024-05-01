@@ -64,8 +64,11 @@ int main(void)
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
     {
+      dc_startup = 3000;
+      SysTick_Config(128);
+      NVIC_EnableIRQ(SysTick_IRQn);
+
       // Проверка батареи
-      ADC_INJ_START(ADC1);
       while (true)
       {
         if (ADC1->SR & ADC_SR_JEOS_Msk)
@@ -73,21 +76,16 @@ int main(void)
           // Получение напряжений
           usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
           usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100);
-          if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) == BAT_VOLTAGE_ERR)
+          if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != BAT_VOLTAGE_ERR)
           {
-            // Не работает батарея
+            dc_enable.set();
+            break;
           }
-          break;
         }
         ADC_INJ_START(ADC1);
       }
 
       // Проверка преобразователя
-      ADC_INJ_START(ADC1);
-      dc_enable.set();
-      SysTick_Config(128);
-      NVIC_EnableIRQ(SysTick_IRQn);
-
       while (true)
       {
         if (ADC1->SR & ADC_SR_JEOS_Msk)
@@ -99,11 +97,12 @@ int main(void)
           {
             if (!(btn_2.get_level()))
             {
-              // SysTick->CTRL = 0;
-              // NVIC_DisableIRQ(SysTick_IRQn);
-              led_pin.reset();
+              dc_enable.set();
+              led_pin.set();
             }
-            // led_pin.reset();
+            // NVIC_DisableIRQ(SysTick_IRQn);
+            // SysTick->CTRL = 0;
+            // dc_startup = 0;
             // break;
           }
         }
@@ -111,6 +110,7 @@ int main(void)
       }
     }
   }
+  NVIC_SystemReset();
 
   /* конфижим ноги проца */
   usb_tx.clock_enable(true);
@@ -189,6 +189,8 @@ int main(void)
   {
     // if (!(btn_2.get_level()))
     //   NVIC_SystemReset();
+    if (!(btn_2.get_level()))
+      led_pin.set();
 
     // system_monitor_handler();
   }

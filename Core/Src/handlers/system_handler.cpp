@@ -39,16 +39,21 @@ extern "C" void HardFault_Handler(void)
  * @note    В большинстве своем для работы в бесконечном цикле
  *          проверяются статус флаги.
  */
-uint16_t cnt = 0;
+uint16_t volatile dc_startup = 0;
 extern "C" void SysTick_Handler(void)
 {
-    if (cnt++ >= 500)
+    if (dc_startup)
     {
-        cnt = 0;
-        // if (led_pin.get_level())
-        //     led_pin.reset();
-        // else
-        led_pin.set();
+        if (dc_startup && dc_startup < 500)
+            led_pin.reset();
+
+        if (--dc_startup == 0)
+        {
+            if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
+            {
+                NVIC_SystemReset();
+            }
+        }
     }
 }
 
