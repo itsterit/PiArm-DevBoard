@@ -61,7 +61,6 @@ int main(void)
   {
     dc_startup = 2000;
     dc_enable.set();
-    led_pin.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
     {
@@ -84,6 +83,37 @@ int main(void)
       NVIC_SystemReset();
   }
 
+  /* конфижим тактирование проца */
+  /**
+   * @brief   конфижим тактирование проца
+   * 
+   * @details Установка максимальной частоты,
+   *          включить проверку внешнего источника тактирования(CSS),
+   *          если он вышел из строя - перезагрузка.
+  */
+  if (clock_control::hse::enable(true) && clock_control::hse::ready())
+  {
+    clock_control::pll::hse_clock_divided(false);
+    clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
+    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X9);
+    if (clock_control::pll::enable(true) && clock_control::pll::ready())
+    {
+      FLASH->ACR |= (0x02 << FLASH_ACR_LATENCY_Pos);
+      clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK);
+      if (clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK) && clock_control::hse::enable_security_system(true))
+      {
+        clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_NOT_DIVIDED);
+        clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
+        clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
+        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_6);
+        goto start_system;
+      }
+    }
+  }
+  led_pin.reset();
+  NVIC_SystemReset();
+
+start_system:
   /* конфижим ноги проца */
   usb_tx.clock_enable(true);
   usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
@@ -100,28 +130,6 @@ int main(void)
   coil_response.set_config(GPIO::input_analog);
   btn_2.clock_enable(true);
   btn_2.set_config(GPIO::input_floating);
-
-  /* конфижим тактирование проца */
-  clock_control::hse::enable(true);
-  if (clock_control::hse::ready())
-  {
-    clock_control::pll::hse_clock_divided(false);
-    clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
-    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X9);
-    clock_control::pll::enable(true);
-    if (clock_control::pll::ready())
-    {
-      FLASH->ACR |= (0x02 << FLASH_ACR_LATENCY_Pos);
-      clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK);
-      if (clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK))
-      {
-        clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_NOT_DIVIDED);
-        clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
-        clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
-        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_6);
-      }
-    }
-  }
 
   /* Конфижим УАРТ в дма режим */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 9600);

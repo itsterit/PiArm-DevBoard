@@ -10,6 +10,12 @@
 #define USB_BUFFER_SIZE (0xFF)
 #endif /* USB_BUFFER_SIZE > DMA_MAX_FRAME_SIZE */
 
+extern "C" void NMI_Handler(void)
+{
+    asm("NOP");
+    NVIC_SystemReset();
+}
+
 extern "C" void HardFault_Handler(void)
 {
     __asm volatile(
@@ -44,6 +50,9 @@ extern "C" void SysTick_Handler(void)
 {
     if (dc_startup)
     {
+        if (dc_startup < 500)
+            led_pin.set();
+
         if (--dc_startup == 0)
         {
             SysTick->CTRL = 0x00;
@@ -57,7 +66,7 @@ extern "C" void SysTick_Handler(void)
                 dc_enable.reset();
                 ADC1->CR2 &= ~(ADC_CR2_ADON_Msk);
                 ADC2->CR2 &= ~(ADC_CR2_ADON_Msk);
-                
+
                 while (1)
                 {
                     /* code */
