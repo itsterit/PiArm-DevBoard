@@ -97,3 +97,21 @@ extern "C" void EXTI15_10_IRQHandler(void)
     }
     __enable_irq();
 }
+
+extern "C" void ADC1_2_IRQHandler(void)
+{
+    __disable_irq();
+    {
+        GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+        GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
+#if INVERT_GENERATOR_SIGNAL
+        GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
+#else
+        GPIOB->BRR = (GPIO_BRR_BR5_Msk);
+#endif
+        ADC1->SR = ~ADC1->SR;
+        cur_fault_delay = 0xFF;
+        led_pin.reset();
+    }
+    __enable_irq();
+}

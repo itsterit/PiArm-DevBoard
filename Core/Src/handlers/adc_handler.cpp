@@ -115,25 +115,25 @@ get_system_status system_monitor_handler(uint16_t ref_voltage, uint16_t bat_volt
     return BAT_VOLTAGE_ERR;
 }
 
-/**
- * @brief   Превышение тока катушки
- *
- * @details Временно отключить генерацию
- */
-extern "C" void ADC1_2_IRQHandler(void)
-{
-    __disable_irq();
-    {
-        GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
-        GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
-        GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
+// /**
+//  * @brief   Превышение тока катушки
+//  *
+//  * @details Временно отключить генерацию
+//  */
+// extern "C" void ADC1_2_IRQHandler(void)
+// {
+//     __disable_irq();
+//     {
+//         GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+//         GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
+//         GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
 
-        while (cur_fault.get_level() == 0)
-            asm("NOP");
+//         while (cur_fault.get_level() == 0)
+//             asm("NOP");
 
-        ADC1->SR = ~ADC1->SR;
-        cur_fault_delay = 0xFF;
-        led_pin.set();
-    }
-    __enable_irq();
-}
+//         ADC1->SR = ~ADC1->SR;
+//         cur_fault_delay = 0xFF;
+//         led_pin.set();
+//     }
+//     __enable_irq();
+// }

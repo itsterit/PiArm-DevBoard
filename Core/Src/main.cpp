@@ -165,13 +165,14 @@ start_system:
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   Logger.LogI((char *)"\n\r--Starting--\n\r");
-  get_core_voltage((uint16_t *)&ref_voltage);
-  // adc_start_system_monitor();
-  // NVIC_EnableIRQ(ADC1_2_IRQn);
+
+  adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+  NVIC_EnableIRQ(ADC1_2_IRQn);
+  ADC_START(ADC1);
 
   SysTick_Config(72000);
   NVIC_EnableIRQ(SysTick_IRQn);
-  
+
   set_timer_config();
   NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_EnableIRQ(TIM3_IRQn);
