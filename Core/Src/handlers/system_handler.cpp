@@ -1,14 +1,6 @@
 #include <main.h>
+#define COIL_CURRENT_FAULT_DELAY (1000)
 
-#ifndef __GNUC__
-#warning "Please check the compiler you are using!"
-#endif /* #ifndef __GNUC__ */
-
-#if USB_BUFFER_SIZE > DMA_MAX_FRAME_SIZE
-#warning "Transmission buffer size determination is incorrect!"
-#undef USB_BUFFER_SIZE
-#define USB_BUFFER_SIZE (0xFF)
-#endif /* USB_BUFFER_SIZE > DMA_MAX_FRAME_SIZE */
 
 extern "C" void NMI_Handler(void)
 {
@@ -70,6 +62,15 @@ extern "C" void SysTick_Handler(void)
             }
         }
     }
+
+    if (cur_fault_delay)
+    {
+        if (--cur_fault_delay == 0)
+        {
+            led_pin.set();
+            set_timer_config();
+        }
+    }
 }
 
 /**
@@ -92,7 +93,7 @@ extern "C" void EXTI15_10_IRQHandler(void)
         GPIOB->BRR = (GPIO_BRR_BR5_Msk);
 #endif
         EXTI->PR = EXTI->PR;
-        cur_fault_delay = 0xFF;
+        cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
         led_pin.reset();
     }
     __enable_irq();
@@ -110,8 +111,18 @@ extern "C" void ADC1_2_IRQHandler(void)
         GPIOB->BRR = (GPIO_BRR_BR5_Msk);
 #endif
         ADC1->SR = ~ADC1->SR;
-        cur_fault_delay = 0xFF;
+        cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
         led_pin.reset();
     }
     __enable_irq();
 }
+
+#ifndef __GNUC__
+#warning "Please check the compiler you are using!"
+#endif
+
+#if USB_BUFFER_SIZE > DMA_MAX_FRAME_SIZE
+#warning "Transmission buffer size determination is incorrect!"
+#undef USB_BUFFER_SIZE
+#define USB_BUFFER_SIZE (0xFF)
+#endif
