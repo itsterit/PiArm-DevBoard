@@ -1,5 +1,6 @@
 #include <main.h>
 
+/* Ноги проца */
 GPIO led_pin(GPIOB, 11U);
 GPIO btn_3(GPIOB, 15U);
 GPIO btn_2(GPIOB, 14U);
@@ -8,35 +9,38 @@ GPIO gen_freq(GPIOB, 5U);
 GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
-GPIO dc_enable(GPIOB, 3);
 GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
 GPIO coil_response(GPIOA, 1U);
+GPIO dc_enable(GPIOB, 3);
 GPIO dc_check(GPIOA, 3U);
 
+/* Таймера на генерацию и сэмплирование */
 uint16_t cur_fault_delay = 0;
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
+/* Библиотека логирования и настройка уарт`а */
 uint8_t usb_buffer[USB_BUFFER_SIZE]{0};
 usart usb_line(USART1);
 SimpleLog Logger(log_out_method);
 
+/* ДМА на сэмплирование и уарт */
 dma_control adc_samling_dma(DMA1, DMA1_Channel1);
 dma_control usb_tx_dma(DMA1, DMA1_Channel4);
 dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 
+/* ModBus */
 uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
-uint16_t voltage = 0;
 int main(void)
 {
   /**
    * @brief   Запуск проца для проверки напряжений
    * @details Частота 125КГц
-  */
+   */
   clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
   gen_freq.clock_enable(true);
   led_pin.clock_enable(true);
@@ -50,7 +54,7 @@ int main(void)
   led_pin.set_config(GPIO::output_push_pull);
   dc_check.set_config(GPIO::input_analog);
   bat_voltage_pin.set_config(GPIO::input_analog);
-  
+
   gen_freq.reset();
 #if INVERT_GENERATOR_SIGNAL
   gen_freq.set();
@@ -123,19 +127,18 @@ int main(void)
 start_system:
   /* конфижим ноги проца */
   usb_tx.clock_enable(true);
-  usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
-  usb_rx.clock_enable(true);
-  usb_rx.set_config(GPIO::alternate_push_pull, GPIO::alternate_input_pull_up);
-  btn_3.clock_enable(true);
-  btn_3.set_config(GPIO::input_floating);
-  btn_1.clock_enable(true);
-  btn_1.set_config(GPIO::input_floating);
-
   coil_current_pin.clock_enable(true);
-  coil_current_pin.set_config(GPIO::input_analog);
+  usb_rx.clock_enable(true);
+  btn_3.clock_enable(true);
+  btn_1.clock_enable(true);
   coil_response.clock_enable(true);
-  coil_response.set_config(GPIO::input_analog);
   btn_2.clock_enable(true);
+  usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
+  usb_rx.set_config(GPIO::alternate_push_pull, GPIO::alternate_input_pull_up);
+  btn_3.set_config(GPIO::input_floating);
+  btn_1.set_config(GPIO::input_floating);
+  coil_current_pin.set_config(GPIO::input_analog);
+  coil_response.set_config(GPIO::input_analog);
   btn_2.set_config(GPIO::input_floating);
 
   /* Конфижим УАРТ в дма режим */
@@ -164,10 +167,12 @@ start_system:
   Logger.LogI((char *)"\n\r--Starting--\n\r");
   get_core_voltage((uint16_t *)&ref_voltage);
   // adc_start_system_monitor();
-  NVIC_EnableIRQ(ADC1_2_IRQn);
+  // NVIC_EnableIRQ(ADC1_2_IRQn);
 
   SysTick_Config(72000);
   NVIC_EnableIRQ(SysTick_IRQn);
+  
+  set_timer_config();
   NVIC_EnableIRQ(TIM1_CC_IRQn);
   NVIC_EnableIRQ(TIM3_IRQn);
 
