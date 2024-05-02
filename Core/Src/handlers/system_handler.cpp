@@ -66,11 +66,6 @@ extern "C" void SysTick_Handler(void)
                 dc_enable.reset();
                 ADC1->CR2 &= ~(ADC_CR2_ADON_Msk);
                 ADC2->CR2 &= ~(ADC_CR2_ADON_Msk);
-
-                while (1)
-                {
-                    /* code */
-                }
                 NVIC_SystemReset();
             }
         }
