@@ -1,4 +1,6 @@
 #include <main.h>
+#define ALPHA_SMOOTH_VALUE (0.3)
+#define COIL_CURRENT_SHUNT (0.2)
 
 /* Ноги проца */
 GPIO led_pin(GPIOB, 11U);
@@ -181,9 +183,20 @@ start_system:
   {
     if (!(btn_2.get_level()))
       NVIC_SystemReset();
-    // if (!(btn_2.get_level()))
-    //   led_pin.set();
 
-    // system_monitor_handler();
+    if (ADC1->SR & ADC_SR_JEOS_Msk)
+    {
+      ADC_CLEAR_STATUS(ADC1);
+      usInputRegisters[INPUT_REG_REF_VOLTAGE] =
+          smooth_value(ALPHA_SMOOTH_VALUE, get_adc_ref_voltage(ADC1->JDR1), usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+      usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
+          smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
+      usInputRegisters[INPUT_REG_DC_VOLTAGE] =
+          smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+      usInputRegisters[INPUT_REG_COIL_CUR] =
+          smooth_value(ALPHA_SMOOTH_VALUE, (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], coil_current)), usInputRegisters[INPUT_REG_COIL_CUR]);
+      if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
+        NVIC_SystemReset();
+    }
   }
 }

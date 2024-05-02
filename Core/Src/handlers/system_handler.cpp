@@ -1,6 +1,6 @@
 #include <main.h>
 #define COIL_CURRENT_FAULT_DELAY (1000)
-
+#define CHECK_SYSTEM_TIMEOUT (500)
 
 extern "C" void NMI_Handler(void)
 {
@@ -38,8 +38,15 @@ extern "C" void HardFault_Handler(void)
  *          проверяются статус флаги.
  */
 uint16_t volatile dc_startup = 0;
+uint16_t volatile check_system_timeout = 0;
 extern "C" void SysTick_Handler(void)
 {
+    if (check_system_timeout++ >= CHECK_SYSTEM_TIMEOUT)
+    {
+        check_system_timeout = 0;
+        ADC_INJ_START(ADC1);
+    }
+
     if (dc_startup)
     {
         if (dc_startup < 500)

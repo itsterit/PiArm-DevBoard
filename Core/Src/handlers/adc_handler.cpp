@@ -1,9 +1,5 @@
 #include <main.h>
 
-#define ALPHA_SMOOTH_VALUE (0.3)
-
-#define COIL_CURRENT_SHUNT (0.2)
-
 #define COIL_CURRENT_ADC_CHANNEL (2)
 #define VOLTAGE_CONVERTER_ADC_CHANNEL (3)
 #define BATTERY_VOLTAGE_ADC_CHANNEL (4)
@@ -19,7 +15,6 @@
 #define DC_VOLTAGE_LOW (11000)
 
 volatile bool system_started_flag = 0;
-volatile float alpha_smooth = 1;
 volatile uint16_t ref_voltage = 0;
 volatile uint16_t coil_current = 0;
 

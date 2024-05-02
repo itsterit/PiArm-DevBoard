@@ -69,7 +69,7 @@ void *_sbrk(ptrdiff_t incr)
   if (__sbrk_heap_end + incr > max_heap)
   {
     errno = ENOMEM;
-    return (void *)-1;
+     return (void *)-1;
   }
 
   prev_heap_end = __sbrk_heap_end;
