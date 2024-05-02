@@ -34,6 +34,29 @@ uint16_t voltage = 0;
 int main(void)
 {
   /**
+   * @brief   Запуск проца для проверки напряжений
+   * @details Частота 125КГц
+  */
+  clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
+  gen_freq.clock_enable(true);
+  led_pin.clock_enable(true);
+  dc_enable.clock_enable(true);
+  dc_check.clock_enable(true);
+  bat_voltage_pin.clock_enable(true);
+
+  AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
+  dc_enable.set_config(GPIO::output_push_pull);
+  gen_freq.set_config(GPIO::output_push_pull);
+  led_pin.set_config(GPIO::output_push_pull);
+  dc_check.set_config(GPIO::input_analog);
+  bat_voltage_pin.set_config(GPIO::input_analog);
+  
+  gen_freq.reset();
+#if INVERT_GENERATOR_SIGNAL
+  gen_freq.set();
+#endif
+
+  /**
    * @brief   Проверка напряжений и запуск dc-dc
    *
    * @details Проверка напряжения батареи, за которой следует
@@ -42,29 +65,13 @@ int main(void)
    *          для ее минимизации его запуск инициируется когда потребление
    *          процессора минимально
    */
-  clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_64);
-  gen_freq.clock_enable(true);
-  led_pin.clock_enable(true);
-  dc_enable.clock_enable(true);
-  gen_freq.set_config(GPIO::output_push_pull);
-  led_pin.set_config(GPIO::output_push_pull);
-  AFIO->MAPR |= (AFIO_MAPR_SWJ_CFG_JTAGDISABLE);
-  dc_enable.set_config(GPIO::output_push_pull);
-  gen_freq.reset();
-#if INVERT_GENERATOR_SIGNAL
-  gen_freq.set();
-#endif
-  dc_check.clock_enable(true);
-  bat_voltage_pin.clock_enable(true);
-  dc_check.set_config(GPIO::input_analog);
-  bat_voltage_pin.set_config(GPIO::input_analog);
   {
     dc_startup = 2000;
     dc_enable.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
     {
-      SysTick_Config(128);
+      SysTick_Config(125);
       NVIC_EnableIRQ(SysTick_IRQn);
 
       while (dc_startup)
@@ -86,11 +93,11 @@ int main(void)
   /* конфижим тактирование проца */
   /**
    * @brief   конфижим тактирование проца
-   * 
+   *
    * @details Установка максимальной частоты,
    *          включить проверку внешнего источника тактирования(CSS),
    *          если он вышел из строя - перезагрузка.
-  */
+   */
   if (clock_control::hse::enable(true) && clock_control::hse::ready())
   {
     clock_control::pll::hse_clock_divided(false);
