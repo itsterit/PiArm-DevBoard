@@ -1,5 +1,5 @@
 #include <main.h>
-#define ALPHA_SMOOTH_VALUE (0.3)
+#define ALPHA_SMOOTH_VALUE (0.2)
 #define COIL_CURRENT_SHUNT (0.2)
 
 /* Ноги проца */
@@ -167,7 +167,6 @@ start_system:
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   Logger.LogI((char *)"\n\r--Starting--\n\r");
-
   if (adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]))
   {
     NVIC_EnableIRQ(ADC1_2_IRQn);
@@ -175,19 +174,6 @@ start_system:
 
     SysTick_Config(72000);
     NVIC_EnableIRQ(SysTick_IRQn);
-
-    adc::enable(ADC2);
-    adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                        DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                        DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                        AWDSGL__ANALOG_WATCHDOG_ON_ALL_CHANNELS, SCAN__SCAN_MODE_DISABLED, JEOCIE__JEOC_INTERRUPT_DISABLED,
-                        AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);
-    adc::set_cr2_config(ADC2, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
-                        EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__TIMER_1_CC1_EVENT,
-                        JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_DISABLED, JEXTSEL__JSWSTART,
-                        ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                        CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
-    NVIC_DisableIRQ(ADC1_2_IRQn);
 
     set_timer_config();
     NVIC_EnableIRQ(TIM1_CC_IRQn);
@@ -208,8 +194,7 @@ start_system:
           smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
       usInputRegisters[INPUT_REG_DC_VOLTAGE] =
           smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-      usInputRegisters[INPUT_REG_COIL_CUR] =
-          smooth_value(ALPHA_SMOOTH_VALUE, (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], coil_current)), usInputRegisters[INPUT_REG_COIL_CUR]);
+
       if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
         NVIC_SystemReset();
     }

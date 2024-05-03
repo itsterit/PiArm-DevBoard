@@ -1,6 +1,6 @@
 #include <main.h>
 #define COIL_CURRENT_FAULT_DELAY (1000)
-#define CHECK_SYSTEM_TIMEOUT (500)
+#define CHECK_SYSTEM_TIMEOUT (250)
 
 extern "C" void NMI_Handler(void)
 {

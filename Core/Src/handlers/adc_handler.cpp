@@ -1,21 +1,18 @@
 #include <main.h>
 
-#define COIL_CURRENT_ADC_CHANNEL (2)
-#define VOLTAGE_CONVERTER_ADC_CHANNEL (3)
-#define BATTERY_VOLTAGE_ADC_CHANNEL (4)
-#define REFERENCE_VOLTAGE_ADC_CHANNEL (17)
-
-#define REFERENCE_VOLTAGE_HIGH (3500)
-#define REFERENCE_VOLTAGE_LOW (2750)
-
-#define BAT_VOLTAGE_HIGH (6000)
-#define BAT_VOLTAGE_LOW (3200)
-
-#define DC_VOLTAGE_HIGH (15000)
-#define DC_VOLTAGE_LOW (11000)
+#define COIL_CURRENT_ADC_CHANNEL        (2)
+#define VOLTAGE_CONVERTER_ADC_CHANNEL   (3)
+#define BATTERY_VOLTAGE_ADC_CHANNEL     (4)
+#define REFERENCE_VOLTAGE_ADC_CHANNEL   (17)
+#define REFERENCE_VOLTAGE_HIGH          (3500)
+#define REFERENCE_VOLTAGE_LOW           (2750)
+#define BAT_VOLTAGE_HIGH                (6000)
+#define BAT_VOLTAGE_LOW                 (3200)
+#define DC_VOLTAGE_HIGH                 (14000)
+#define DC_VOLTAGE_LOW                  (12000)
 
 volatile bool system_started_flag = 0;
-volatile uint16_t ref_voltage = 0;
+volatile uint16_t ref_voltage  = 0;
 volatile uint16_t coil_current = 0;
 
 /**
@@ -109,26 +106,3 @@ get_system_status system_monitor_handler(uint16_t ref_voltage, uint16_t bat_volt
     }
     return BAT_VOLTAGE_ERR;
 }
-
-// /**
-//  * @brief   Превышение тока катушки
-//  *
-//  * @details Временно отключить генерацию
-//  */
-// extern "C" void ADC1_2_IRQHandler(void)
-// {
-//     __disable_irq();
-//     {
-//         GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
-//         GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
-//         GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
-
-//         while (cur_fault.get_level() == 0)
-//             asm("NOP");
-
-//         ADC1->SR = ~ADC1->SR;
-//         cur_fault_delay = 0xFF;
-//         led_pin.set();
-//     }
-//     __enable_irq();
-// }
