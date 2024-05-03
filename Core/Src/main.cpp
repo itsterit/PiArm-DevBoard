@@ -1,5 +1,5 @@
 #include <main.h>
-#define ALPHA_SMOOTH_VALUE (0.2)
+#define ALPHA_SMOOTH_VALUE (0.1)
 #define COIL_CURRENT_SHUNT (0.2)
 
 /* Ноги проца */

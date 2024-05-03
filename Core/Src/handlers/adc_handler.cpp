@@ -8,8 +8,8 @@
 #define REFERENCE_VOLTAGE_LOW           (2750)
 #define BAT_VOLTAGE_HIGH                (6000)
 #define BAT_VOLTAGE_LOW                 (3200)
-#define DC_VOLTAGE_HIGH                 (14000)
-#define DC_VOLTAGE_LOW                  (12000)
+#define DC_VOLTAGE_HIGH                 (15000)
+#define DC_VOLTAGE_LOW                  (11000)
 
 volatile bool system_started_flag = 0;
 volatile uint16_t ref_voltage  = 0;
@@ -77,7 +77,7 @@ bool adc_start_system_monitor(uint16_t rev_mv)
             if (get_adc_code(rev_mv, 200))
             {
                 adc::set_injected_sequence(ADC1, 2, VOLTAGE_CONVERTER_ADC_CHANNEL, BATTERY_VOLTAGE_ADC_CHANNEL, REFERENCE_VOLTAGE_ADC_CHANNEL, 0);
-                adc::set_analog_watchdog_threshold(ADC1, get_adc_code(rev_mv, 200), 0);
+                adc::set_analog_watchdog_threshold(ADC1, get_adc_code(rev_mv, 400), 0);
                 adc::set_regular_sequence(ADC1, 0, 1, 2);
                 return 1;
             }
@@ -85,7 +85,6 @@ bool adc_start_system_monitor(uint16_t rev_mv)
     }
     return 0;
 }
-// ADC_START(ADC1);
 
 get_system_status system_monitor_handler(uint16_t ref_voltage, uint16_t bat_voltage, uint16_t dc_voltage)
 {
