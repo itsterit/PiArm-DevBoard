@@ -171,19 +171,52 @@ start_system:
   {
     NVIC_EnableIRQ(ADC1_2_IRQn);
     ADC_START(ADC1);
-
     SysTick_Config(72000);
     NVIC_EnableIRQ(SysTick_IRQn);
 
+    // coil_response
+    if (adc::enable(ADC2))
+    {
+      adc::set_cr1_config(ADC2, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+                          DUALMOD__INDEPENDENT_MODE, 0,
+                          JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+                          JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+                          AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL,
+                          SCAN__SCAN_MODE_ENABLED,
+                          JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 1);
+
+      adc::set_cr2_config(ADC2, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
+                          EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
+                          JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
+                          ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+                          CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
+
+      if (adc::set_sampling(ADC2, 1, SMP_1_5_cycles))
+      {
+        if (get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 21))
+        {
+          adc::set_analog_watchdog_threshold(ADC2, get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 3000), get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 60));
+          adc::set_regular_sequence(ADC2, 0, 1, 1);
+          led_pin.reset();
+          ADC_START(ADC2);
+        }
+      }
+    }
+
     set_timer_config();
-    NVIC_EnableIRQ(TIM1_CC_IRQn);
+    // NVIC_EnableIRQ(TIM1_CC_IRQn);
     NVIC_EnableIRQ(TIM3_IRQn);
   }
 
   while (true)
   {
+    if (ABS_DIFF(usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT], usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST]) > 5)
+      GPIOB->BSRR = (0b01 << 11U);
+    else
+      GPIOB->BRR = (0b01 << 11U);
+
     if (!(btn_2.get_level()))
-      NVIC_SystemReset();
+      usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST] = usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT];
 
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {

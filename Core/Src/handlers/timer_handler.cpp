@@ -32,7 +32,7 @@ void set_timer_config()
 #endif
         coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
         coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0,
-                                                      (TIM_DIER_CC2IE_Msk | TIM_DIER_CC3IE_Msk | TIM_DIER_CC4IE_Msk));
+                                                      (TIM_DIER_CC1IE_Msk | TIM_DIER_CC2IE_Msk | TIM_DIER_CC3IE_Msk | TIM_DIER_CC4IE_Msk));
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
@@ -47,7 +47,7 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
     uint32_t timer_arr = tmr_freq / frq;
     uint32_t timer_main_channel = (timer_arr / 100) * duty;
     uint32_t start_coil_reply_sampling = (timer_main_channel + start_sampling_offset);
-    uint32_t end_coil_reply_sampling = (timer_arr - start_sampling_offset);
+    uint32_t end_coil_reply_sampling = (timer_arr - 10);
     uint32_t start_coil_toque_sampling = start_sampling_offset;
 
     coil_frequency_timer.set_timer_config(start_coil_reply_sampling, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 71, 0);
@@ -64,6 +64,12 @@ extern "C" void TIM3_IRQHandler(void)
     TIM1->SR = ~TIM1->SR;
     TIM1->CNT = 0;
     {
+        if (TIM3->SR & TIM_SR_CC1IF_Msk)
+        {
+            /* Начало замера ответа катушки */
+            ADC2->SR = ~ADC2->SR;
+            ADC2->CR1 |= (ADC_CR1_AWDIE_Msk);
+        }
         if (TIM3->SR & TIM_SR_CC2IF_Msk)
         {
             /* Конец замера тока катушки */
@@ -74,13 +80,8 @@ extern "C" void TIM3_IRQHandler(void)
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
-            /* Конец замера ответа катушки */
-            // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
-            //                                MSIZE_16bits, PSIZE_16bits,
-            //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-            //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-            // adc_samling_dma.dma_start(10, (uint32_t *)&usInputRegisters[1], (uint32_t *)&ADC1->DR);
-
+            ADC2->CR1 &= ~(ADC_CR1_AWDIE_Msk);
+            ADC2->SR = ~ADC2->SR;
         }
     }
     TIM3->SR = ~TIM3->SR;
