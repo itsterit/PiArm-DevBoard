@@ -8,6 +8,7 @@ GPIO btn_3(GPIOB, 15U);
 GPIO btn_2(GPIOB, 14U);
 GPIO btn_1(GPIOB, 13U);
 GPIO gen_freq(GPIOB, 5U);
+GPIO buzz_freq(GPIOB, 9U);
 GPIO usb_tx(GPIOA, 9U);
 GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
@@ -143,6 +144,9 @@ start_system:
   coil_response.set_config(GPIO::input_analog);
   btn_2.set_config(GPIO::input_floating);
 
+  buzz_freq.clock_enable(true);
+  buzz_freq.set_config(GPIO::output_push_pull);
+
   /* Конфижим УАРТ в дма режим */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 9600);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
@@ -195,7 +199,7 @@ start_system:
       {
         if (get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 21))
         {
-          adc::set_analog_watchdog_threshold(ADC2, get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 3000), get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 60));
+          adc::set_analog_watchdog_threshold(ADC2, get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 3000), get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 1600));
           adc::set_regular_sequence(ADC2, 0, 1, 1);
           led_pin.reset();
           ADC_START(ADC2);
@@ -210,7 +214,10 @@ start_system:
 
   while (true)
   {
-    if (ABS_DIFF(usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT], usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST]) > 5)
+    buzz_freq.set();
+    buzz_freq.reset();
+
+    if (ABS_DIFF(usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT], usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST]) > 1)
       GPIOB->BSRR = (0b01 << 11U);
     else
       GPIOB->BRR = (0b01 << 11U);
