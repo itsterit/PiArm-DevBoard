@@ -20,6 +20,7 @@ GPIO dc_check(GPIOA, 3U);
 
 /* Таймера на генерацию и сэмплирование */
 uint16_t cur_fault_delay = 0;
+timer buzzer_timer(TIM4);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM1);
 
@@ -145,7 +146,7 @@ start_system:
   btn_2.set_config(GPIO::input_floating);
 
   buzz_freq.clock_enable(true);
-  buzz_freq.set_config(GPIO::output_push_pull);
+  buzz_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
 
   /* Конфижим УАРТ в дма режим */
   usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 9600);
@@ -169,6 +170,13 @@ start_system:
   EXTI->PR = EXTI->PR;
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+  buzzer_timer.set_channel_output_config(4U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
+  buzzer_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
+  buzzer_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, 0);
+  buzzer_timer.capture_compare_register(0, TIM_CCER_CC4E_Msk);
+  buzzer_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
+  buzzer_timer.set_timer_config(0, 0, 0, 10, 100, 71, 0);
 
   Logger.LogI((char *)"\n\r--Starting--\n\r");
   if (adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]))
