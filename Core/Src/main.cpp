@@ -192,14 +192,14 @@ start_system:
     NVIC_EnableIRQ(SysTick_IRQn);
 
     set_timer_config();
-    NVIC_EnableIRQ(TIM1_CC_IRQn);
+    // NVIC_EnableIRQ(TIM1_CC_IRQn);
     NVIC_EnableIRQ(TIM3_IRQn);
   }
 
   while (true)
   {
     system_monitor();
-    
+
     if (!(btn_2.get_level()))
       buzzer_timer.set_timer_config(0, 0, 0, 1, 454, 71, 0);
   }
