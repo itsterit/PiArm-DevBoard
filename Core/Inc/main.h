@@ -20,8 +20,6 @@
 #define INPUT_REG_BAT_VOLTAGE               (1)
 #define INPUT_REG_DC_VOLTAGE                (2)
 #define INPUT_REG_COIL_CUR                  (3)
-#define INPUT_REG_COIL_RESPONSE_TIMEOUT     (5)
-#define INPUT_REG_COIL_RESPONSE_TEST        (6)
 
 extern GPIO led_pin;
 extern GPIO gen_freq;

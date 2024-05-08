@@ -108,8 +108,6 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
-    usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT] = TIM3->CNT;
-
     if (ADC1->SR & ADC_SR_AWD_Msk)
     {
         __disable_irq();
@@ -124,11 +122,6 @@ extern "C" void ADC1_2_IRQHandler(void)
         cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
         led_pin.reset();
         __enable_irq();
-    }
-    else
-    {
-        ADC2->CR1 &= ~(ADC_CR1_AWDIE_Msk);
-        ADC2->SR = ~ADC2->SR;
     }
 }
 

@@ -1,5 +1,5 @@
 #include <main.h>
-#define ALPHA_SMOOTH_VALUE (0.1)
+#define ALPHA_SMOOTH_VALUE (0.2)
 #define COIL_CURRENT_SHUNT (0.2)
 
 /* Ноги проца */
@@ -38,6 +38,8 @@ dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
+
+void system_monitor();
 
 int main(void)
 {
@@ -129,22 +131,25 @@ int main(void)
   NVIC_SystemReset();
 
 start_system:
-  /* конфижим ноги проца */
-  usb_tx.clock_enable(true);
-  coil_current_pin.clock_enable(true);
+  /* конфижим ноги проца - уарт */
   usb_rx.clock_enable(true);
-  btn_3.clock_enable(true);
-  btn_1.clock_enable(true);
-  coil_response.clock_enable(true);
-  btn_2.clock_enable(true);
-  usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
   usb_rx.set_config(GPIO::alternate_push_pull, GPIO::alternate_input_pull_up);
-  btn_3.set_config(GPIO::input_floating);
-  btn_1.set_config(GPIO::input_floating);
+  usb_tx.clock_enable(true);
+  usb_tx.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
+  /* конфижим ноги проца - ток */
+  coil_current_pin.clock_enable(true);
   coil_current_pin.set_config(GPIO::input_analog);
-  coil_response.set_config(GPIO::input_analog);
+  /* конфижим ноги проца - кнопки */
+  btn_3.clock_enable(true);
+  btn_3.set_config(GPIO::input_floating);
+  btn_1.clock_enable(true);
+  btn_1.set_config(GPIO::input_floating);
+  btn_2.clock_enable(true);
   btn_2.set_config(GPIO::input_floating);
-
+  /* конфижим ноги проца - ответ катушки */
+  coil_response.clock_enable(true);
+  coil_response.set_config(GPIO::input_analog);
+  /* конфижим ноги проца - динамик */
   buzz_freq.clock_enable(true);
   buzz_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
 
@@ -186,68 +191,33 @@ start_system:
     SysTick_Config(72000);
     NVIC_EnableIRQ(SysTick_IRQn);
 
-    // coil_response
-    if (adc::enable(ADC2))
-    {
-      adc::set_cr1_config(ADC2, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                          DUALMOD__INDEPENDENT_MODE, 0,
-                          JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                          JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                          AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL,
-                          SCAN__SCAN_MODE_ENABLED,
-                          JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 1);
-
-      adc::set_cr2_config(ADC2, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
-                          EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
-                          JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
-                          ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                          CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
-
-      if (adc::set_sampling(ADC2, 1, SMP_1_5_cycles))
-      {
-        if (get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 21))
-        {
-          adc::set_analog_watchdog_threshold(ADC2, get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 3000), get_adc_code(usInputRegisters[INPUT_REG_REF_VOLTAGE], 1600));
-          adc::set_regular_sequence(ADC2, 0, 1, 1);
-          led_pin.reset();
-          ADC_START(ADC2);
-        }
-      }
-    }
-
     set_timer_config();
-    // NVIC_EnableIRQ(TIM1_CC_IRQn);
+    NVIC_EnableIRQ(TIM1_CC_IRQn);
     NVIC_EnableIRQ(TIM3_IRQn);
   }
 
   while (true)
   {
-    buzz_freq.set();
-    buzz_freq.reset();
-
-    if (ABS_DIFF(usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT], usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST]) > 1)
-      GPIOB->BSRR = (0b01 << 11U);
-    else
-      GPIOB->BRR = (0b01 << 11U);
-
+    system_monitor();
+    
     if (!(btn_2.get_level()))
       buzzer_timer.set_timer_config(0, 0, 0, 1, 454, 71, 0);
+  }
+}
 
-    // if (!(btn_2.get_level()))
-    //   usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST] = usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT];
+void system_monitor()
+{
+  if (ADC1->SR & ADC_SR_JEOS_Msk)
+  {
+    ADC_CLEAR_STATUS(ADC1);
+    usInputRegisters[INPUT_REG_REF_VOLTAGE] =
+        smooth_value(ALPHA_SMOOTH_VALUE, get_adc_ref_voltage(ADC1->JDR1), usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+    usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
+        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
+    usInputRegisters[INPUT_REG_DC_VOLTAGE] =
+        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
 
-    if (ADC1->SR & ADC_SR_JEOS_Msk)
-    {
-      ADC_CLEAR_STATUS(ADC1);
-      usInputRegisters[INPUT_REG_REF_VOLTAGE] =
-          smooth_value(ALPHA_SMOOTH_VALUE, get_adc_ref_voltage(ADC1->JDR1), usInputRegisters[INPUT_REG_REF_VOLTAGE]);
-      usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
-          smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
-      usInputRegisters[INPUT_REG_DC_VOLTAGE] =
-          smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-
-      if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
-        NVIC_SystemReset();
-    }
+    if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
+      NVIC_SystemReset();
   }
 }
