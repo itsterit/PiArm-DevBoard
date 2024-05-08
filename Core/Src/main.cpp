@@ -176,7 +176,7 @@ start_system:
   buzzer_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, 0);
   buzzer_timer.capture_compare_register(0, TIM_CCER_CC4E_Msk);
   buzzer_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
-  buzzer_timer.set_timer_config(0, 0, 0, 10, 100, 71, 0);
+  buzzer_timer.set_timer_config(0, 0, 0, 5, 500, 71, 0);
 
   Logger.LogI((char *)"\n\r--Starting--\n\r");
   if (adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]))
@@ -231,7 +231,10 @@ start_system:
       GPIOB->BRR = (0b01 << 11U);
 
     if (!(btn_2.get_level()))
-      usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST] = usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT];
+      buzzer_timer.set_timer_config(0, 0, 0, 1, 454, 71, 0);
+
+    // if (!(btn_2.get_level()))
+    //   usInputRegisters[INPUT_REG_COIL_RESPONSE_TEST] = usInputRegisters[INPUT_REG_COIL_RESPONSE_TIMEOUT];
 
     if (ADC1->SR & ADC_SR_JEOS_Msk)
     {
