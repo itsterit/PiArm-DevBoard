@@ -108,6 +108,7 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
+    ADC2->SR = ~ADC2->SR;
     GPIOB->BSRR = (0b01 << 11U);
     GPIOB->BRR = (0b01 << 11U);
 

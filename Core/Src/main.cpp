@@ -212,7 +212,7 @@ start_system:
     }
 
     set_timer_config();
-    NVIC_EnableIRQ(TIM1_CC_IRQn);
+    // NVIC_EnableIRQ(TIM1_CC_IRQn);
     NVIC_EnableIRQ(TIM3_IRQn);
   }
 
