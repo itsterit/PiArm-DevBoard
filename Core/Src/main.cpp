@@ -224,6 +224,19 @@ start_system:
 
     if (!(btn_2.get_level()))
       buzzer_timer.set_timer_config(0, 0, 0, 1, 454, 71, 0);
+
+    if (usHoldingRegisters[0])
+    {
+      usHoldingRegisters[0] = 0;
+      GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
+      GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
+#if INVERT_GENERATOR_SIGNAL
+      GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
+#else
+      GPIOB->BRR = (GPIO_BRR_BR5_Msk);
+#endif
+      TIM3->CR1 &= ~TIM_CR1_CEN_Msk;
+    }
   }
 }
 
