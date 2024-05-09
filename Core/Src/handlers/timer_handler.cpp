@@ -10,7 +10,7 @@ void set_timer_config()
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, (TIM_DIER_CC1IE_Msk));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(1, 0, 0, 0, 5, 71, 0);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 1, 35, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
 
@@ -52,7 +52,7 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
     uint32_t end_coil_reply_sampling = (timer_arr - start_sampling_offset);
     uint32_t start_coil_toque_sampling = start_sampling_offset;
 
-    coil_frequency_timer.set_timer_config(start_coil_reply_sampling, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 71, 0);
+    coil_frequency_timer.set_timer_config(start_coil_reply_sampling, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 55, 0);
 }
 
 extern "C" void TIM1_CC_IRQHandler(void)
@@ -69,23 +69,18 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC1IF_Msk)
         {
             /* Начало замера ответа катушки */
-            GPIOB->BSRR = (0b01 << 11U);
         }
         if (TIM3->SR & TIM_SR_CC2IF_Msk)
         {
             /* Конец замера тока катушки */
-            // GPIOB->BRR = (0b01 << 11U);
         }
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
-            // GPIOB->BSRR = (0b01 << 11U);
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
-            GPIOB->BRR = (0b01 << 11U);
-
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
