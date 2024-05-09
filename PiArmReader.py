@@ -5,7 +5,7 @@ import time
 
 # while input("Continue? y/n ") == "y":
 while 1:
-    client = ModbusSerialClient(method='rtu', port='COM7', baudrate=9600)  # Укажите нужный COM порт и настройки подключения
+    client = ModbusSerialClient(method='rtu', port='COM7', baudrate=19200)  # Укажите нужный COM порт и настройки подключения
     connection = client.connect()
 
     if connection:
