@@ -154,7 +154,7 @@ start_system:
   buzz_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
 
   /* Конфижим УАРТ в дма режим */
-  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 72000000, 9600);
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 56000000, 4800);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
   set_usb_tx_dma_cfg();
   set_usb_rx_dma_cfg();
@@ -176,6 +176,7 @@ start_system:
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
+  Logger.LogI((char *)"Starting!\n\r");
   uint16_t core_voltage;
   if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
   {
@@ -190,8 +191,8 @@ start_system:
       {
         // конфигурация
         adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                            DUALMOD__INDEPENDENT_MODE, 0, 
-                            JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, 
+                            DUALMOD__INDEPENDENT_MODE, 0,
+                            JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                             JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
                             AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
                             JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);

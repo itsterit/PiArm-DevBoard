@@ -81,6 +81,7 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
+            // usInputRegisters[9] = (0xFFF - DMA1_Channel1->CNDTR);
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;

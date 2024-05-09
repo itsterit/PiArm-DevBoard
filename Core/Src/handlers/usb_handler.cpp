@@ -16,7 +16,7 @@ void usb_as_dma_transmit(uint8_t *msg, int16_t len)
  */
 void set_usb_tx_dma_cfg()
 {
-    usb_tx_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+    usb_tx_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
                               MSIZE_8bits, PSIZE_8bits,
                               MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Memory,
                               TEIE_Enabled, HTIE_Disabled, TCIE_Enabled);
@@ -24,7 +24,7 @@ void set_usb_tx_dma_cfg()
 
 void set_usb_rx_dma_cfg()
 {
-    usb_rx_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+    usb_rx_dma.dma_set_config(MEM2MEM_Disabled, PL_High,
                               MSIZE_8bits, PSIZE_8bits,
                               MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
                               TEIE_Enabled, HTIE_Disabled, TCIE_Enabled);
