@@ -86,18 +86,22 @@ int main(void)
 
       while (dc_startup)
       {
-        if (ADC1->SR & ADC_SR_JEOS_Msk)
+        if (ADC_END_INJ_CONVERSION(ADC2))
         {
-          ADC_CLEAR_STATUS(ADC1);
-          usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
-          usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100);
-          usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100);
+          ADC_CLEAR_STATUS(ADC2);
+          usInputRegisters[INPUT_REG_REF_VOLTAGE] = core_voltage;
+          usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR1), 10000, 5100);
+          usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR2), 1000, 100);
         }
-        ADC_INJ_START(ADC1);
+        ADC_INJ_START(ADC2);
       }
     }
     else
       NVIC_SystemReset();
+  }
+
+  while (1)
+  {
   }
 
   /* конфижим тактирование проца */
@@ -195,10 +199,10 @@ start_system:
     {
       // конфигурация
       adc::set_cr1_config(ADC2, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                          DUALMOD__INDEPENDENT_MODE, 0, 
-                          JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, 
+                          DUALMOD__INDEPENDENT_MODE, 0,
+                          JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                           JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                          AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, 
+                          AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL,
                           SCAN__SCAN_MODE_DISABLED,
                           JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);
 
