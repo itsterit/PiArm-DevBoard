@@ -2,7 +2,7 @@
 #define __MODBUS_RTU_H__
 #include <stdint.h>
 
-#define MB_INPUT_ADR_MAX    (100)
+#define MB_INPUT_ADR_MAX    (4000)
 #define MB_HOLDING_ADR_MAX  (100)
 
 class ModBusRTU

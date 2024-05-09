@@ -108,6 +108,9 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BRR = (0b01 << 11U);
+
     if (ADC1->SR & ADC_SR_AWD_Msk)
     {
         __disable_irq();
