@@ -37,7 +37,7 @@ void set_timer_config()
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
         set_generation_timing(1000000, 500, 5);
-        coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_ENABLE);
+        coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
 }
 
@@ -76,13 +76,16 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
-            adc_samling_dma.dma_start(0xFFF, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
-            usInputRegisters[9] = (0xFFF - DMA1_Channel1->CNDTR);
+            uint16_t rem_smp = DMA1_Channel1->CNDTR;
+            usInputRegisters[9] = (100 - rem_smp);
+            adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
+            TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
         }

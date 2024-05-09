@@ -211,6 +211,7 @@ start_system:
                                      MSIZE_16bits, PSIZE_16bits,
                                      MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
                                      TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+      adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
     }
 
     set_timer_config();
