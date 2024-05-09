@@ -37,7 +37,7 @@ void set_timer_config()
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
         set_generation_timing(1000000, 500, 5);
-        coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
+        coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_ENABLE);
     }
 }
 
@@ -81,11 +81,10 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
-            // usInputRegisters[9] = (0xFFF - DMA1_Channel1->CNDTR);
+            usInputRegisters[9] = (0xFFF - DMA1_Channel1->CNDTR);
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
-            // TIM3->CR1 &= ~TIM_CR1_CEN_Msk;
         }
     }
     TIM3->SR = ~TIM3->SR;
