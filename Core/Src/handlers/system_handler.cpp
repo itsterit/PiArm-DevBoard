@@ -44,7 +44,7 @@ extern "C" void SysTick_Handler(void)
     if (check_system_timeout++ >= CHECK_SYSTEM_TIMEOUT)
     {
         check_system_timeout = 0;
-        ADC_INJ_START(ADC1);
+        ADC_INJ_START(ADC2);
     }
 
     if (dc_startup)
@@ -63,8 +63,6 @@ extern "C" void SysTick_Handler(void)
             {
                 led_pin.reset();
                 dc_enable.reset();
-                ADC1->CR2 &= ~(ADC_CR2_ADON_Msk);
-                ADC2->CR2 &= ~(ADC_CR2_ADON_Msk);
                 NVIC_SystemReset();
             }
         }
@@ -108,11 +106,7 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
-    ADC2->SR = ~ADC2->SR;
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
-
-    if (ADC1->SR & ADC_SR_AWD_Msk)
+    if (ADC2->SR & ADC_SR_AWD_Msk)
     {
         __disable_irq();
         GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
@@ -122,7 +116,7 @@ extern "C" void ADC1_2_IRQHandler(void)
 #else
         GPIOB->BRR = (GPIO_BRR_BR5_Msk);
 #endif
-        ADC1->SR = ~ADC1->SR;
+        ADC2->SR = ~ADC2->SR;
         cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
         led_pin.reset();
         __enable_irq();

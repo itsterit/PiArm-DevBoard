@@ -100,10 +100,6 @@ int main(void)
       NVIC_SystemReset();
   }
 
-  while (1)
-  {
-  }
-
   /* конфижим тактирование проца */
   /**
    * @brief   конфижим тактирование проца
@@ -180,40 +176,14 @@ start_system:
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  buzzer_timer.set_channel_output_config(4U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_1);
-  buzzer_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
-  buzzer_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, 0);
-  buzzer_timer.capture_compare_register(0, TIM_CCER_CC4E_Msk);
-  buzzer_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
-  buzzer_timer.set_timer_config(0, 0, 0, 5, 500, 71, 0);
-
-  Logger.LogI((char *)"\n\r--Starting--\n\r");
-  if (adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]))
+  uint16_t core_voltage;
+  if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
   {
+    usInputRegisters[INPUT_REG_REF_VOLTAGE] = core_voltage;
     NVIC_EnableIRQ(ADC1_2_IRQn);
-    ADC_START(ADC1);
+    ADC_START(ADC2);
     SysTick_Config(72000);
     NVIC_EnableIRQ(SysTick_IRQn);
-
-    if (adc::enable(ADC2))
-    {
-      // конфигурация
-      adc::set_cr1_config(ADC2, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                          DUALMOD__INDEPENDENT_MODE, 0,
-                          JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                          JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                          AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL,
-                          SCAN__SCAN_MODE_DISABLED,
-                          JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);
-
-      adc::set_cr2_config(ADC2, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
-                          EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__TIMER_1_CC1_EVENT,
-                          JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
-                          ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                          CONT__SINGLE_CONVERSION_MODE, ADON__ENABLE_ADC);
-      adc::set_sampling(ADC2, 1, SMP_1_5_cycles);
-      adc::set_regular_sequence(ADC2, 0, 1, 1);
-    }
 
     set_timer_config();
     // NVIC_EnableIRQ(TIM1_CC_IRQn);
@@ -231,15 +201,13 @@ start_system:
 
 void system_monitor()
 {
-  if (ADC1->SR & ADC_SR_JEOS_Msk)
+  if (ADC_END_INJ_CONVERSION(ADC2))
   {
-    ADC_CLEAR_STATUS(ADC1);
-    usInputRegisters[INPUT_REG_REF_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_adc_ref_voltage(ADC1->JDR1), usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+    ADC_CLEAR_STATUS(ADC2);
     usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
+        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR1), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
     usInputRegisters[INPUT_REG_DC_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR2), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
 
     if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
       NVIC_SystemReset();
