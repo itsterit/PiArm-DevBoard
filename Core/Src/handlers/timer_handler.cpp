@@ -85,6 +85,7 @@ extern "C" void TIM3_IRQHandler(void)
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
+            // TIM3->CR1 &= ~TIM_CR1_CEN_Msk;
         }
     }
     TIM3->SR = ~TIM3->SR;

@@ -154,7 +154,7 @@ start_system:
   buzz_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
 
   /* Конфижим УАРТ в дма режим */
-  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 56000000, 4800);
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 56000000, 9600);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
   set_usb_tx_dma_cfg();
   set_usb_rx_dma_cfg();
@@ -183,7 +183,7 @@ start_system:
     usInputRegisters[INPUT_REG_REF_VOLTAGE] = core_voltage;
     NVIC_EnableIRQ(ADC1_2_IRQn);
     ADC_START(ADC2);
-    SysTick_Config(72000);
+    SysTick_Config(56000);
     NVIC_EnableIRQ(SysTick_IRQn);
 
     {
