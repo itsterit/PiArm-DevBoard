@@ -76,6 +76,7 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
+            adc_samling_dma.dma_start(0xFFF, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {

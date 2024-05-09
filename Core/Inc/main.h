@@ -14,12 +14,11 @@
 
 #define INVERT_GENERATOR_SIGNAL (1)
 #define MODBUS_ADDRESS (1)
-#define USB_BUFFER_SIZE (0xFFF)
+#define USB_BUFFER_SIZE (0xFF)
 
 #define INPUT_REG_REF_VOLTAGE               (0)
 #define INPUT_REG_BAT_VOLTAGE               (1)
 #define INPUT_REG_DC_VOLTAGE                (2)
-#define INPUT_REG_COIL_CUR                  (3)
 
 extern GPIO led_pin;
 extern GPIO gen_freq;
