@@ -80,11 +80,10 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
-            
-            // uint16_t rem_smp = DMA1_Channel1->CNDTR;
-            // usInputRegisters[9] = (100 - rem_smp);
-            // adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
-            // TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
+            uint16_t rem_smp = DMA1_Channel1->CNDTR;
+            usInputRegisters[9] = (100 - rem_smp);
+            adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+            TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
 
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
