@@ -3,12 +3,11 @@ import matplotlib.pyplot as plt
 import serial
 import time
 
-# while input("Continue? y/n ") == "y":
-while 1:
-    client = ModbusSerialClient(method='rtu', port='COM7', baudrate=19200)  # Укажите нужный COM порт и настройки подключения
-    connection = client.connect()
+client = ModbusSerialClient(method='rtu', port='COM8', baudrate=9600)  # Укажите нужный COM порт и настройки подключения
+connection = client.connect()
 
-    if connection:
+if connection:
+    while 1:
         while 1:
             # Подача сигнала в катушку
             client.write_register(address=0x0000, value=0x001, unit=1)
@@ -43,6 +42,5 @@ while 1:
         plt.ylabel('Значение')
         plt.title('Сигнал катушки')
         plt.show()
-
-    else:
-        print('Connection lost, Try again')
+else:
+    print('Connection lost, Try again')
