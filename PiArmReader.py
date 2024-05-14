@@ -2,9 +2,13 @@ from pymodbus.client import ModbusSerialClient
 import matplotlib.pyplot as plt
 import serial
 import time
+import numpy as np
+from scipy.integrate import simps
 
 client = ModbusSerialClient(method='rtu', port='COM8', baudrate=9600)  # Укажите нужный COM порт и настройки подключения
 connection = client.connect()
+print("Starting...") 
+
 
 if connection:
     while 1:
@@ -20,22 +24,17 @@ if connection:
                 break
 
         values = []
-        i = 0
-        sqr = 0
-
-        while i < 100:
-            result = client.read_input_registers(i+10, 1, unit=1)  
+        counter = 0
+        while counter < 100:
+            result = client.read_input_registers(counter+10, 1, unit=1)  
             if not result.isError():
                 values.append(result.registers[0])
-                i = i + 1
-                sqr = sqr + result.registers[0]
+                counter = counter + 1
             else:
                 print(".") 
             time.sleep(0.1)
         client.close()
 
-
-        print("sqr ", sqr) 
 
         plt.plot(range(100), values)
         plt.xlabel('Регистр')
