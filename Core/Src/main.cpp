@@ -119,6 +119,7 @@ int main(void)
       clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK);
       if (clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK) && clock_control::hse::enable_security_system(true))
       {
+        clock_control::hsi::enable(true);
         clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_NOT_DIVIDED);
         clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
         clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
@@ -175,6 +176,31 @@ start_system:
   EXTI->PR = EXTI->PR;
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+  usHoldingRegisters[0] = (uint32_t)(*(uint32_t *)(0x800FC00));
+
+  {
+    FLASH->KEYR = 0x45670123;
+    FLASH->KEYR = 0xCDEF89AB;
+    FLASH->CR &= ~FLASH_CR_PER;
+    FLASH->CR |= FLASH_CR_PG;
+
+    *(uint16_t *)(0x800FC00) = (uint16_t)(100);
+
+    while (FLASH->SR & FLASH_SR_BSY)
+    {
+      asm("NOP");
+    }
+
+    if (FLASH->SR & FLASH_SR_PGERR)
+    {
+      asm("NOP"); // flash not erased to begin with
+    }
+    if (FLASH->SR & FLASH_SR_WRPRTERR)
+    {
+      asm("NOP"); // write protect error
+    }
+  }
 
   Logger.LogI((char *)"Starting!\n\r");
   uint16_t core_voltage;
