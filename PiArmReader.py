@@ -9,6 +9,14 @@ client = ModbusSerialClient(method='rtu', port='COM8', baudrate=9600)  # Ука�
 connection = client.connect()
 print("Starting...") 
 
+def median_filter(a, b , c):
+    middle = 0
+    if((max(a,b) == max(b, c))):
+        middle = max(a, c)
+    else:
+        middle = max(b, min(a, c))
+    return middle
+
 
 if connection:
     while 1:
@@ -22,6 +30,8 @@ if connection:
                 samples_amount = result.registers
                 print("Количество сэмплов: ", samples_amount) 
                 break
+            else:
+                print("Количество сэмплов - ошибка") 
 
         values = []
         counter = 0
@@ -31,9 +41,21 @@ if connection:
                 values.append(result.registers[0])
                 counter = counter + 1
             else:
-                print(".") 
+                print(".", counter) 
             time.sleep(0.1)
         client.close()
+
+        counter = 0
+        while counter <= 97:
+            if(values[counter] > 900):
+                values[counter] = 900
+            else:
+                if(values[counter] > 50):
+                    values[counter] = median_filter(
+                                        values[counter], 
+                                        values[counter+1], 
+                                        values[counter+2])
+            counter = counter + 1
 
 
         plt.plot(range(100), values)
