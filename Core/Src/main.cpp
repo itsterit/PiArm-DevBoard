@@ -201,7 +201,7 @@ start_system:
                             EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__TIMER_1_CC1_EVENT,
                             JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
                             ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_ENABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                            CONT__SINGLE_CONVERSION_MODE, ADON__ENABLE_ADC);
+                            CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
         adc::set_sampling(ADC1, 1, SMP_1_5_cycles);
         adc::set_regular_sequence(ADC1, 0, 1, 1);

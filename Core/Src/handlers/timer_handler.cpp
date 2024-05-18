@@ -10,8 +10,8 @@ void set_timer_config()
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, (TIM_DIER_CC1IE_Msk));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 1, 35, 0);
-        sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 1, 15, 0);
+        sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
 
         sampling_timer.set_channel_output_config(1, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_DISABLE, OUTPUT_COMPARE_FAST_DISABLE, CHANNEL_TOGGLE);
@@ -36,7 +36,7 @@ void set_timer_config()
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-        set_generation_timing(1000000, 500, 5);
+        set_generation_timing(1000000, 500, 2);
         coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
 }
@@ -65,6 +65,24 @@ extern "C" void TIM1_CC_IRQHandler(void)
 extern "C" void TIM3_IRQHandler(void)
 {
     {
+        if (TIM3->SR & TIM_SR_CC4IF_Msk)
+        {
+            /* Конец замера ответа катушки */
+            DMA1_Channel1->CCR &= ~(DMA_CCR_EN_Msk);
+            TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
+            {
+                // uint16_t rem_smp = DMA1_Channel1->CNDTR;
+                // usInputRegisters[9] = (100 - rem_smp);
+                // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+                //                                MSIZE_16bits, PSIZE_16bits,
+                //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
+                //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+                // adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+                // TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
+            }
+            TIM1->SR = ~TIM1->SR;
+            TIM1->CNT = 0;
+        }
         if (TIM3->SR & TIM_SR_CC1IF_Msk)
         {
             /* Начало замера ответа катушки */
@@ -76,18 +94,6 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
-        }
-        if (TIM3->SR & TIM_SR_CC4IF_Msk)
-        {
-            /* Конец замера ответа катушки */
-            uint16_t rem_smp = DMA1_Channel1->CNDTR;
-            usInputRegisters[9] = (100 - rem_smp);
-            adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
-            TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
-
-            TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
-            TIM1->SR = ~TIM1->SR;
-            TIM1->CNT = 0;
         }
     }
     TIM3->SR = ~TIM3->SR;

@@ -47,17 +47,14 @@ if connection:
 
         counter = 0
         while counter <= 97:
-            if(values[counter] > 900):
-                values[counter] = 900
-            else:
-                if(values[counter] > 50):
-                    values[counter] = median_filter(
-                                        values[counter], 
-                                        values[counter+1], 
-                                        values[counter+2])
+            values[counter] = median_filter(
+                                values[counter], 
+                                values[counter+1], 
+                                values[counter+2])
             counter = counter + 1
 
 
+        # plt.axis([5, 50, 0, 700])
         plt.plot(range(100), values)
         plt.xlabel('Регистр')
         plt.ylabel('Значение')

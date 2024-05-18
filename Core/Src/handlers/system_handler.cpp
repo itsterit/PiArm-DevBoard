@@ -121,6 +121,12 @@ extern "C" void ADC1_2_IRQHandler(void)
         led_pin.reset();
         __enable_irq();
     }
+    else
+    {
+        ADC1->SR = ~ADC1->SR;
+        GPIOB->BSRR = (0b01 << 11U);
+        GPIOB->BRR = (0b01 << 11U);
+    }
 }
 
 #ifndef __GNUC__
