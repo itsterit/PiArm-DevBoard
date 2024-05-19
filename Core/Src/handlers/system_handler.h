@@ -3,6 +3,7 @@
 #include <main.h>
 #define INVERT_GENERATOR_SIGNAL (1)
 
+extern uint16_t act_coil_current;
 void check_system_parameters();
 
 #if INVERT_GENERATOR_SIGNAL
@@ -23,7 +24,7 @@ void check_system_parameters();
 
 // Частота ШИМ катушки
 #define HOLDING_COIL_FREQUENCY 2
-#define COIL_FREQUENCY__MAX 5000
+#define COIL_FREQUENCY__MAX 2000
 #define BASE_COIL_FREQUENCY 500
 #define COIL_FREQUENCY__MIN 100
 // ШИМ заполнение катушки
@@ -38,9 +39,10 @@ void check_system_parameters();
 #define VOLUME__MIN 10
 
 // Выходные регистры
-#define INPUT_REG_REF_VOLTAGE 0
-#define INPUT_REG_BAT_VOLTAGE 1
-#define INPUT_REG_DC_VOLTAGE 2
-#define HOLDING_REGISTER_DATA_CRC 9
+#define INPUT_REG_REF_VOLTAGE       0
+#define INPUT_REG_BAT_VOLTAGE       1
+#define INPUT_REG_DC_VOLTAGE        2
+#define INPUT_REG_COIL_CURRENT      3
+#define HOLDING_REGISTER_DATA_CRC   9
 
 #endif /* __SYSTEM_HANDLER_H__ */

@@ -1,7 +1,7 @@
 #include <main.h>
 #include "ModBus/mbcrc/mbcrc.h"
 #define COIL_CURRENT_FAULT_DELAY (1000)
-#define CHECK_SYSTEM_TIMEOUT (250)
+#define CHECK_SYSTEM_TIMEOUT     (100)
 
 extern "C" void NMI_Handler(void)
 {

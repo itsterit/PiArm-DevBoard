@@ -38,7 +38,7 @@ void set_timer_config()
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-        
+
         set_generation_timing(1000000, usHoldingRegisters[HOLDING_COIL_FREQUENCY], usHoldingRegisters[HOLDING_COIL_DUTY]);
         coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
@@ -46,14 +46,14 @@ void set_timer_config()
 
 void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 {
-    uint8_t start_sampling_offset = 5;
+    uint8_t start_sampling_offset = 1;
     uint32_t timer_arr = tmr_freq / frq;
 
     uint32_t timer_main_channel = (timer_arr / 100) * duty;
     uint32_t start_coil_reply_sampling = (timer_main_channel + start_sampling_offset);
 
     uint32_t end_coil_reply_sampling = (timer_arr - start_sampling_offset);
-    uint32_t start_coil_toque_sampling = start_sampling_offset;
+    uint32_t start_coil_toque_sampling = timer_main_channel / 2;
 
     coil_frequency_timer.set_timer_config(start_coil_reply_sampling, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 55, 0);
 }
@@ -85,6 +85,9 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
+            act_coil_current = ADC2->DR;
+            GPIOB->BSRR = (0b01 << 11U);
+            GPIOB->BRR = (0b01 << 11U);
         }
     }
     TIM3->SR = ~TIM3->SR;

@@ -1,5 +1,5 @@
 #include <main.h>
-#define ALPHA_SMOOTH_VALUE (0.2)
+#define ALPHA_SMOOTH_VALUE (0.07)
 #define COIL_CURRENT_SHUNT (0.2)
 
 /* Ноги проца */
@@ -39,6 +39,7 @@ uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
+uint16_t act_coil_current = 0;
 void system_monitor();
 
 int main(void)
@@ -241,6 +242,8 @@ void system_monitor()
         smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR1), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
     usInputRegisters[INPUT_REG_DC_VOLTAGE] =
         smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR2), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+    usInputRegisters[INPUT_REG_COIL_CURRENT] =
+        smooth_value(COIL_CURRENT_SHUNT, act_coil_current, usInputRegisters[INPUT_REG_COIL_CURRENT]);
 
     if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
       NVIC_SystemReset();
