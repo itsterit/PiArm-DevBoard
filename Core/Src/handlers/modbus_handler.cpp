@@ -15,9 +15,8 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
 
 bool ModBusSaveCallback(void)
 {
-    if (erase_sector(DATA_SECTOR_START_ADDRESS))
+    if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
     {
-        write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters));
         return true;
     }
     return false;
@@ -25,7 +24,7 @@ bool ModBusSaveCallback(void)
 
 bool write_sector(uint16_t *address, uint16_t *values, uint16_t size)
 {
-    size = size / 2; // incoming value is expressed in bytes, not 16 bit words
+    size = size / 2;
 
     while (size)
     {
@@ -36,24 +35,21 @@ bool write_sector(uint16_t *address, uint16_t *values, uint16_t size)
 
         (*(uint16_t *)address) = (*(uint16_t *)values);
 
-        while (FLASH->SR & FLASH_SR_BSY)
+        for (uint16_t err_counter = 0; err_counter < 0xFFF; err_counter++)
         {
-            asm("NOP");
+            if ((!(FLASH->SR & FLASH_SR_BSY)) &&
+                (!(FLASH->SR & FLASH_SR_PGERR) && !(FLASH->SR & FLASH_SR_WRPRTERR)))
+            {
+                goto write_next;
+            }
         }
+        return false;
 
-        if (FLASH->SR & FLASH_SR_PGERR)
-        {
-            return false; // flash not erased to begin with
-        }
-        if (FLASH->SR & FLASH_SR_WRPRTERR)
-        {
-            return false; // write protect error
-        }
+    write_next:
         address++;
         values++;
         size--;
     }
-
     return true;
 }
 
