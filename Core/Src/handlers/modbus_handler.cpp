@@ -1,6 +1,8 @@
 #include <main.h>
 #include "ModBus/mbcrc/mbcrc.h"
+#include "system_handler.h"
 #define DATA_SECTOR_START_ADDRESS (0x800FC00)
+#define SET_CONFIG_DELAY (1000)
 
 bool write_sector(uint16_t *address, uint16_t *values, uint16_t size);
 bool erase_sector(uint32_t sector_start_address);
@@ -20,12 +22,17 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
  */
 bool ModBusSaveCallback(void)
 {
-    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])));
+    __disable_irq();
+    STOP_GENERATION;
+    cur_fault_delay = SET_CONFIG_DELAY;
 
+    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])));
     if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
     {
+        __enable_irq();
         return true;
     }
+    __enable_irq();
     return false;
 }
 
