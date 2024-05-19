@@ -10,17 +10,12 @@
 #include "dma_control/dma_control.h"
 #include "ModBus/ModBusRTU.h"
 #include "adc/adc.h"
+#include "../Src/handlers/system_handler.h"
 #define ABS_DIFF(x, y) ((x) > (y) ? ((x) - (y)) : ((y) - (x)))
 
 #define INVERT_GENERATOR_SIGNAL (1)
 #define MODBUS_ADDRESS (1)
 #define USB_BUFFER_SIZE (0xFF)
-
-#define INPUT_REG_REF_VOLTAGE (0)
-#define INPUT_REG_BAT_VOLTAGE (1)
-#define INPUT_REG_DC_VOLTAGE (2)
-
-#define HOLDING_REGISTER_DATA_CRC 9
 
 extern GPIO led_pin;
 extern GPIO gen_freq;

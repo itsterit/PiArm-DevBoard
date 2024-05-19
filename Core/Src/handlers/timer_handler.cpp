@@ -1,5 +1,4 @@
 #include "main.h"
-#include "system_handler.h"
 
 void set_timer_config()
 {
