@@ -22,7 +22,7 @@ void check_system_parameters();
 #endif
 
 // Частота ШИМ катушки
-#define HOLDING_COIL_FREQUENCY 5
+#define HOLDING_COIL_FREQUENCY 2
 #define COIL_FREQUENCY__MAX 5000
 #define BASE_COIL_FREQUENCY 500
 #define COIL_FREQUENCY__MIN 100
