@@ -2,7 +2,7 @@
 #define DATA_SECTOR_START_ADDRESS (0x800FC00)
 
 bool writeSector(uint32_t Address, void *values, uint16_t size);
-void erase_sector(uint32_t sector_start_address);
+bool erase_sector(uint32_t sector_start_address);
 
 /**
  * @brief   Отправка ответа мастер устройству по modbus
@@ -15,8 +15,13 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
 
 bool ModBusSaveCallback(void)
 {
-    erase_sector(DATA_SECTOR_START_ADDRESS);
-    return true;
+    if (erase_sector(DATA_SECTOR_START_ADDRESS))
+    {
+        // MB_HOLDING_ADR_MAX
+
+        return true;
+    }
+    return false;
 }
 
 bool writeSector(uint32_t Address, void *values, uint16_t size)
@@ -58,17 +63,22 @@ bool writeSector(uint32_t Address, void *values, uint16_t size)
     return true;
 }
 
-void erase_sector(uint32_t sector_start_address)
+bool erase_sector(uint32_t sector_start_address)
 {
     FLASH->KEYR = 0x45670123;
     FLASH->KEYR = 0xCDEF89AB;
 
-    FLASH->CR &= ~FLASH_CR_PG; // Ensure PG bit is low
-    FLASH->CR |= FLASH_CR_PER; // set the PER bit
-    {
-        FLASH->AR = sector_start_address;
-    }
+    FLASH->CR &= ~FLASH_CR_PG;
+    FLASH->CR |= FLASH_CR_PER;
+    FLASH->AR = sector_start_address;
     FLASH->CR |= FLASH_CR_STRT;
-    while (FLASH->SR & FLASH_SR_BSY)
-        ; // wait while busy
+
+    for (uint16_t err_counter = 0; err_counter < 0xFFF; err_counter++)
+    {
+        if (!(FLASH->SR & FLASH_SR_BSY))
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
