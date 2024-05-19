@@ -208,11 +208,11 @@ start_system:
         adc::set_regular_sequence(ADC1, 0, 1, 1);
       }
 
-      adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                                     MSIZE_16bits, PSIZE_16bits,
-                                     MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-                                     TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-      adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+      // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
+      //                                MSIZE_16bits, PSIZE_16bits,
+      //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
+      //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
+      // adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
     }
 
     set_timer_config();

@@ -2,7 +2,7 @@
 
 void set_timer_config()
 {
-    check_system_parameters();
+    // check_system_parameters();
 
     gen_freq.clock_enable(true);
     gen_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
@@ -39,7 +39,8 @@ void set_timer_config()
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
         
-        set_generation_timing(1000000, usHoldingRegisters[HOLDING_COIL_FREQUENCY], usHoldingRegisters[HOLDING_COIL_DUTY]);
+        set_generation_timing(1000000, 1000, 5);
+        // set_generation_timing(1000000, usHoldingRegisters[HOLDING_COIL_FREQUENCY], usHoldingRegisters[HOLDING_COIL_DUTY]);
         coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
 }
@@ -61,8 +62,8 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 extern "C" void TIM1_CC_IRQHandler(void)
 {
     TIM1->SR = ~TIM1->SR;
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
+    // GPIOB->BSRR = (0b01 << 11U);
+    // GPIOB->BRR = (0b01 << 11U);
 }
 
 extern "C" void TIM3_IRQHandler(void)
@@ -71,18 +72,6 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
-            DMA1_Channel1->CCR &= ~(DMA_CCR_EN_Msk);
-            TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
-            {
-                // uint16_t rem_smp = DMA1_Channel1->CNDTR;
-                // usInputRegisters[9] = (100 - rem_smp);
-                // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
-                //                                MSIZE_16bits, PSIZE_16bits,
-                //                                MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-                //                                TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-                // adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
-                // TIM3->CR1 &= ~(TIM_CR1_CEN_Msk);
-            }
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
         }
