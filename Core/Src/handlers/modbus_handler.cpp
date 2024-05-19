@@ -39,7 +39,7 @@ bool ModBusSaveCallback(void)
 /**
  * @brief   Проверка сохраненных данных
  * @note    Если данные некорректные - пишем базовые.
-*/
+ */
 void check_system_parameters()
 {
     uint32_t data_adr = DATA_SECTOR_START_ADDRESS;
@@ -49,10 +49,31 @@ void check_system_parameters()
         data_adr += 2;
     }
 
-    if(usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] == MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2))
+    if (usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] == MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2))
     {
-        asm("NOP");
+        // Частота ШИМ катушки
+        if (usHoldingRegisters[HOLDING_COIL_FREQUENCY] > COIL_FREQUENCY__MAX ||
+            usHoldingRegisters[HOLDING_COIL_FREQUENCY] < COIL_FREQUENCY__MIN)
+        {
+            usHoldingRegisters[HOLDING_COIL_FREQUENCY] = BASE_COIL_FREQUENCY;
+        }
+        // ШИМ заполнение катушки
+        if (usHoldingRegisters[HOLDING_COIL_DUTY] > COIL_DUTY__MAX ||
+            usHoldingRegisters[HOLDING_COIL_DUTY] < COIL_DUTY__MIN)
+        {
+            usHoldingRegisters[HOLDING_COIL_DUTY] = BASE_COIL_DUTY;
+        }
+        // Громкость динамика
+        if (usHoldingRegisters[HOLDING_VOLUME] > VOLUME__MAX ||
+            usHoldingRegisters[HOLDING_VOLUME] < VOLUME__MIN)
+        {
+            usHoldingRegisters[HOLDING_VOLUME] = BASE_VOLUME;
+        }
+        return;
     }
+    usHoldingRegisters[HOLDING_COIL_FREQUENCY] = BASE_COIL_FREQUENCY;
+    usHoldingRegisters[HOLDING_COIL_DUTY] = BASE_COIL_DUTY;
+    usHoldingRegisters[HOLDING_VOLUME] = BASE_VOLUME;
 }
 
 /**
