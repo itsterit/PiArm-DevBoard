@@ -1,5 +1,6 @@
 #include <main.h>
 #include "system_handler.h"
+#include "ModBus/mbcrc/mbcrc.h"
 #define COIL_CURRENT_FAULT_DELAY (1000)
 #define CHECK_SYSTEM_TIMEOUT (250)
 
@@ -77,6 +78,12 @@ extern "C" void SysTick_Handler(void)
             set_timer_config();
         }
     }
+}
+
+void check_system_parameters()
+{
+    // usHoldingRegisters[0] = (uint16_t)(*(uint16_t *)(0x800FC00));
+    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2);
 }
 
 /**

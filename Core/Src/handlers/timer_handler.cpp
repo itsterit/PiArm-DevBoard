@@ -2,6 +2,8 @@
 
 void set_timer_config()
 {
+    check_system_parameters();
+    
     gen_freq.clock_enable(true);
     gen_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
     AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;

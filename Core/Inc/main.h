@@ -30,6 +30,7 @@ extern uint16_t cur_fault_delay;
 extern GPIO cur_fault;
 
 // Работа с таймерами
+void check_system_parameters();
 void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 void set_timer_config();
 extern timer coil_frequency_timer;

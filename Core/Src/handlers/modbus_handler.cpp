@@ -26,7 +26,7 @@ bool ModBusSaveCallback(void)
     STOP_GENERATION;
     cur_fault_delay = SET_CONFIG_DELAY;
 
-    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])));
+    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2);
     if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
     {
         __enable_irq();

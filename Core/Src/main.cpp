@@ -177,8 +177,6 @@ start_system:
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  usHoldingRegisters[0] = (uint16_t)(*(uint16_t *)(0x800FC00));
-
   Logger.LogI((char *)"Starting!\n\r");
   uint16_t core_voltage;
   if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
