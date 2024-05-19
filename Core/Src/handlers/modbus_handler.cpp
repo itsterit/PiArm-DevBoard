@@ -1,4 +1,6 @@
 #include <main.h>
+#define DATA_SECTOR_START_ADDRESS (0x800FC00)
+
 bool writeSector(uint32_t Address, void *values, uint16_t size);
 void erase_sector(uint32_t sector_start_address);
 
@@ -13,6 +15,7 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
 
 bool ModBusSaveCallback(void)
 {
+    erase_sector(DATA_SECTOR_START_ADDRESS);
     return true;
 }
 
