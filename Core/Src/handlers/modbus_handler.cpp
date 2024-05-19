@@ -36,6 +36,28 @@ bool ModBusSaveCallback(void)
     return false;
 }
 
+/**
+ * @brief   Проверка сохраненных данных
+ * @note    Если данные некорректные - пишем базовые.
+*/
+void check_system_parameters()
+{
+    uint32_t data_adr = DATA_SECTOR_START_ADDRESS;
+    for (uint8_t counter = 0; counter < (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])); counter++)
+    {
+        usHoldingRegisters[counter] = (*(uint16_t *)data_adr);
+        data_adr += 2;
+    }
+
+    if(usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] == MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2))
+    {
+        
+    }
+}
+
+/**
+ * @brief   Работа со встроенной flash
+ */
 bool write_sector(uint16_t *address, uint16_t *values, uint16_t size)
 {
     size = size / 2;
@@ -66,7 +88,6 @@ bool write_sector(uint16_t *address, uint16_t *values, uint16_t size)
     }
     return true;
 }
-
 bool erase_sector(uint32_t sector_start_address)
 {
     FLASH->KEYR = 0x45670123;

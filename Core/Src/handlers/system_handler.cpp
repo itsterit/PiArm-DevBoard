@@ -80,11 +80,6 @@ extern "C" void SysTick_Handler(void)
     }
 }
 
-void check_system_parameters()
-{
-    // usHoldingRegisters[0] = (uint16_t)(*(uint16_t *)(0x800FC00));
-    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2);
-}
 
 /**
  * @brief   Сработала защита по току катушки

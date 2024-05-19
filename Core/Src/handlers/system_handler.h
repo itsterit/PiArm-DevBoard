@@ -1,4 +1,5 @@
 #include <main.h>
+void check_system_parameters();
 
 #if INVERT_GENERATOR_SIGNAL
     #define STOP_GENERATION                     \
