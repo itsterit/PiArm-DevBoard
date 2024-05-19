@@ -21,14 +21,17 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
  */
 bool ModBusSaveCallback(void)
 {
+    __disable_irq();
     STOP_GENERATION;
     cur_fault_delay = SET_CONFIG_DELAY;
 
     usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2);
     if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
     {
+        __enable_irq();
         return true;
     }
+    __enable_irq();
     return false;
 }
 

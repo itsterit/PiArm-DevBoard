@@ -11,24 +11,23 @@ extern "C" void NMI_Handler(void)
 
 extern "C" void HardFault_Handler(void)
 {
-    __asm volatile(
-        /* Кол-во итерация для извлечения LR и PC из стека */
-        "LDR R0, =7				\n"
-        /* Тут должны дойти до LR регистра */
-        "read_stack:			\n"
-        "SUBS R0, R0, #1 		\n"
-        "POP {r1}				\n"
-        /* Проверяем что мы дошли до LR регистра в стеке */
-        "CBZ R0, get_stack_PC	\n"
-        "B read_stack			\n"
-        /* Тут извлекаем PC регистр */
-        "get_stack_PC:			\n"
-        "POP {r0}				\n"
-        /* Сохраняем полученные данные в noinit  */
-        "LDR r4, =0x20004FF6 	\n" // PC
-        "STR r0, [r4]			\n"
-        "LDR r4, =0x20004FFA	\n" // LR
-        "STR r1, [r4]			\n");
+    /* Кол-во итерация для извлечения LR и PC из стека */
+    asm("LDR R0, =7				\n");
+    /* Тут должны дойти до LR регистра */
+    asm("read_stack:			\n");
+    asm("SUBS R0, R0, #1 		\n");
+    asm("POP {r1}				\n");
+    /* Проверяем что мы дошли до LR регистра в стеке */
+    asm("CBZ R0, get_stack_PC	\n");
+    asm("B read_stack			\n");
+    /* Тут извлекаем PC регистр */
+    asm("get_stack_PC:			\n");
+    asm("POP {r0}				\n");
+    /* Сохраняем полученные данные в noinit  */
+    asm("LDR r4, =0x20004FF6 	\n");
+    asm("STR r0, [r4]			\n");
+    asm("LDR r4, =0x20004FFA	\n");
+    asm("STR r1, [r4]			\n");
     NVIC_SystemReset();
 }
 
@@ -78,7 +77,6 @@ extern "C" void SysTick_Handler(void)
         }
     }
 }
-
 
 /**
  * @brief   Сработала защита по току катушки
