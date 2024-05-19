@@ -76,7 +76,7 @@ bool adc_start_system_monitor(uint16_t rev_mv)
             if (get_adc_code(rev_mv, 200))
             {
                 adc::set_injected_sequence(ADC2, 1, VOLTAGE_CONVERTER_ADC_CHANNEL, BATTERY_VOLTAGE_ADC_CHANNEL, 0, 0);
-                adc::set_analog_watchdog_threshold(ADC2, get_adc_code(rev_mv, 600), 0);
+                adc::set_analog_watchdog_threshold(ADC2, get_adc_code(rev_mv, 300), 0);
                 adc::set_regular_sequence(ADC2, 0, 1, COIL_CURRENT_ADC_CHANNEL);
                 return 1;
             }
