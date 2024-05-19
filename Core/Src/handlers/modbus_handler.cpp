@@ -1,7 +1,7 @@
 #include <main.h>
 #define DATA_SECTOR_START_ADDRESS (0x800FC00)
 
-bool writeSector(uint32_t Address, void *values, uint16_t size);
+bool write_sector(uint16_t *address, uint16_t *values, uint16_t size);
 bool erase_sector(uint32_t sector_start_address);
 
 /**
@@ -17,20 +17,14 @@ bool ModBusSaveCallback(void)
 {
     if (erase_sector(DATA_SECTOR_START_ADDRESS))
     {
-        // MB_HOLDING_ADR_MAX
-
+        write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters));
         return true;
     }
     return false;
 }
 
-bool writeSector(uint32_t Address, void *values, uint16_t size)
+bool write_sector(uint16_t *address, uint16_t *values, uint16_t size)
 {
-    uint16_t *AddressPtr;
-    uint16_t *valuePtr;
-
-    AddressPtr = (uint16_t *)Address;
-    valuePtr = (uint16_t *)values;
     size = size / 2; // incoming value is expressed in bytes, not 16 bit words
 
     while (size)
@@ -40,7 +34,7 @@ bool writeSector(uint32_t Address, void *values, uint16_t size)
         FLASH->CR &= ~FLASH_CR_PER;
         FLASH->CR |= FLASH_CR_PG;
 
-        *(AddressPtr) = *(valuePtr);
+        (*(uint16_t *)address) = (*(uint16_t *)values);
 
         while (FLASH->SR & FLASH_SR_BSY)
         {
@@ -55,8 +49,8 @@ bool writeSector(uint32_t Address, void *values, uint16_t size)
         {
             return false; // write protect error
         }
-        AddressPtr++;
-        valuePtr++;
+        address++;
+        values++;
         size--;
     }
 

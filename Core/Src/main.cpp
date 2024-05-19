@@ -179,29 +179,6 @@ start_system:
 
   usHoldingRegisters[0] = (uint16_t)(*(uint16_t *)(0x800FC00));
 
-  // {
-  //   FLASH->KEYR = 0x45670123;
-  //   FLASH->KEYR = 0xCDEF89AB;
-  //   FLASH->CR &= ~FLASH_CR_PER;
-  //   FLASH->CR |= FLASH_CR_PG;
-
-  //   *(uint16_t *)(0x800FC00) = (uint16_t)(100);
-
-  //   while (FLASH->SR & FLASH_SR_BSY)
-  //   {
-  //     asm("NOP");
-  //   }
-
-  //   if (FLASH->SR & FLASH_SR_PGERR)
-  //   {
-  //     asm("NOP"); // flash not erased to begin with
-  //   }
-  //   if (FLASH->SR & FLASH_SR_WRPRTERR)
-  //   {
-  //     asm("NOP"); // write protect error
-  //   }
-  // }
-
   Logger.LogI((char *)"Starting!\n\r");
   uint16_t core_voltage;
   if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
