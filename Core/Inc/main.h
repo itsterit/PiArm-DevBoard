@@ -13,7 +13,6 @@
 #include "../Src/handlers/system_handler.h"
 #define ABS_DIFF(x, y) ((x) > (y) ? ((x) - (y)) : ((y) - (x)))
 
-#define INVERT_GENERATOR_SIGNAL (1)
 #define MODBUS_ADDRESS (1)
 #define USB_BUFFER_SIZE (0xFF)
 
