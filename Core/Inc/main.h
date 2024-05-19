@@ -16,9 +16,9 @@
 #define MODBUS_ADDRESS (1)
 #define USB_BUFFER_SIZE (0xFF)
 
-#define INPUT_REG_REF_VOLTAGE               (0)
-#define INPUT_REG_BAT_VOLTAGE               (1)
-#define INPUT_REG_DC_VOLTAGE                (2)
+#define INPUT_REG_REF_VOLTAGE (0)
+#define INPUT_REG_BAT_VOLTAGE (1)
+#define INPUT_REG_DC_VOLTAGE (2)
 
 extern GPIO led_pin;
 extern GPIO gen_freq;
@@ -52,6 +52,7 @@ extern uint8_t usb_buffer[USB_BUFFER_SIZE];
 extern uint16_t usInputRegisters[MB_INPUT_ADR_MAX];
 extern uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX];
 void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize);
+bool ModBusSaveCallback(void);
 extern ModBusRTU ModBus;
 
 // Работа с АЦП

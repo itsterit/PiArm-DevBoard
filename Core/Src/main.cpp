@@ -37,7 +37,7 @@ dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 /* ModBus */
 uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
-ModBusRTU ModBus(ModBusTxCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
+ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
 void system_monitor();
 
@@ -177,30 +177,30 @@ start_system:
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  usHoldingRegisters[0] = (uint32_t)(*(uint32_t *)(0x800FC00));
+  usHoldingRegisters[0] = (uint16_t)(*(uint16_t *)(0x800FC00));
 
-  {
-    FLASH->KEYR = 0x45670123;
-    FLASH->KEYR = 0xCDEF89AB;
-    FLASH->CR &= ~FLASH_CR_PER;
-    FLASH->CR |= FLASH_CR_PG;
+  // {
+  //   FLASH->KEYR = 0x45670123;
+  //   FLASH->KEYR = 0xCDEF89AB;
+  //   FLASH->CR &= ~FLASH_CR_PER;
+  //   FLASH->CR |= FLASH_CR_PG;
 
-    *(uint16_t *)(0x800FC00) = (uint16_t)(100);
+  //   *(uint16_t *)(0x800FC00) = (uint16_t)(100);
 
-    while (FLASH->SR & FLASH_SR_BSY)
-    {
-      asm("NOP");
-    }
+  //   while (FLASH->SR & FLASH_SR_BSY)
+  //   {
+  //     asm("NOP");
+  //   }
 
-    if (FLASH->SR & FLASH_SR_PGERR)
-    {
-      asm("NOP"); // flash not erased to begin with
-    }
-    if (FLASH->SR & FLASH_SR_WRPRTERR)
-    {
-      asm("NOP"); // write protect error
-    }
-  }
+  //   if (FLASH->SR & FLASH_SR_PGERR)
+  //   {
+  //     asm("NOP"); // flash not erased to begin with
+  //   }
+  //   if (FLASH->SR & FLASH_SR_WRPRTERR)
+  //   {
+  //     asm("NOP"); // write protect error
+  //   }
+  // }
 
   Logger.LogI((char *)"Starting!\n\r");
   uint16_t core_voltage;

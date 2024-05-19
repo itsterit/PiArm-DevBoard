@@ -1,6 +1,6 @@
 #include <main.h>
 bool writeSector(uint32_t Address, void *values, uint16_t size);
-// void eraseSector(uint32_t SectorStartAddress)
+void erase_sector(uint32_t sector_start_address);
 
 /**
  * @brief   Отправка ответа мастер устройству по modbus
@@ -11,11 +11,16 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
     usb_as_dma_transmit((uint8_t *)&DataPtr[0], DataSize);
 }
 
+bool ModBusSaveCallback(void)
+{
+    return true;
+}
+
 bool writeSector(uint32_t Address, void *values, uint16_t size)
 {
     uint16_t *AddressPtr;
     uint16_t *valuePtr;
-    
+
     AddressPtr = (uint16_t *)Address;
     valuePtr = (uint16_t *)values;
     size = size / 2; // incoming value is expressed in bytes, not 16 bit words
@@ -50,14 +55,17 @@ bool writeSector(uint32_t Address, void *values, uint16_t size)
     return true;
 }
 
-// void eraseSector(uint32_t SectorStartAddress)
-// {
-//     FLASH->KEYR = 0x45670123;
-//     FLASH->KEYR = 0xCDEF89AB;
-//     FLASH->CR &= ~BIT0; // Ensure PG bit is low
-//     FLASH->CR |= BIT1;  // set the PER bit
-//     FLASH->AR = SectorStartAddress;
-//     FLASH->CR |= BIT6; // set the start bit
-//     while (FLASH->SR & BIT0)
-//         ; // wait while busy
-// }
+void erase_sector(uint32_t sector_start_address)
+{
+    FLASH->KEYR = 0x45670123;
+    FLASH->KEYR = 0xCDEF89AB;
+
+    FLASH->CR &= ~FLASH_CR_PG; // Ensure PG bit is low
+    FLASH->CR |= FLASH_CR_PER; // set the PER bit
+    {
+        FLASH->AR = sector_start_address;
+    }
+    FLASH->CR |= FLASH_CR_STRT;
+    while (FLASH->SR & FLASH_SR_BSY)
+        ; // wait while busy
+}
