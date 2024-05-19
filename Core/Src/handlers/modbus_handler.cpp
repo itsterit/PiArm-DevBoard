@@ -51,7 +51,7 @@ void check_system_parameters()
 
     if(usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] == MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2))
     {
-        
+        asm("NOP");
     }
 }
 
