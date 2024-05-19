@@ -1,4 +1,5 @@
 #include <main.h>
+#include "system_handler.h"
 #define COIL_CURRENT_FAULT_DELAY (1000)
 #define CHECK_SYSTEM_TIMEOUT (250)
 
@@ -90,13 +91,8 @@ extern "C" void EXTI15_10_IRQHandler(void)
 {
     __disable_irq();
     {
-        GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
-        GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
-#if INVERT_GENERATOR_SIGNAL
-        GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
-#else
-        GPIOB->BRR = (GPIO_BRR_BR5_Msk);
-#endif
+        STOP_GENERATION;
+
         EXTI->PR = EXTI->PR;
         cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
         led_pin.reset();
@@ -109,23 +105,14 @@ extern "C" void ADC1_2_IRQHandler(void)
     if (ADC2->SR & ADC_SR_AWD_Msk)
     {
         __disable_irq();
-        GPIOB->CRL &= ~(GPIO_CRL_CNF5_Msk);
-        GPIOB->CRL |= (GPIO_CRL_MODE5_Msk);
-#if INVERT_GENERATOR_SIGNAL
-        GPIOB->BSRR = (GPIO_BSRR_BS5_Msk);
-#else
-        GPIOB->BRR = (GPIO_BRR_BR5_Msk);
-#endif
-        ADC2->SR = ~ADC2->SR;
-        cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
-        led_pin.reset();
+        {
+            STOP_GENERATION;
+
+            ADC2->SR = ~ADC2->SR;
+            cur_fault_delay = COIL_CURRENT_FAULT_DELAY;
+            led_pin.reset();
+        }
         __enable_irq();
-    }
-    else
-    {
-        ADC1->SR = ~ADC1->SR;
-        GPIOB->BSRR = (0b01 << 11U);
-        GPIOB->BRR = (0b01 << 11U);
     }
 }
 

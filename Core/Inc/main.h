@@ -20,6 +20,8 @@
 #define INPUT_REG_BAT_VOLTAGE (1)
 #define INPUT_REG_DC_VOLTAGE (2)
 
+#define HOLDING_REGISTER_DATA_CRC 9
+
 extern GPIO led_pin;
 extern GPIO gen_freq;
 extern GPIO dc_enable;

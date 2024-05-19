@@ -1,4 +1,5 @@
 #include <main.h>
+#include "ModBus/mbcrc/mbcrc.h"
 #define DATA_SECTOR_START_ADDRESS (0x800FC00)
 
 bool write_sector(uint16_t *address, uint16_t *values, uint16_t size);
@@ -13,8 +14,14 @@ void ModBusTxCallback(uint8_t *DataPtr, int16_t DataSize)
     usb_as_dma_transmit((uint8_t *)&DataPtr[0], DataSize);
 }
 
+/**
+ * @brief   Сохранение регистров в память контроллера
+ * @note    Для проверки целостности будем считать crc уставок
+ */
 bool ModBusSaveCallback(void)
 {
+    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])));
+
     if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
     {
         return true;
