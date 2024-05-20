@@ -1,7 +1,4 @@
 #include <main.h>
-#define ALPHA_SMOOTH_VALUE (0.07)
-#define COIL_CURRENT_SMOOTH_VALUE (0.2)
-#define COIL_CURRENT_RES (0.2)
 
 /* Ноги проца */
 GPIO led_pin(GPIOB, 11U);
@@ -41,7 +38,6 @@ uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
 uint16_t act_coil_current = 0;
-void system_monitor();
 
 int main(void)
 {
@@ -242,25 +238,10 @@ start_system:
   }
 }
 
-void system_monitor()
-{
-  if (ADC_END_INJ_CONVERSION(ADC2))
-  {
-    usInputRegisters[8] = 1;
-
-    ADC_CLEAR_STATUS(ADC2);
-    // Мониторинг напряжений
-    usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR1), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
-    usInputRegisters[INPUT_REG_DC_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR2), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-    // Ток катушки
-    usInputRegisters[INPUT_REG_COIL_CURRENT] =
-        smooth_value(COIL_CURRENT_SMOOTH_VALUE,
-                     (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], act_coil_current) / COIL_CURRENT_RES),
-                     usInputRegisters[INPUT_REG_COIL_CURRENT]);
-
-    if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
-      NVIC_SystemReset();
-  }
-}
+// int median(int newVal) {
+//   static int buf[3];
+//   static byte count = 0;
+//   buf[count] = newVal;
+//   if (++count >= 3) count = 0;
+//   return (max(buf[0], buf[1]) == max(buf[1], buf[2])) ? max(buf[0], buf[2]) : max(buf[1], min(buf[0], buf[2]));
+// }

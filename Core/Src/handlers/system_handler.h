@@ -5,6 +5,7 @@
 
 extern uint16_t act_coil_current;
 void check_system_parameters();
+void system_monitor();
 
 #if INVERT_GENERATOR_SIGNAL
 #define STOP_GENERATION                     \
