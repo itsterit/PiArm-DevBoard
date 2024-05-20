@@ -25,14 +25,14 @@ bool ModBusSaveCallback(void)
     STOP_GENERATION;
     cur_fault_delay = SET_CONFIG_DELAY;
 
-    // usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2);
-    // if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
-    // {
-    //     __enable_irq();
+    usHoldingRegisters[HOLDING_REGISTER_DATA_CRC] = MbCrcCalculate((uint8_t *)&usHoldingRegisters[0], sizeof(usHoldingRegisters) - 2);
+    if (erase_sector(DATA_SECTOR_START_ADDRESS) && write_sector((uint16_t *)DATA_SECTOR_START_ADDRESS, &usHoldingRegisters[0], sizeof(usHoldingRegisters)))
+    {
+        __enable_irq();
         return true;
-    // }
-    // __enable_irq();
-    // return false;
+    }
+    __enable_irq();
+    return false;
 }
 
 /**
@@ -42,7 +42,7 @@ bool ModBusSaveCallback(void)
 void check_system_parameters()
 {
     uint32_t data_adr = DATA_SECTOR_START_ADDRESS;
-    for (uint8_t counter = 1; counter < (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])); counter++)
+    for (uint8_t counter = 0; counter < (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])); counter++)
     {
         usHoldingRegisters[counter] = (*(uint16_t *)data_adr);
         data_adr += 2;

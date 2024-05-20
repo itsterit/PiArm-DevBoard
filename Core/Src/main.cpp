@@ -215,12 +215,6 @@ start_system:
   while (true)
   {
     system_monitor();
-
-    if (usHoldingRegisters[0] == 228)
-    {
-      usHoldingRegisters[0] = 0;
-      set_timer_config();
-    }
   }
 }
 

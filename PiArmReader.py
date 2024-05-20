@@ -45,13 +45,13 @@ if connection:
             time.sleep(0.1)
         client.close()
 
-        counter = 0
-        while counter <= 97:
-            values[counter] = median_filter(
-                                values[counter], 
-                                values[counter+1], 
-                                values[counter+2])
-            counter = counter + 1
+        # counter = 0
+        # while counter <= 97:
+        #     values[counter] = median_filter(
+        #                         values[counter], 
+        #                         values[counter+1], 
+        #                         values[counter+2])
+        #     counter = counter + 1
 
 
         # plt.axis([5, 50, 0, 700])
