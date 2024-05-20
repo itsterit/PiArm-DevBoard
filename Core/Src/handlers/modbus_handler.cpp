@@ -42,7 +42,7 @@ bool ModBusSaveCallback(void)
 void check_system_parameters()
 {
     uint32_t data_adr = DATA_SECTOR_START_ADDRESS;
-    for (uint8_t counter = 0; counter < (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])); counter++)
+    for (uint8_t counter = 1; counter < (sizeof(usHoldingRegisters) / sizeof(usHoldingRegisters[0])); counter++)
     {
         usHoldingRegisters[counter] = (*(uint16_t *)data_adr);
         data_adr += 2;
