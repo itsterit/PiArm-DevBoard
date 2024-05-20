@@ -28,6 +28,7 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty);
 void set_timer_config();
 extern timer coil_frequency_timer;
 extern timer sampling_timer;
+extern timer buzzer_timer;
 
 // Работа с уарт
 void log_out_method(char *str, uint8_t len);

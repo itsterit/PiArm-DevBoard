@@ -212,11 +212,28 @@ start_system:
     NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   }
 
+  uint32_t old_val = 0;
+  uint32_t sum = 0;
   while (true)
   {
     if (usInputRegisters[9])
     {
       usInputRegisters[9] = 0;
+
+      old_val = sum;
+      sum = 0;
+      for (uint8_t cnt = 0; cnt < 50; cnt++)
+      {
+        if (usInputRegisters[10 + cnt] > 900)
+          usInputRegisters[10 + cnt] = 900;
+        sum += usInputRegisters[10 + cnt];
+      }
+
+      if (usInputRegisters[8])
+      {
+        usInputRegisters[8] = 0;
+        TIM4->ARR = sum / 100;
+      }
       GPIOB->BSRR = (0b01 << 11U);
       GPIOB->BRR = (0b01 << 11U);
     }
@@ -229,6 +246,8 @@ void system_monitor()
 {
   if (ADC_END_INJ_CONVERSION(ADC2))
   {
+    usInputRegisters[8] = 1;
+
     ADC_CLEAR_STATUS(ADC2);
     // Мониторинг напряжений
     usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
