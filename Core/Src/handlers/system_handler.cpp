@@ -101,10 +101,6 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
-    // GPIOB->BSRR = (0b01 << 11U);
-    // GPIOB->BRR = (0b01 << 11U);
-    ADC1->SR = ~ADC1->SR;
-
     if (ADC2->SR & ADC_SR_AWD_Msk)
     {
         __disable_irq();
@@ -117,6 +113,7 @@ extern "C" void ADC1_2_IRQHandler(void)
         }
         __enable_irq();
     }
+    ADC1->SR = ~ADC1->SR;
 }
 
 #ifndef __GNUC__
