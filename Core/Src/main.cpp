@@ -37,7 +37,13 @@ uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
 
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
 uint16_t act_coil_current = 0;
+int median_filter(uint16_t a, uint16_t b, uint16_t c);
+double calculateTrapezoidalArea(uint16_t *data, int size);
+void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
+uint16_t test_mass[20];
 
 int main(void)
 {
@@ -208,28 +214,32 @@ start_system:
     NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   }
 
-  uint32_t old_val = 0;
-  uint32_t sum = 0;
   while (true)
   {
     if (usInputRegisters[9])
     {
       usInputRegisters[9] = 0;
-
-      old_val = sum;
-      sum = 0;
+      // фильтр
       for (uint8_t cnt = 0; cnt < 50; cnt++)
       {
-        if (usInputRegisters[10 + cnt] > 900)
-          usInputRegisters[10 + cnt] = 900;
-        sum += usInputRegisters[10 + cnt];
+        if (usInputRegisters[10 + cnt] > 100)
+          usInputRegisters[10 + cnt] = 100;
+        if (cnt <= 47)
+          usInputRegisters[10 + cnt] = median_filter(usInputRegisters[10 + cnt], usInputRegisters[10 + cnt + 1], usInputRegisters[10 + cnt + 2]);
       }
+      double area = calculateTrapezoidalArea(&usInputRegisters[10], 50);
+      push_fun(&test_mass[0], sizeof(test_mass), area);
 
-      if (usInputRegisters[8])
+      uint16_t sum = 0;
+      for (uint8_t cnt = 0; cnt < 20; cnt++)
       {
-        usInputRegisters[8] = 0;
-        TIM4->ARR = sum / 100;
+        sum += test_mass[cnt];
       }
+      sum = sum / 20;
+
+      usInputRegisters[4] =
+          smooth_value(0.2, sum, usInputRegisters[4]);
+
       GPIOB->BSRR = (0b01 << 11U);
       GPIOB->BRR = (0b01 << 11U);
     }
@@ -238,10 +248,36 @@ start_system:
   }
 }
 
-// int median(int newVal) {
-//   static int buf[3];
-//   static byte count = 0;
-//   buf[count] = newVal;
-//   if (++count >= 3) count = 0;
-//   return (max(buf[0], buf[1]) == max(buf[1], buf[2])) ? max(buf[0], buf[2]) : max(buf[1], min(buf[0], buf[2]));
-// }
+void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val)
+{
+  uint16_t add_arr[99];
+  add_arr[0] = new_val;
+  memcpy(&add_arr[1], arr_ptr, arr_size);
+  memcpy(arr_ptr, &add_arr[0], arr_size);
+}
+
+int median_filter(uint16_t a, uint16_t b, uint16_t c)
+{
+  int middle = 0;
+
+  if ((MAX(a, b) == MAX(b, c)))
+    middle = MAX(a, c);
+  else
+    middle = MAX(b, MIN(a, c));
+  return middle;
+}
+
+double calculateTrapezoidalArea(uint16_t *data, int size)
+{
+  double area = 0.0;
+
+  for (int i = 1; i < size; i++)
+  {
+    double base = data[i] + data[i - 1]; // Сумма двух соседних элементов
+    double height = 1.0;                 // Ширина трапеции (можно изменить в соответствии с вашими нуждами)
+
+    area += 0.5 * base * height; // Площадь трапеции
+  }
+
+  return area;
+}

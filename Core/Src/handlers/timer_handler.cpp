@@ -55,7 +55,7 @@ void set_timer_config()
         buzzer_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, 0);
         buzzer_timer.capture_compare_register(0, TIM_CCER_CC4E_Msk);
         buzzer_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
-        buzzer_timer.set_timer_config(0, 0, 0, 1, 100, 55, 0);
+        // buzzer_timer.set_timer_config(0, 0, 0, 1, 100, 55, 0);
     }
 }
 
