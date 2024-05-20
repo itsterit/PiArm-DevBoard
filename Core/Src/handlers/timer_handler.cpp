@@ -1,4 +1,5 @@
 #include "main.h"
+#define SAMPLING_POINT_AMOUNT 100
 
 void set_timer_config()
 {
@@ -43,8 +44,8 @@ void set_timer_config()
         adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
                                        MSIZE_16bits, PSIZE_16bits,
                                        MINC_Enabled, PINC_Disabled, CIRC_Disabled, Read_From_Peripheral,
-                                       TEIE_Disabled, HTIE_Disabled, TCIE_Disabled);
-        adc_samling_dma.dma_start(100, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+                                       TEIE_Disabled, HTIE_Disabled, TCIE_Enabled);
+        adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
     }
 }
 
@@ -73,6 +74,7 @@ extern "C" void TIM3_IRQHandler(void)
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
+            adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
         }
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
@@ -81,4 +83,16 @@ extern "C" void TIM3_IRQHandler(void)
         }
     }
     TIM3->SR = ~TIM3->SR;
+}
+
+extern "C" void DMA1_Channel1_IRQHandler(void)
+{
+    {
+        // Если мы тут - значит данные получены
+        TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
+        TIM1->SR = ~TIM1->SR;
+        TIM1->CNT = 0;
+        adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+    }
+    DMA1->IFCR = DMA_IFCR_CGIF1_Msk;
 }
