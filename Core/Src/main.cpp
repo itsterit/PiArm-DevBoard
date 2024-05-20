@@ -216,11 +216,11 @@ start_system:
   {
     system_monitor();
 
-    // if (usHoldingRegisters[0])
-    // {
-    //   usHoldingRegisters[0] = 0;
-    //   set_timer_config();
-    // }
+    if (usHoldingRegisters[0] == 228)
+    {
+      usHoldingRegisters[0] = 0;
+      set_timer_config();
+    }
   }
 }
 

@@ -22,7 +22,7 @@ if connection:
     while 1:
         while 1:
             # Подача сигнала в катушку
-            client.write_register(address=0x0000, value=0x001, unit=1)
+            client.write_register(address=0x0000, value=228, unit=1)
             time.sleep(2.5)
             # Смотрим количество сэмплов
             result = client.read_input_registers(address=0x0009, count=1, unit=1)
