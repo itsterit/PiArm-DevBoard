@@ -64,6 +64,7 @@ void timer::set_dma_interrupt_config(TRIGGER_DMA_REQUEST_Type trigger_dma_reques
 {
     if (act_timer)
     {
+        act_timer->DIER = 0;
         act_timer->DIER = ((trigger_dma_request << TIM_DIER_TDE_Pos) | (update_dma_request << TIM_DIER_UDE_Pos) | (trigger_interrupt << TIM_DIER_TIE_Pos) | (update_interrupt << TIM_DIER_UIE_Pos) |
                            ((TIM_DIER_CC4DE_Msk | TIM_DIER_CC3DE_Msk | TIM_DIER_CC2DE_Msk | TIM_DIER_CC1DE_Msk) & capture_compare_dma_request_enable_msk) |
                            ((TIM_DIER_CC4IE_Msk | TIM_DIER_CC3IE_Msk | TIM_DIER_CC2IE_Msk | TIM_DIER_CC1IE_Msk) & capture_compare_interrupt_enable_msk));
