@@ -214,6 +214,13 @@ start_system:
 
   while (true)
   {
+    if (usInputRegisters[9])
+    {
+      usInputRegisters[9] = 0;
+      GPIOB->BSRR = (0b01 << 11U);
+      GPIOB->BRR = (0b01 << 11U);
+    }
+
     system_monitor();
   }
 }

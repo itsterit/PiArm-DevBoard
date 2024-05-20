@@ -92,6 +92,7 @@ extern "C" void DMA1_Channel1_IRQHandler(void)
         TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
         TIM1->SR = ~TIM1->SR;
         TIM1->CNT = 0;
+        usInputRegisters[9] = (100 - DMA1_Channel1->CNDTR);
         adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
     }
     DMA1->IFCR = DMA_IFCR_CGIF1_Msk;
