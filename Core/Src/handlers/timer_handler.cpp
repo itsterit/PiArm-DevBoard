@@ -9,11 +9,12 @@ void set_timer_config()
     AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
     AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
 
+    // Таймер сэмплирования сигнала
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, (TIM_DIER_CC1IE_Msk));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 1, 15, 0);
-        sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 10, 35, 0);
+        sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
 
         sampling_timer.set_channel_output_config(1, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_DISABLE, OUTPUT_COMPARE_FAST_DISABLE, CHANNEL_TOGGLE);
@@ -26,6 +27,7 @@ void set_timer_config()
                                                0);
     }
 
+    // задающий таймер
     {
 #if INVERT_GENERATOR_SIGNAL
         coil_frequency_timer.set_channel_output_config(2U, OUTPUT_COMPARE_CLEAR_DISABLE, OUTPUT_COMPARE_PRELOAD_ENABLE, OUTPUT_COMPARE_FAST_ENABLE, CHANNEL_PWM_MODE_2);
@@ -38,7 +40,6 @@ void set_timer_config()
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
-
         set_generation_timing(1000000, usHoldingRegisters[HOLDING_COIL_FREQUENCY], usHoldingRegisters[HOLDING_COIL_DUTY]);
         coil_frequency_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
     }
@@ -48,21 +49,18 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
 {
     uint8_t start_sampling_offset = 1;
     uint32_t timer_arr = tmr_freq / frq;
-
     uint32_t timer_main_channel = (timer_arr / 100) * duty;
     uint32_t start_coil_reply_sampling = (timer_main_channel + start_sampling_offset);
-
-    uint32_t end_coil_reply_sampling = (timer_arr - start_sampling_offset);
+    uint32_t end_coil_reply_sampling = (timer_arr - 10);
     uint32_t start_coil_toque_sampling = timer_main_channel / 2;
-
     coil_frequency_timer.set_timer_config(start_coil_reply_sampling, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 55, 0);
 }
 
 extern "C" void TIM1_CC_IRQHandler(void)
 {
     TIM1->SR = ~TIM1->SR;
-    // GPIOB->BSRR = (0b01 << 11U);
-    // GPIOB->BRR = (0b01 << 11U);
+    GPIOB->BSRR = (0b01 << 11U);
+    GPIOB->BRR = (0b01 << 11U);
 }
 
 extern "C" void TIM3_IRQHandler(void)
@@ -71,12 +69,15 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
             /* Конец замера ответа катушки */
+            TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
         }
         if (TIM3->SR & TIM_SR_CC1IF_Msk)
         {
             /* Начало замера ответа катушки */
+            // GPIOB->BSRR = (0b01 << 11U);
+            // GPIOB->BRR = (0b01 << 11U);
         }
         if (TIM3->SR & TIM_SR_CC2IF_Msk)
         {
@@ -86,8 +87,6 @@ extern "C" void TIM3_IRQHandler(void)
         {
             /* Начало замера тока катушки */
             act_coil_current = ADC2->DR;
-            GPIOB->BSRR = (0b01 << 11U);
-            GPIOB->BRR = (0b01 << 11U);
         }
     }
     TIM3->SR = ~TIM3->SR;

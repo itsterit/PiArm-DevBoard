@@ -1,7 +1,7 @@
 #include <main.h>
 #include "ModBus/mbcrc/mbcrc.h"
 #define COIL_CURRENT_FAULT_DELAY (1000)
-#define CHECK_SYSTEM_TIMEOUT     (100)
+#define CHECK_SYSTEM_TIMEOUT (100)
 
 extern "C" void NMI_Handler(void)
 {
@@ -101,6 +101,10 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 extern "C" void ADC1_2_IRQHandler(void)
 {
+    // GPIOB->BSRR = (0b01 << 11U);
+    // GPIOB->BRR = (0b01 << 11U);
+    ADC1->SR = ~ADC1->SR;
+
     if (ADC2->SR & ADC_SR_AWD_Msk)
     {
         __disable_irq();

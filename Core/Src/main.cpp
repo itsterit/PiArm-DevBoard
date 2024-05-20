@@ -192,22 +192,22 @@ start_system:
     {
       if (adc::enable(ADC1))
       {
-        // конфигурация
-        adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                            DUALMOD__INDEPENDENT_MODE, 0,
-                            JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                            JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                            AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
-                            JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);
+        // // конфигурация
+        // adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+        //                     DUALMOD__INDEPENDENT_MODE, 0,
+        //                     JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
+        //                     JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
+        //                     AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
+        //                     JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);
 
-        adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
-                            EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__TIMER_1_CC1_EVENT,
-                            JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
-                            ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_ENABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                            CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
+        // adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
+        //                     EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__TIMER_1_CC1_EVENT,
+        //                     JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
+        //                     ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_ENABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
+        //                     CONT__SINGLE_CONVERSION_MODE, ADON__ENABLE_ADC);
 
-        adc::set_sampling(ADC1, 1, SMP_1_5_cycles);
-        adc::set_regular_sequence(ADC1, 0, 1, 1);
+        // adc::set_sampling(ADC1, 1, SMP_1_5_cycles);
+        // adc::set_regular_sequence(ADC1, 0, 1, 1);
       }
 
       // adc_samling_dma.dma_set_config(MEM2MEM_Disabled, PL_Low,
@@ -218,7 +218,7 @@ start_system:
     }
 
     set_timer_config();
-    // NVIC_EnableIRQ(TIM1_CC_IRQn);
+    NVIC_EnableIRQ(TIM1_CC_IRQn);
     NVIC_EnableIRQ(TIM3_IRQn);
   }
 
