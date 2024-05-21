@@ -41,7 +41,7 @@ ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &us
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 uint16_t act_coil_current = 0;
 int median_filter(uint16_t a, uint16_t b, uint16_t c);
-double calculateTrapezoidalArea(uint16_t *data, int size);
+int calculate_trapezoidal_area(uint16_t *data, int size);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 uint16_t test_mass[20];
 
@@ -219,6 +219,7 @@ start_system:
     if (usInputRegisters[9])
     {
       usInputRegisters[9] = 0;
+
       // фильтр
       for (uint8_t cnt = 0; cnt < 50; cnt++)
       {
@@ -227,18 +228,10 @@ start_system:
         if (cnt <= 47)
           usInputRegisters[10 + cnt] = median_filter(usInputRegisters[10 + cnt], usInputRegisters[10 + cnt + 1], usInputRegisters[10 + cnt + 2]);
       }
-      double area = calculateTrapezoidalArea(&usInputRegisters[10], 50);
-      push_fun(&test_mass[0], sizeof(test_mass), area);
-
-      uint16_t sum = 0;
-      for (uint8_t cnt = 0; cnt < 20; cnt++)
-      {
-        sum += test_mass[cnt];
-      }
-      sum = sum / 20;
+      int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
 
       usInputRegisters[4] =
-          smooth_value(0.2, sum, usInputRegisters[4]);
+          smooth_value(0.2, area, usInputRegisters[4]);
 
       GPIOB->BSRR = (0b01 << 11U);
       GPIOB->BRR = (0b01 << 11U);
@@ -267,14 +260,14 @@ int median_filter(uint16_t a, uint16_t b, uint16_t c)
   return middle;
 }
 
-double calculateTrapezoidalArea(uint16_t *data, int size)
+int calculate_trapezoidal_area(uint16_t *data, int size)
 {
-  double area = 0.0;
+  int area = 0;
 
   for (int i = 1; i < size; i++)
   {
-    double base = data[i] + data[i - 1]; // Сумма двух соседних элементов
-    double height = 1.0;                 // Ширина трапеции (можно изменить в соответствии с вашими нуждами)
+    uint32_t base = data[i] + data[i - 1]; 
+    uint32_t height = 1;                 
 
     area += 0.5 * base * height; // Площадь трапеции
   }
