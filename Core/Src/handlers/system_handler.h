@@ -25,7 +25,7 @@ void system_monitor();
 
 // Частота ШИМ катушки
 #define HOLDING_COIL_FREQUENCY 2
-#define COIL_FREQUENCY__MAX 2000
+#define COIL_FREQUENCY__MAX 1000
 #define BASE_COIL_FREQUENCY 500
 #define COIL_FREQUENCY__MIN 100
 // ШИМ заполнение катушки

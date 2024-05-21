@@ -225,10 +225,20 @@ start_system:
       {
         if (usInputRegisters[10 + cnt] > 250)
           usInputRegisters[10 + cnt] = 250;
+
+        if (usInputRegisters[10 + cnt] < 50)
+          usInputRegisters[10 + cnt] = 50;
       }
-      int area = calculate_trapezoidal_area(&usInputRegisters[10], 20);
-      usInputRegisters[4] = area;
+
+      // Постоянная составляющая
+      int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
       push_fun(&mass[0], sizeof(mass), area);
+      int sum = 0;
+      for (uint8_t cnt = 0; cnt < 20; cnt++)
+        sum += mass[cnt]; 
+      sum = (sum / 20);
+
+      usInputRegisters[4] = sum - area;
 
       GPIOB->BSRR = (0b01 << 11U);
       GPIOB->BRR = (0b01 << 11U);
