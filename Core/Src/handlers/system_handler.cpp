@@ -124,8 +124,6 @@ void system_monitor()
 {
   if (ADC_END_INJ_CONVERSION(ADC2))
   {
-    usInputRegisters[8] = 1;
-
     ADC_CLEAR_STATUS(ADC2);
     // Мониторинг напряжений
     usInputRegisters[INPUT_REG_BAT_VOLTAGE] =

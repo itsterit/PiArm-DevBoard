@@ -39,10 +39,11 @@ ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &us
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define ABS_DIFF(x, y) ((x) > (y) ? ((x) - (y)) : ((y) - (x)))
 uint16_t act_coil_current = 0;
 int median_filter(uint16_t a, uint16_t b, uint16_t c);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
-uint16_t mass[20];
+uint16_t mass[80];
 double calculate_trapezoidal_area(uint16_t *data, int size);
 
 int main(void)
@@ -220,28 +221,19 @@ start_system:
     {
       usInputRegisters[9] = 0;
 
-      // фильтр
-      for (uint8_t cnt = 0; cnt < 50; cnt++)
-      {
-        if (usInputRegisters[10 + cnt] > 250)
-          usInputRegisters[10 + cnt] = 250;
-
-        if (usInputRegisters[10 + cnt] < 50)
-          usInputRegisters[10 + cnt] = 50;
-      }
-
       // Постоянная составляющая
-      int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
+      int area = (calculate_trapezoidal_area(&usInputRegisters[10], 50)) - 39000;
+
       push_fun(&mass[0], sizeof(mass), area);
+
       int sum = 0;
-      for (uint8_t cnt = 0; cnt < 20; cnt++)
-        sum += mass[cnt]; 
-      sum = (sum / 20);
+      int mas_amt = sizeof(mass) / sizeof(mass[0]);
 
-      usInputRegisters[4] = sum - area;
+      for (uint8_t cnt = 0; cnt < mas_amt; cnt++)
+        sum += mass[cnt];
+      sum = (sum / mas_amt);
 
-      GPIOB->BSRR = (0b01 << 11U);
-      GPIOB->BRR = (0b01 << 11U);
+      usInputRegisters[4] = sum;
     }
 
     system_monitor();

@@ -1,5 +1,5 @@
 #include "main.h"
-#define SAMPLING_POINT_AMOUNT 50
+#define SAMPLING_POINT_AMOUNT 200
 
 void set_timer_config()
 {
