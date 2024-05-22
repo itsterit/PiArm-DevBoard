@@ -9,25 +9,46 @@ void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 uint16_t mass[80];
 double calculate_trapezoidal_area(uint16_t *data, int size);
 
+struct signal
+{
+    uint16_t signal_point_amt;
+    uint16_t signal[50];
+} main_signal, search_signal;
+
 void search_function()
 {
     if (usInputRegisters[9])
     {
         usInputRegisters[9] = 0;
 
-        // Постоянная составляющая
-        int area = (calculate_trapezoidal_area(&usInputRegisters[10], 50)) - 39000;
+        if (main_signal.signal_point_amt < (sizeof(main_signal.signal) / sizeof(main_signal.signal[0])))
+        {
+            main_signal.signal[main_signal.signal_point_amt] = calculate_trapezoidal_area(&usInputRegisters[10], 50);
+            main_signal.signal_point_amt++;
+        }
 
-        push_fun(&mass[0], sizeof(mass), area);
+        if (search_signal.signal_point_amt < (sizeof(search_signal.signal) / sizeof(search_signal.signal[0])))
+        {
+            search_signal.signal[search_signal.signal_point_amt] = calculate_trapezoidal_area(&usInputRegisters[10], 50);
+            search_signal.signal_point_amt++;
+        }
 
-        int sum = 0;
-        int mas_amt = sizeof(mass) / sizeof(mass[0]);
+        int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
+        push_fun(&search_signal.signal[0], sizeof(search_signal.signal), area);
+
+        int mas_amt = sizeof(search_signal.signal) / sizeof(search_signal.signal[0]);
+        int search_signal_val = 0;
+        int main_signal_val = 0;
 
         for (uint8_t cnt = 0; cnt < mas_amt; cnt++)
-            sum += mass[cnt];
-        sum = (sum / mas_amt);
+            search_signal_val += search_signal.signal[cnt];
+        search_signal_val = (search_signal_val / mas_amt);
 
-        usInputRegisters[4] = sum;
+        for (uint8_t cnt = 0; cnt < mas_amt; cnt++)
+            main_signal_val += main_signal.signal[cnt];
+        main_signal_val = (main_signal_val / mas_amt);
+
+        usInputRegisters[4] = smooth_value(0.05, ABS_DIFF(search_signal_val, main_signal_val), usInputRegisters[4]);
     }
 }
 
