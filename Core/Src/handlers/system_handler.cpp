@@ -1,7 +1,8 @@
 #include <main.h>
 #include "ModBus/mbcrc/mbcrc.h"
-#define COIL_CURRENT_FAULT_DELAY (1000)
-#define CHECK_SYSTEM_TIMEOUT (100)
+#define COIL_CURRENT_FAULT_DELAY    (1000)
+#define CHECK_SYSTEM_TIMEOUT        (100)
+#define UPDATE_TIMEOUT              (2000)
 // Параметры
 #define ALPHA_SMOOTH_VALUE (0.07)
 #define COIL_CURRENT_SMOOTH_VALUE (0.2)
@@ -43,12 +44,19 @@ extern "C" void HardFault_Handler(void)
  */
 uint16_t volatile dc_startup = 0;
 uint16_t volatile check_system_timeout = 0;
+uint16_t volatile update_signal_timeout = 0;
 extern "C" void SysTick_Handler(void)
 {
     if (check_system_timeout++ >= CHECK_SYSTEM_TIMEOUT)
     {
         check_system_timeout = 0;
         ADC_INJ_START(ADC2);
+    }
+
+    if (update_signal_timeout++ >= UPDATE_TIMEOUT)
+    {
+        usInputRegisters[8] = 1;
+        update_signal_timeout = 0;
     }
 
     if (dc_startup)

@@ -6,13 +6,13 @@
 uint16_t act_coil_current = 0;
 int median_filter(uint16_t a, uint16_t b, uint16_t c);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
-uint16_t mass[80];
+uint16_t mass[128];
 double calculate_trapezoidal_area(uint16_t *data, int size);
 
 struct signal
 {
     uint16_t signal_point_amt;
-    uint16_t signal[50];
+    uint16_t signal[24];
 } main_signal, search_signal;
 
 void search_function()
@@ -20,11 +20,24 @@ void search_function()
     if (usInputRegisters[9])
     {
         usInputRegisters[9] = 0;
+        int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
 
         if (main_signal.signal_point_amt < (sizeof(main_signal.signal) / sizeof(main_signal.signal[0])))
         {
             main_signal.signal[main_signal.signal_point_amt] = calculate_trapezoidal_area(&usInputRegisters[10], 50);
             main_signal.signal_point_amt++;
+        }
+        else
+        {
+            if (usInputRegisters[8])
+            {
+                usInputRegisters[8] = 0;
+                push_fun(&main_signal.signal[0], sizeof(main_signal.signal), area);
+                if (usInputRegisters[4] > 50)
+                {
+                    memcpy(&main_signal.signal[0], &search_signal.signal[0], sizeof(search_signal.signal));
+                }
+            }
         }
 
         if (search_signal.signal_point_amt < (sizeof(search_signal.signal) / sizeof(search_signal.signal[0])))
@@ -32,9 +45,10 @@ void search_function()
             search_signal.signal[search_signal.signal_point_amt] = calculate_trapezoidal_area(&usInputRegisters[10], 50);
             search_signal.signal_point_amt++;
         }
-
-        int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
-        push_fun(&search_signal.signal[0], sizeof(search_signal.signal), area);
+        else
+        {
+            push_fun(&search_signal.signal[0], sizeof(search_signal.signal), area);
+        }
 
         int mas_amt = sizeof(search_signal.signal) / sizeof(search_signal.signal[0]);
         int search_signal_val = 0;
@@ -48,7 +62,7 @@ void search_function()
             main_signal_val += main_signal.signal[cnt];
         main_signal_val = (main_signal_val / mas_amt);
 
-        usInputRegisters[4] = smooth_value(0.05, ABS_DIFF(search_signal_val, main_signal_val), usInputRegisters[4]);
+        usInputRegisters[4] = smooth_value(0.2, ABS_DIFF(search_signal_val, main_signal_val), usInputRegisters[4]);
     }
 }
 
