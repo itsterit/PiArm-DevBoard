@@ -12,7 +12,7 @@ GPIO usb_rx(GPIOA, 10U);
 GPIO cur_fault(GPIOC, 13U);
 GPIO bat_voltage_pin(GPIOA, 4U);
 GPIO coil_current_pin(GPIOA, 2U);
-GPIO coil_response(GPIOA, 1U);
+GPIO coil_response(GPIOA, 0U);
 GPIO dc_enable(GPIOB, 3);
 GPIO dc_check(GPIOA, 3U);
 
@@ -72,7 +72,7 @@ int main(void)
    *          процессора минимально
    */
   {
-    dc_startup = 2000;
+    dc_startup = 4000;
     dc_enable.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
@@ -145,7 +145,7 @@ start_system:
   btn_2.set_config(GPIO::input_floating);
   /* конфижим ноги проца - ответ катушки */
   coil_response.clock_enable(true);
-  coil_response.set_config(GPIO::input_analog);
+  coil_response.set_config(GPIO::alternate_push_pull, GPIO::alternate_input_pull_down);
   /* конфижим ноги проца - динамик */
   buzz_freq.clock_enable(true);
   buzz_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
@@ -186,20 +186,19 @@ start_system:
     if (adc::enable(ADC1))
     {
       // конфигурация для сэмплирования
-      adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_DISABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
-                          DUALMOD__INDEPENDENT_MODE, 0,
-                          JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED, DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
-                          JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
-                          AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_DISABLED,
-                          JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_DISABLED, EOCIE__EOC_INTERRUPT_DISABLED, 0);
+      RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+      TIM2->PSC = 56000 - 1; // новая частота 1Khz
 
-      adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
-                          EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__TIMER_1_CC1_EVENT,
-                          JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
-                          ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_ENABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
-                          CONT__SINGLE_CONVERSION_MODE, ADON__ENABLE_ADC);
-      adc::set_sampling(ADC1, 1, SMP_1_5_cycles);
-      adc::set_regular_sequence(ADC1, 0, 1, 1);
+      TIM2->CCMR1 |= TIM_CCMR1_CC1S;                       // выбираем TI4 для TIM5_CH4
+      TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
+
+      TIM2->CCER &= ~TIM_CCER_CC1P; // выбираем захват по переднему фронту
+      TIM2->CCER |= TIM_CCER_CC1E;  // включаем режим захвата для 4-го канала
+
+      TIM2->DIER |= TIM_DIER_CC1IE; // разрешаем прерывание по захвату
+
+      TIM2->CR1 |= TIM_CR1_CEN; // включаем счётчик
+      NVIC_EnableIRQ(TIM2_IRQn);
     }
     set_timer_config();
     NVIC_EnableIRQ(TIM3_IRQn);
@@ -211,4 +210,14 @@ start_system:
     search_function();
     system_monitor();
   }
+}
+
+extern "C" void TIM2_IRQHandler(void)
+{
+  TIM2->CR1 &= ~TIM_CR1_CEN;
+  
+  usInputRegisters[4] = TIM2->CCR1;
+
+  TIM2->SR = ~TIM2->SR;
+  asm("NOP");
 }

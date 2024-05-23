@@ -84,7 +84,8 @@ extern "C" void TIM3_IRQHandler(void)
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
-            adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+            // adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
+            TIM2->CR1 |= TIM_CR1_CEN; 
         }
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {

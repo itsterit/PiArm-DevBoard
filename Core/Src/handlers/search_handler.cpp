@@ -56,7 +56,7 @@ void search_function()
 
         push_fun(&out_signal.signal[0], sizeof(out_signal.signal), area);
         // usInputRegisters[4] = median_filter(out_signal.signal[0], out_signal.signal[1], out_signal.signal[2]);
-        usInputRegisters[4] = area;
+        // usInputRegisters[4] = area;
     }
 }
 
