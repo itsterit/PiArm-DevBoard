@@ -12,37 +12,29 @@ double calculate_trapezoidal_area(uint16_t *data, int size);
 struct signal
 {
     uint16_t signal_point_amt;
-    uint16_t signal[24];
-} main_signal, search_signal;
+    uint16_t signal[8];
+} main_signal, search_signal, out_signal;
 
 void search_function()
 {
     if (usInputRegisters[9])
     {
+        for (uint8_t cnt = 0; cnt < 50; cnt++)
+        {
+            if (usInputRegisters[10 + cnt] > 900)
+                usInputRegisters[10 + cnt] = 900;
+        }
+
         usInputRegisters[9] = 0;
         int area = calculate_trapezoidal_area(&usInputRegisters[10], 50);
 
         if (main_signal.signal_point_amt < (sizeof(main_signal.signal) / sizeof(main_signal.signal[0])))
         {
-            main_signal.signal[main_signal.signal_point_amt] = calculate_trapezoidal_area(&usInputRegisters[10], 50);
+            // Основной сигнал - постоянная составляющая
+            main_signal.signal[main_signal.signal_point_amt] = area;
             main_signal.signal_point_amt++;
-        }
-        else
-        {
-            if (usInputRegisters[8])
-            {
-                usInputRegisters[8] = 0;
-                push_fun(&main_signal.signal[0], sizeof(main_signal.signal), area);
-                if (usInputRegisters[4] > 50)
-                {
-                    memcpy(&main_signal.signal[0], &search_signal.signal[0], sizeof(search_signal.signal));
-                }
-            }
-        }
-
-        if (search_signal.signal_point_amt < (sizeof(search_signal.signal) / sizeof(search_signal.signal[0])))
-        {
-            search_signal.signal[search_signal.signal_point_amt] = calculate_trapezoidal_area(&usInputRegisters[10], 50);
+            // Поисковой сигнал
+            search_signal.signal[search_signal.signal_point_amt] = area;
             search_signal.signal_point_amt++;
         }
         else
@@ -62,7 +54,9 @@ void search_function()
             main_signal_val += main_signal.signal[cnt];
         main_signal_val = (main_signal_val / mas_amt);
 
-        usInputRegisters[4] = smooth_value(0.2, ABS_DIFF(search_signal_val, main_signal_val), usInputRegisters[4]);
+        push_fun(&out_signal.signal[0], sizeof(out_signal.signal), area);
+        // usInputRegisters[4] = median_filter(out_signal.signal[0], out_signal.signal[1], out_signal.signal[2]);
+        usInputRegisters[4] = area;
     }
 }
 
