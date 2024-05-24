@@ -185,29 +185,18 @@ start_system:
 
     if (adc::enable(ADC1))
     {
-      // конфигурация для сэмплирования
-      RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-      TIM2->PSC = 56000 - 1; // новая частота 1Khz
-
-      TIM2->CCMR1 |= TIM_CCMR1_CC1S;                       // выбираем TI4 для TIM5_CH4
-      TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
-
-      TIM2->CCER &= ~TIM_CCER_CC1P; // выбираем захват по переднему фронту
-      TIM2->CCER |= TIM_CCER_CC1E;  // включаем режим захвата для 4-го канала
-
-      TIM2->DIER |= TIM_DIER_CC1IE; // разрешаем прерывание по захвату
-
-      TIM2->CR1 |= TIM_CR1_CEN; // включаем счётчик
+      set_timer_config();
       NVIC_EnableIRQ(TIM2_IRQn);
+      NVIC_EnableIRQ(TIM3_IRQn);
+      goto monitoring_system_started;
     }
-    set_timer_config();
-    NVIC_EnableIRQ(TIM3_IRQn);
-    NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   }
+  NVIC_SystemReset();
 
+monitoring_system_started:
   while (true)
   {
-    search_function();
+    // search_function();
     system_monitor();
   }
 }
@@ -215,9 +204,14 @@ start_system:
 extern "C" void TIM2_IRQHandler(void)
 {
   TIM2->CR1 &= ~TIM_CR1_CEN;
-  
-  usInputRegisters[4] = TIM2->CCR1;
-
   TIM2->SR = ~TIM2->SR;
-  asm("NOP");
+
+  GPIOB->BSRR = (0b01 << 11U);
+  GPIOB->BRR = (0b01 << 11U);
+
+  uint16_t rising_edge = TIM2->CCR1;
+  uint16_t filing_edge = TIM2->CCR2;
+
+  if (filing_edge > rising_edge)
+    usInputRegisters[4] = filing_edge - rising_edge;
 }

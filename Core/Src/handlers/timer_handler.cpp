@@ -9,6 +9,29 @@ void set_timer_config()
     AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
     AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
 
+    // конфигурация для сэмплирования
+    {
+        RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+        TIM2->PSC = 56000 - 1; // новая частота 1Khz
+
+        TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI4 для TIM5_CH4
+        TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
+
+        TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC2S_Pos);         // выбираем TI4 для TIM5_CH4
+        TIM2->CCMR1 &= ~(TIM_CCMR1_IC2F | TIM_CCMR1_IC2PSC); // не фильтруем и делитель не используем
+
+        TIM2->CCER &= ~TIM_CCER_CC1P; // выбираем захват по переднему фронту
+        TIM2->CCER |= TIM_CCER_CC1E;  // включаем режим захвата для 4-го канала
+
+        TIM2->CCER |= TIM_CCER_CC2P; // выбираем захват по заднему фронту
+        TIM2->CCER |= TIM_CCER_CC2E; // включаем режим захвата для 4-го канала
+
+        // TIM2->DIER |= TIM_DIER_CC1IE; // разрешаем прерывание по захвату
+        TIM2->DIER |= TIM_DIER_CC2IE; // разрешаем прерывание по захвату
+
+        TIM2->CR1 |= TIM_CR1_CEN; // включаем счётчик
+    }
+
     // Таймер сэмплирования сигнала
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, (TIM_DIER_CC1IE_Msk));
@@ -84,12 +107,13 @@ extern "C" void TIM3_IRQHandler(void)
             TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
             TIM1->SR = ~TIM1->SR;
             TIM1->CNT = 0;
-            // adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
-            TIM2->CR1 |= TIM_CR1_CEN; 
         }
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
+            TIM2->SR = ~TIM2->SR;
+            TIM2->CNT = 0;
+            TIM2->CR1 |= TIM_CR1_CEN;
             act_coil_current = ADC2->DR;
         }
     }
