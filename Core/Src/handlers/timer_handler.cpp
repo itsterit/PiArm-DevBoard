@@ -4,6 +4,9 @@
 void set_timer_config()
 {
     check_system_parameters();
+    main_signal.signal_point_amt = 0;
+    search_signal.signal_point_amt = 0;
+
     gen_freq.clock_enable(true);
     gen_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
     AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
@@ -13,7 +16,7 @@ void set_timer_config()
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_UIE_Msk));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 28000, 3, 0);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 14000, 3, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
 

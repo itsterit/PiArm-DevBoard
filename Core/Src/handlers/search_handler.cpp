@@ -8,11 +8,7 @@ int median_filter(uint16_t a, uint16_t b, uint16_t c);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 
 // Вспомогательные переменные
-struct signal
-{
-    uint16_t signal_point_amt;
-    uint16_t signal[4];
-} main_signal, search_signal;
+signal main_signal, search_signal;
 
 void search_function()
 {
@@ -25,7 +21,9 @@ void search_function()
         {
             main_signal.signal[main_signal.signal_point_amt++] = search_signal.signal[3];
             search_signal.signal[3] = 0;
+            return;
         }
+        TIM4->CCR4 = 0;
     }
     else
     {
@@ -40,6 +38,20 @@ void search_function()
         else
         {
             push_fun(&search_signal.signal[0], arr_size, search_signal.signal[3]);
+
+            int main = median_filter(main_signal.signal[0], main_signal.signal[1], main_signal.signal[2]);
+            int search = median_filter(search_signal.signal[0], search_signal.signal[1], search_signal.signal[2]);
+            int signal_val = ABS_DIFF(main, search);
+
+            if (signal_val > 10)
+            {
+                TIM4->CCR4 = usHoldingRegisters[HOLDING_VOLUME];
+                TIM4->ARR = signal_val * 10;
+            }
+            else
+            {
+                TIM4->CCR4 = 0;
+            }
         }
     }
 }
@@ -47,10 +59,6 @@ void search_function()
 extern "C" void TIM2_IRQHandler(void)
 {
     TIM2->SR = ~TIM2->SR;
-
-    GPIOB->BSRR = (0b01 << 11U);
-    GPIOB->BRR = (0b01 << 11U);
-
     search_signal.signal[3] = TIM2->CCR1;
 }
 

@@ -7,6 +7,13 @@ extern uint16_t act_coil_current;
 void check_system_parameters();
 void system_monitor();
 
+struct signal
+{
+    uint16_t signal_point_amt;
+    uint16_t signal[4];
+};
+extern signal main_signal, search_signal;
+
 #if INVERT_GENERATOR_SIGNAL
 #define STOP_GENERATION                     \
     {                                       \
@@ -26,18 +33,18 @@ void system_monitor();
 // Частота ШИМ катушки
 #define HOLDING_COIL_FREQUENCY 2
 #define COIL_FREQUENCY__MAX 500
-#define BASE_COIL_FREQUENCY 400
+#define BASE_COIL_FREQUENCY 300
 #define COIL_FREQUENCY__MIN 100
 // ШИМ заполнение катушки
 #define HOLDING_COIL_DUTY 1
 #define COIL_DUTY__MAX 10
-#define BASE_COIL_DUTY 2
+#define BASE_COIL_DUTY 3
 #define COIL_DUTY__MIN 1
 // Громкость динамика
 #define HOLDING_VOLUME 3
-#define VOLUME__MAX 90
-#define BASE_VOLUME 50
-#define VOLUME__MIN 10
+#define VOLUME__MAX 70
+#define BASE_VOLUME 10
+#define VOLUME__MIN 1
 
 // Выходные регистры
 #define INPUT_REG_REF_VOLTAGE       0
