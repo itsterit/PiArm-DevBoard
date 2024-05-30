@@ -76,10 +76,9 @@ extern "C" void TIM3_IRQHandler(void)
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
-            // TIM2->SR = ~TIM2->SR;
-            // TIM2->CNT = 0;
-            // TIM2->CR1 |= TIM_CR1_CEN;
-            // act_coil_current = ADC2->DR;
+            TIM2->SR = ~TIM2->SR;
+            TIM2->CNT = 0;
+            act_coil_current = ADC2->DR;
         }
     }
     TIM3->SR = ~TIM3->SR;

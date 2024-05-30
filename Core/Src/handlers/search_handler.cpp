@@ -11,11 +11,37 @@ void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 struct signal
 {
     uint16_t signal_point_amt;
-    uint16_t signal[8];
-} main_signal, search_signal, out_signal;
+    uint16_t signal[4];
+} main_signal, search_signal;
 
 void search_function()
 {
+    uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
+    uint8_t arr_size = (sizeof(main_signal.signal));
+
+    if (main_signal.signal_point_amt < arr_amt)
+    {
+        if (search_signal.signal[3])
+        {
+            main_signal.signal[main_signal.signal_point_amt++] = search_signal.signal[3];
+            search_signal.signal[3] = 0;
+        }
+    }
+    else
+    {
+        if (search_signal.signal_point_amt < arr_amt)
+        {
+            if (search_signal.signal[3])
+            {
+                search_signal.signal[search_signal.signal_point_amt++] = search_signal.signal[3];
+                search_signal.signal[3] = 0;
+            }
+        }
+        else
+        {
+            push_fun(&search_signal.signal[0], arr_size, search_signal.signal[3]);
+        }
+    }
 }
 
 extern "C" void TIM2_IRQHandler(void)
@@ -25,9 +51,7 @@ extern "C" void TIM2_IRQHandler(void)
     GPIOB->BSRR = (0b01 << 11U);
     GPIOB->BRR = (0b01 << 11U);
 
-    uint16_t rising_edge = TIM2->CCR1;
-    usInputRegisters[4] = rising_edge;
-    TIM4->ARR = rising_edge;
+    search_signal.signal[3] = TIM2->CCR1;
 }
 
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val)
