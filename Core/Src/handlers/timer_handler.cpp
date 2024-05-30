@@ -37,7 +37,7 @@ void set_timer_config()
 #endif
         coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
         coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0,
-                                                      (0));
+                                                      (TIM_DIER_CC3IE));
         coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER1, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
@@ -73,13 +73,6 @@ extern "C" void TIM1_CC_IRQHandler(void)
 extern "C" void TIM3_IRQHandler(void)
 {
     {
-        if (TIM3->SR & TIM_SR_CC4IF_Msk)
-        {
-            /* Конец замера ответа катушки */
-            // TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
-            // TIM1->SR = ~TIM1->SR;
-            // TIM1->CNT = 0;
-        }
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
@@ -87,11 +80,6 @@ extern "C" void TIM3_IRQHandler(void)
             // TIM2->CNT = 0;
             // TIM2->CR1 |= TIM_CR1_CEN;
             // act_coil_current = ADC2->DR;
-        }
-        if (TIM3->SR & TIM_SR_CC2IF_Msk)
-        {
-            GPIOB->BSRR = (0b01 << 11U);
-            GPIOB->BRR = (0b01 << 11U);
         }
     }
     TIM3->SR = ~TIM3->SR;

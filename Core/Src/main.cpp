@@ -33,6 +33,7 @@ dma_control usb_tx_dma(DMA1, DMA1_Channel4);
 dma_control usb_rx_dma(DMA1, DMA1_Channel5);
 
 /* ModBus */
+uint16_t act_coil_current = 0;
 uint16_t usInputRegisters[MB_INPUT_ADR_MAX] = {0};
 uint16_t usHoldingRegisters[MB_HOLDING_ADR_MAX] = {0};
 ModBusRTU ModBus(ModBusTxCallback, ModBusSaveCallback, &usInputRegisters[0], &usHoldingRegisters[0]);
@@ -196,19 +197,7 @@ start_system:
 monitoring_system_started:
   while (true)
   {
-    // search_function();
+    search_function();
     system_monitor();
   }
-}
-
-extern "C" void TIM2_IRQHandler(void)
-{
-  TIM2->SR = ~TIM2->SR;
-
-  GPIOB->BSRR = (0b01 << 11U);
-  GPIOB->BRR = (0b01 << 11U);
-
-  uint16_t rising_edge = TIM2->CCR1;
-  usInputRegisters[4] = rising_edge;
-  TIM4->ARR = rising_edge;
 }
