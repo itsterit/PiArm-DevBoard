@@ -203,15 +203,11 @@ monitoring_system_started:
 
 extern "C" void TIM2_IRQHandler(void)
 {
-  TIM2->CR1 &= ~TIM_CR1_CEN;
   TIM2->SR = ~TIM2->SR;
 
   GPIOB->BSRR = (0b01 << 11U);
   GPIOB->BRR = (0b01 << 11U);
 
-  // uint16_t rising_edge = TIM2->CCR1;
-  // uint16_t filing_edge = TIM2->CCR2;
-
-  // if (filing_edge > rising_edge)
-  //   usInputRegisters[4] = filing_edge - rising_edge;
+  uint16_t rising_edge = TIM2->CCR1;
+  usInputRegisters[4] = rising_edge;
 }

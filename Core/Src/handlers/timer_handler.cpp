@@ -14,7 +14,7 @@ void set_timer_config()
         // RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
         // TIM2->PSC = 56000 - 1; // новая частота 1Khz
 
-        // TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI4 для TIM5_CH4
+        // TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos); // выбираем TI4 для TIM5_CH4
         // TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
 
         // TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC2S_Pos);         // выбираем TI4 для TIM5_CH4
@@ -36,9 +36,18 @@ void set_timer_config()
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_UIE_Msk));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 8000, 13, 0);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 28000, 3, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
         sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
+
+        TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI2 для CH1
+        TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
+        TIM2->CCMR1 |= (0b0100 << TIM_CCMR1_IC1F_Pos);
+
+        TIM2->CCER |= TIM_CCER_CC1P;  // выбираем захват по заднему фронту
+        TIM2->CCER |= TIM_CCER_CC1E;  // включаем режим захвата для 1-го канала
+        // TIM2->DIER |= TIM_DIER_CC1IE; // разрешаем прерывание по захвату
+
         sampling_timer.set_break_and_dead_time(OC_AND_OCN_OUTPUTS_ARE_ENABLED, MOE_CAN_BE_SET_ONLY_BY_SOFTWARE,
                                                BREAK_INPUT_BRK_IS_ACTIVE_HIGH, BREAK_INPUTS_DISABLED, WHEN_INACTIVE_OUTPUTS_DISABLED, WHEN_INACTIVE_DISABLED, LOCK_OFF, 0);
     }
