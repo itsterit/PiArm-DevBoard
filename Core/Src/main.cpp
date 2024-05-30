@@ -210,4 +210,5 @@ extern "C" void TIM2_IRQHandler(void)
 
   uint16_t rising_edge = TIM2->CCR1;
   usInputRegisters[4] = rising_edge;
+  TIM4->ARR = rising_edge;
 }

@@ -35,6 +35,14 @@ typedef enum
     CHANNEL_PWM_MODE_2                          = 0b111,
 } OUTPUT_COMPARE_MODE_Type;
 
+typedef enum
+{
+    CC_CHANNEL_IS_AS_OUTPUT                     = 0b00,
+    CC_CHANNEL_IS_AS_INPUT_IC1_IS_MAPPED_ON_TI1 = 0b01,
+    CC_CHANNEL_IS_AS_INPUT_IC1_IS_MAPPED_ON_TI2 = 0b10,
+    CC_CHANNEL_IS_AS_INPUT_IC1_IS_MAPPED_ON_TRC = 0b11,
+} CAPTURE_COMPARE_SELECTION_Type;
+
 /**
  *  set_event_generation
  */
@@ -205,7 +213,8 @@ public:
                                    OUTPUT_COMPARE_CLEAR_Type output_compare_clear,
                                    OUTPUT_COMPARE_PRELOAD_Type output_compare_preload,
                                    OUTPUT_COMPARE_FAST_Type output_compare_fast,
-                                   OUTPUT_COMPARE_MODE_Type output_mode);
+                                   OUTPUT_COMPARE_MODE_Type output_mode,
+                                   CAPTURE_COMPARE_SELECTION_Type capture_compare_sel);
 
     void set_event_generation(TRIGGER_GENERATION_Type trigger_generation,
                               UPDATE_GENERATION_Type update_generation,

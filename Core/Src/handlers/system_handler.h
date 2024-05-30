@@ -25,12 +25,12 @@ void system_monitor();
 
 // Частота ШИМ катушки
 #define HOLDING_COIL_FREQUENCY 2
-#define COIL_FREQUENCY__MAX 1000
-#define BASE_COIL_FREQUENCY 500
+#define COIL_FREQUENCY__MAX 500
+#define BASE_COIL_FREQUENCY 400
 #define COIL_FREQUENCY__MIN 100
 // ШИМ заполнение катушки
 #define HOLDING_COIL_DUTY 1
-#define COIL_DUTY__MAX 20
+#define COIL_DUTY__MAX 10
 #define BASE_COIL_DUTY 2
 #define COIL_DUTY__MIN 1
 // Громкость динамика
