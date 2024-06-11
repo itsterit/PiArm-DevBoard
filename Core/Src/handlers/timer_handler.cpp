@@ -43,7 +43,7 @@ void set_timer_config()
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (0));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 27000, 0, 0);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 40000, 0, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
 
         TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI2 для CH1
@@ -64,7 +64,7 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
     uint32_t timer_main_channel = (timer_arr / 100) * duty;
     uint32_t end_coil_reply_sampling = (timer_arr - 10);
     uint32_t start_coil_toque_sampling = timer_main_channel / 2;
-    coil_frequency_timer.set_timer_config(timer_main_channel, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 27, 0);
+    coil_frequency_timer.set_timer_config(timer_main_channel, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, ((main_frq / 1000000) - 1), 0);
 }
 
 extern "C" void TIM3_IRQHandler(void)

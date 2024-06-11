@@ -30,21 +30,26 @@ extern signal main_signal, search_signal;
     }
 #endif
 
-// Частота ШИМ катушки
-#define HOLDING_COIL_FREQUENCY 2
-#define COIL_FREQUENCY__MAX 500
-#define BASE_COIL_FREQUENCY 300
-#define COIL_FREQUENCY__MIN 100
 // ШИМ заполнение катушки
-#define HOLDING_COIL_DUTY 1
-#define COIL_DUTY__MAX 10
-#define BASE_COIL_DUTY 3
-#define COIL_DUTY__MIN 1
+#define HOLDING_COIL_DUTY           1
+#define COIL_DUTY__MAX              10
+#define BASE_COIL_DUTY              3
+#define COIL_DUTY__MIN              1
+// Частота ШИМ катушки
+#define HOLDING_COIL_FREQUENCY      2
+#define COIL_FREQUENCY__MAX         500
+#define BASE_COIL_FREQUENCY         300
+#define COIL_FREQUENCY__MIN         100
 // Громкость динамика
-#define HOLDING_VOLUME 3
-#define VOLUME__MAX 70
-#define BASE_VOLUME 10
-#define VOLUME__MIN 1
+#define HOLDING_VOLUME              3
+#define VOLUME__MAX                 70
+#define BASE_VOLUME                 10
+#define VOLUME__MIN                 1
+// Чувствительность
+#define HOLDING_SENSITIVITY         4
+#define SENSITIVITY__MAX            100
+#define BASE_SENSITIVITY            10
+#define SENSITIVITY__MIN            1
 
 // Выходные регистры
 #define INPUT_REG_REF_VOLTAGE       0

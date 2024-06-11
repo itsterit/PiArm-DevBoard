@@ -68,6 +68,12 @@ void check_system_parameters()
         {
             usHoldingRegisters[HOLDING_VOLUME] = BASE_VOLUME;
         }
+        // Чувствительность
+        if (usHoldingRegisters[HOLDING_SENSITIVITY] > SENSITIVITY__MAX ||
+            usHoldingRegisters[HOLDING_SENSITIVITY] < SENSITIVITY__MIN)
+        {
+            usHoldingRegisters[HOLDING_SENSITIVITY] = BASE_SENSITIVITY;
+        }
         return;
     }
     usHoldingRegisters[HOLDING_COIL_FREQUENCY] = BASE_COIL_FREQUENCY;
