@@ -12,25 +12,6 @@ void set_timer_config()
     AFIO->MAPR &= ~AFIO_MAPR_TIM3_REMAP_Msk;
     AFIO->MAPR |= (0b01 << AFIO_MAPR_TIM3_REMAP_PARTIALREMAP_Pos);
 
-    // Таймер сэмплирования сигнала
-    {
-        sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (TIM_DIER_UIE_Msk));
-        sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 14000, 3, 0);
-        sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
-        sampling_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
-
-        TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI2 для CH1
-        TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
-        TIM2->CCMR1 |= (0b0100 << TIM_CCMR1_IC1F_Pos);       //
-        TIM2->CCER |= TIM_CCER_CC1P;                         // выбираем захват по заднему фронту
-        TIM2->CCER |= TIM_CCER_CC1E;                         // включаем режим захвата для 1-го канала
-        // TIM2->DIER |= TIM_DIER_CC1IE; // разрешаем прерывание по захвату
-
-        sampling_timer.set_break_and_dead_time(OC_AND_OCN_OUTPUTS_ARE_ENABLED, MOE_CAN_BE_SET_ONLY_BY_SOFTWARE,
-                                               BREAK_INPUT_BRK_IS_ACTIVE_HIGH, BREAK_INPUTS_DISABLED, WHEN_INACTIVE_OUTPUTS_DISABLED, WHEN_INACTIVE_DISABLED, LOCK_OFF, 0);
-    }
-
     // задающий таймер
     {
 #if INVERT_GENERATOR_SIGNAL
@@ -40,8 +21,8 @@ void set_timer_config()
 #endif
         coil_frequency_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
         coil_frequency_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0,
-                                                      (TIM_DIER_CC3IE));
-        coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER1, SLAVE_MODE_DISABLED);
+                                                      (TIM_DIER_CC3IE | TIM_DIER_CC4IE));
+        coil_frequency_timer.slave_mode_control(INTERNAL_TRIGGER0, SLAVE_MODE_DISABLED);
         coil_frequency_timer.master_mode_config(MASTER_MODE_COMPARE_PULSE);
         coil_frequency_timer.capture_compare_register(0, TIM_CCER_CC2E_Msk);
         set_generation_timing(1000000, usHoldingRegisters[HOLDING_COIL_FREQUENCY], usHoldingRegisters[HOLDING_COIL_DUTY]);
@@ -57,6 +38,24 @@ void set_timer_config()
         buzzer_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
         buzzer_timer.set_timer_config(0, 0, 0, 1, 4000, 55, 0);
     }
+
+    // Таймер сэмплирования сигнала
+    {
+        sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (0));
+        sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 14000, 3, 0);
+        sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
+
+        TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI2 для CH1
+        TIM2->CCMR1 &= ~(TIM_CCMR1_IC1F | TIM_CCMR1_IC1PSC); // не фильтруем и делитель не используем
+        TIM2->CCMR1 |= (0b0100 << TIM_CCMR1_IC1F_Pos);       //
+        TIM2->CCER |= TIM_CCER_CC1P;                         // выбираем захват по заднему фронту
+        TIM2->CCER |= TIM_CCER_CC1E;                         // включаем режим захвата для 1-го канала
+        TIM2->DIER |= TIM_DIER_CC1IE;                        // разрешаем прерывание по захвату
+
+        sampling_timer.set_break_and_dead_time(OC_AND_OCN_OUTPUTS_ARE_ENABLED, MOE_CAN_BE_SET_ONLY_BY_SOFTWARE,
+                                               BREAK_INPUT_BRK_IS_ACTIVE_HIGH, BREAK_INPUTS_DISABLED, WHEN_INACTIVE_OUTPUTS_DISABLED, WHEN_INACTIVE_DISABLED, LOCK_OFF, 0);
+    }
 }
 
 void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
@@ -68,34 +67,22 @@ void set_generation_timing(uint32_t tmr_freq, uint16_t frq, uint8_t duty)
     coil_frequency_timer.set_timer_config(timer_main_channel, timer_main_channel, start_coil_toque_sampling, end_coil_reply_sampling, timer_arr, 55, 0);
 }
 
-extern "C" void TIM1_CC_IRQHandler(void)
-{
-    TIM1->SR = ~TIM1->SR;
-}
-
 extern "C" void TIM3_IRQHandler(void)
 {
     {
         if (TIM3->SR & TIM_SR_CC3IF_Msk)
         {
             /* Начало замера тока катушки */
+            act_coil_current = ADC2->DR;
+        }
+        if (TIM3->SR & TIM_SR_CC4IF_Msk)
+        {
+            if (TIM2->SR & TIM_SR_CC1IF_Msk)
+                search_signal.signal[3] = TIM2->CCR1;
+
             TIM2->SR = ~TIM2->SR;
             TIM2->CNT = 0;
-            act_coil_current = ADC2->DR;
         }
     }
     TIM3->SR = ~TIM3->SR;
-}
-
-extern "C" void DMA1_Channel1_IRQHandler(void)
-{
-    {
-        // Если мы тут - значит данные получены
-        TIM1->CR1 &= ~(TIM_CR1_CEN_Msk);
-        TIM1->SR = ~TIM1->SR;
-        TIM1->CNT = 0;
-        usInputRegisters[9] = (100 - DMA1_Channel1->CNDTR);
-        adc_samling_dma.dma_start(SAMPLING_POINT_AMOUNT, (uint32_t *)&usInputRegisters[10], (uint32_t *)&ADC1->DR);
-    }
-    DMA1->IFCR = DMA_IFCR_CGIF1_Msk;
 }
