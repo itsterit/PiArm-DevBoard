@@ -22,6 +22,8 @@ timer buzzer_timer(TIM4);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM2);
 
+uint32_t main_frq;
+
 /* Библиотека логирования и настройка уарт`а */
 uint8_t usb_buffer[USB_BUFFER_SIZE]{0};
 usart usb_line(USART1);
@@ -109,7 +111,7 @@ int main(void)
   {
     clock_control::pll::hse_clock_divided(false);
     clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
-    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X7);
+    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X5);
     if (clock_control::pll::enable(true) && clock_control::pll::ready())
     {
       FLASH->ACR |= (0x02 << FLASH_ACR_LATENCY_Pos);
@@ -117,10 +119,12 @@ int main(void)
       if (clock_control::clock_switch(clock_control::SYSTEM_CLOCK_SOURCE_Type::PLL_SELECTED_AS_SYSTEM_CLOCK) && clock_control::hse::enable_security_system(true))
       {
         clock_control::hsi::enable(true);
-        clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_NOT_DIVIDED);
+        clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_DIVIDED_BY_2);
         clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
         clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
-        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_4);
+        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_2);
+
+        main_frq = 20000000;
         goto start_system;
       }
     }
@@ -152,7 +156,7 @@ start_system:
   buzz_freq.set_config(GPIO::alternate_push_pull, GPIO::alternate_output_mode);
 
   /* Конфижим УАРТ в дма режим */
-  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, 56000000, 9600);
+  usb_line.usart_config(NUMBER_OF_DATA_BITS_IS_8, PARITY_CONTROL_DISABLED, NUMBER_OF_STOP_BIT_IS_1, DMA_MODE_RXEN_TXEN, main_frq, 9600);
   usb_line.interrupt_config(USART_CR1_IDLEIE_Msk);
   set_usb_tx_dma_cfg();
   set_usb_rx_dma_cfg();
@@ -181,7 +185,7 @@ start_system:
     usInputRegisters[INPUT_REG_REF_VOLTAGE] = core_voltage;
     NVIC_EnableIRQ(ADC1_2_IRQn);
     ADC_START(ADC2);
-    SysTick_Config(56000);
+    SysTick_Config(main_frq / 1000);
     NVIC_EnableIRQ(SysTick_IRQn);
 
     if (adc::enable(ADC1))

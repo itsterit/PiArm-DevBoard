@@ -15,6 +15,7 @@
 
 #define MODBUS_ADDRESS (1)
 #define USB_BUFFER_SIZE (0xFF)
+extern uint32_t main_frq;
 
 extern GPIO led_pin;
 extern GPIO gen_freq;
