@@ -111,7 +111,7 @@ int main(void)
   {
     clock_control::pll::hse_clock_divided(false);
     clock_control::pll::pll_clock_source(clock_control::PLL_CLOCK_SOURCE_Type::HSE_oscillator);
-    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X5);
+    clock_control::pll::multiplication_factor(clock_control::MULTIPLICATION_FACTOR_Type::PLL_INPUT_CLOCK_X3);
     if (clock_control::pll::enable(true) && clock_control::pll::ready())
     {
       FLASH->ACR |= (0x02 << FLASH_ACR_LATENCY_Pos);
@@ -122,9 +122,9 @@ int main(void)
         clock_control::set_ahb_prescaler(clock_control::AHB_PRESCALER_Type::SYSCLK_NOT_DIVIDED);
         clock_control::set_apb1_prescaler(clock_control::APB1_PRESCALER_Type::HCLK_DIVIDED_BY_2);
         clock_control::set_apb2_prescaler(clock_control::APB2_PRESCALER_Type::HCLK_NOT_DIVIDED);
-        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_4);
+        clock_control::set_adc_prescaler(clock_control::ADC_PRESCALER_Type::PCLK2_DIVIDED_BY_2);
 
-        main_frq = 40000000;
+        main_frq = 24000000;
         goto start_system;
       }
     }

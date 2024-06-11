@@ -51,11 +51,12 @@ extern signal main_signal, search_signal;
 #define BASE_SENSITIVITY            10
 #define SENSITIVITY__MIN            1
 
-// Выходные регистры
+// регистры
 #define INPUT_REG_REF_VOLTAGE       0
 #define INPUT_REG_BAT_VOLTAGE       1
 #define INPUT_REG_DC_VOLTAGE        2
 #define INPUT_REG_COIL_CURRENT      3
+#define INPUT_SEARCH_VALUE          4
 #define HOLDING_REGISTER_DATA_CRC   9
 
 #endif /* __SYSTEM_HANDLER_H__ */

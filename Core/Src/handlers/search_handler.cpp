@@ -43,6 +43,7 @@ void search_function()
             int main = median_filter(main_signal.signal[0], main_signal.signal[1], main_signal.signal[2]);
             int search = median_filter(search_signal.signal[0], search_signal.signal[1], search_signal.signal[2]);
             int signal_val = ABS_DIFF(main, search);
+            usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
             if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
             {
