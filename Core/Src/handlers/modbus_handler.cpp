@@ -77,8 +77,9 @@ void check_system_parameters()
         return;
     }
     usHoldingRegisters[HOLDING_COIL_FREQUENCY] = BASE_COIL_FREQUENCY;
-    usHoldingRegisters[HOLDING_COIL_DUTY] = BASE_COIL_DUTY;
-    usHoldingRegisters[HOLDING_VOLUME] = BASE_VOLUME;
+    usHoldingRegisters[HOLDING_COIL_DUTY]      = BASE_COIL_DUTY;
+    usHoldingRegisters[HOLDING_VOLUME]         = BASE_VOLUME;
+    usHoldingRegisters[HOLDING_SENSITIVITY]    = BASE_SENSITIVITY;
 }
 
 /**

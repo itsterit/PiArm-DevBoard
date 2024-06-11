@@ -48,8 +48,8 @@ extern signal main_signal, search_signal;
 // Чувствительность
 #define HOLDING_SENSITIVITY         4
 #define SENSITIVITY__MAX            100
-#define BASE_SENSITIVITY            15
-#define SENSITIVITY__MIN            1
+#define BASE_SENSITIVITY            10
+#define SENSITIVITY__MIN            5
 
 // регистры
 #define INPUT_REG_REF_VOLTAGE       0
