@@ -57,12 +57,6 @@ void search_function()
     }
 }
 
-extern "C" void TIM2_IRQHandler(void)
-{
-    TIM2->SR = ~TIM2->SR;
-    search_signal.signal[3] = TIM2->CCR1;
-}
-
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val)
 {
     uint16_t add_arr[99];

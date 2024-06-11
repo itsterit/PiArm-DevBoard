@@ -51,7 +51,7 @@ void set_timer_config()
         TIM2->CCMR1 |= (0b0100 << TIM_CCMR1_IC1F_Pos);       //
         TIM2->CCER |= TIM_CCER_CC1P;                         // выбираем захват по заднему фронту
         TIM2->CCER |= TIM_CCER_CC1E;                         // включаем режим захвата для 1-го канала
-        TIM2->DIER |= TIM_DIER_CC1IE;                        // разрешаем прерывание по захвату
+        // TIM2->DIER |= TIM_DIER_CC1IE;                        // разрешаем прерывание по захвату
 
         sampling_timer.set_break_and_dead_time(OC_AND_OCN_OUTPUTS_ARE_ENABLED, MOE_CAN_BE_SET_ONLY_BY_SOFTWARE,
                                                BREAK_INPUT_BRK_IS_ACTIVE_HIGH, BREAK_INPUTS_DISABLED, WHEN_INACTIVE_OUTPUTS_DISABLED, WHEN_INACTIVE_DISABLED, LOCK_OFF, 0);
@@ -77,9 +77,10 @@ extern "C" void TIM3_IRQHandler(void)
         }
         if (TIM3->SR & TIM_SR_CC4IF_Msk)
         {
+            /* Конец ответа катушки */
             if (TIM2->SR & TIM_SR_CC1IF_Msk)
                 search_signal.signal[3] = TIM2->CCR1;
-
+            TIM2->CR1 &= ~TIM_CR1_CEN_Msk;
             TIM2->SR = ~TIM2->SR;
             TIM2->CNT = 0;
         }

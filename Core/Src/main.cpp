@@ -187,7 +187,6 @@ start_system:
     if (adc::enable(ADC1))
     {
       set_timer_config();
-      // NVIC_EnableIRQ(TIM2_IRQn);
       NVIC_EnableIRQ(TIM3_IRQn);
       goto monitoring_system_started;
     }
