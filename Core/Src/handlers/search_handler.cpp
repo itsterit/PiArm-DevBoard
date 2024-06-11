@@ -15,7 +15,7 @@ void search_function()
     uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
     uint8_t arr_size = (sizeof(main_signal.signal));
 
-    if (main_signal.signal_point_amt < (arr_amt * 2))
+    if (main_signal.signal_point_amt < (arr_amt * 4))
     {
         if (search_signal.signal[3])
         {
