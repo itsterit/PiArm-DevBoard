@@ -3,6 +3,9 @@
 #define ABS_DIFF(x, y) ((x) > (y) ? ((x) - (y)) : ((y) - (x)))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
+#define BASE_FREQ 3000
+#define MIN_FREQ  500
+
 // Вспомогательные функции
 int median_filter(uint16_t a, uint16_t b, uint16_t c);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
@@ -47,12 +50,16 @@ void search_function()
 
             if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
             {
-                TIM4->CCR4 = usHoldingRegisters[HOLDING_VOLUME];
-                TIM4->ARR = signal_val * 10;
+                uint32_t timer_arr = (BASE_FREQ > signal_val)
+                                         ? (((BASE_FREQ - signal_val) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal_val))
+                                         : (MIN_FREQ);
+                TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
+                TIM4->ARR = timer_arr;
             }
             else
             {
-                TIM4->CCR4 = 0;
+                if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1)
+                    TIM4->CCR4 = 0;
             }
         }
     }

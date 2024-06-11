@@ -35,15 +35,15 @@ void set_timer_config()
         buzzer_timer.set_event_generation(TRIGGER_GENERATION_DISABLE, UPDATE_GENERATION_DISABLE, 0);
         buzzer_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_DISABLE, 0, 0);
         buzzer_timer.capture_compare_register(0, TIM_CCER_CC4E_Msk);
+        buzzer_timer.set_timer_config(0, 0, 0, 0, 500, ((main_frq / 1000000) - 1), 0);
         buzzer_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_DISABLE, COUNTER_ENABLE);
-        buzzer_timer.set_timer_config(0, 0, 0, 1, 4000, ((main_frq / 1000000) - 1), 0);
     }
 
     // Таймер сэмплирования сигнала
     {
         sampling_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, (0));
         sampling_timer.slave_mode_control(INTERNAL_TRIGGER2, TRIGGER_MODE);
-        sampling_timer.set_timer_config(0, 0, 0, 0, 40000, 0, 0);
+        sampling_timer.set_timer_config(0, 0, 0, 0, 32000, 0, 0);
         sampling_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
 
         TIM2->CCMR1 |= (0b01 << TIM_CCMR1_CC1S_Pos);         // выбираем TI2 для CH1
