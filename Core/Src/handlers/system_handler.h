@@ -33,7 +33,7 @@ extern signal main_signal, search_signal;
 // ШИМ заполнение катушки
 #define HOLDING_COIL_DUTY           1
 #define COIL_DUTY__MAX              10
-#define BASE_COIL_DUTY              3
+#define BASE_COIL_DUTY              2
 #define COIL_DUTY__MIN              1
 // Частота ШИМ катушки
 #define HOLDING_COIL_FREQUENCY      2
@@ -48,7 +48,7 @@ extern signal main_signal, search_signal;
 // Чувствительность
 #define HOLDING_SENSITIVITY         4
 #define SENSITIVITY__MAX            100
-#define BASE_SENSITIVITY            10
+#define BASE_SENSITIVITY            15
 #define SENSITIVITY__MIN            1
 
 // регистры
