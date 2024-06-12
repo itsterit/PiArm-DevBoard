@@ -51,7 +51,7 @@ void search_function()
 
             if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
             {
-                uint32_t signal = signal_val * 4;
+                uint32_t signal = signal_val * 2;
                 uint32_t freq = (BASE_FREQ > signal)
                                     ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
                                     : (MIN_FREQ);
