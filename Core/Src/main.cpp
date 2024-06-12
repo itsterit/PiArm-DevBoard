@@ -19,6 +19,7 @@ GPIO dc_check(GPIOA, 3U);
 /* Таймера на генерацию и сэмплирование */
 uint16_t cur_fault_delay = 0;
 timer buzzer_timer(TIM4);
+timer set_balance_timer(TIM1);
 timer coil_frequency_timer(TIM3);
 timer sampling_timer(TIM2);
 

@@ -14,18 +14,21 @@ void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 // Вспомогательные переменные
 signal main_signal, search_signal;
 uint16_t new_signal = 0;
+uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
+uint8_t arr_size = (sizeof(main_signal.signal));
 
 void search_function()
 {
-    uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
-    uint8_t arr_size = (sizeof(main_signal.signal));
-
     if (main_signal.signal_point_amt < (arr_amt * 4))
     {
         if (new_signal)
         {
             push_fun(&main_signal.signal[0], arr_size, new_signal);
+            push_fun(&search_signal.signal[0], arr_size, new_signal);
+
             main_signal.signal_point_amt++;
+            search_signal.signal_point_amt++;
+
             new_signal = 0;
             return;
         }
@@ -38,38 +41,31 @@ void search_function()
             push_fun(&search_signal.signal[0], arr_size, new_signal);
             new_signal = 0;
         }
-        else
-            return;
 
-        if (search_signal.signal_point_amt >= arr_amt)
+        uint32_t main = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+        uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
+
+        int signal_val = ABS_DIFF(main, search);
+        usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
+
+        if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
         {
+            uint32_t signal = signal_val * 2;
+            uint32_t freq = (BASE_FREQ > signal)
+                                ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
+                                : (MIN_FREQ);
 
-            uint32_t main = filter((uint16_t *)&main_signal.signal[0], arr_amt);
-            uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
-
-            int signal_val = ABS_DIFF(main, search);
-            usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
-
-            if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
-            {
-                uint32_t signal = signal_val * 2;
-                uint32_t freq = (BASE_FREQ > signal)
-                                    ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
-                                    : (MIN_FREQ);
-
-                uint32_t timer_arr = TIMER_FREQ / freq;
-                TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
-                TIM4->ARR = timer_arr;
-            }
-            else
-            {
-                if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1)
-                    TIM4->CCR4 = 0;
-            }
-
-            return;
+            uint32_t timer_arr = TIMER_FREQ / freq;
+            TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
+            TIM4->ARR = timer_arr;
         }
-        search_signal.signal_point_amt++;
+        else
+        {
+            if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 2)
+            {
+                TIM4->CCR4 = 0;
+            }
+        }
     }
 }
 

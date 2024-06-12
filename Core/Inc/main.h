@@ -30,6 +30,7 @@ void set_timer_config();
 extern timer coil_frequency_timer;
 extern timer sampling_timer;
 extern timer buzzer_timer;
+extern timer set_balance_timer;
 
 // Работа с уарт
 void log_out_method(char *str, uint8_t len);

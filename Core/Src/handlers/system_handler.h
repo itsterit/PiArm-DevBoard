@@ -10,7 +10,7 @@ void system_monitor();
 struct signal
 {
     uint8_t signal_point_amt;
-    uint16_t signal[4];
+    uint16_t signal[5];
 };
 extern signal main_signal, search_signal;
 extern uint16_t new_signal;
