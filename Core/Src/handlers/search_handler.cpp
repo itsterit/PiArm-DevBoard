@@ -33,17 +33,16 @@ void search_function()
     }
     else
     {
-        if (search_signal.signal_point_amt < arr_amt)
-        {
-            if (new_signal)
-            {
-                search_signal.signal[search_signal.signal_point_amt++] = new_signal;
-                new_signal = 0;
-            }
-        }
-        else
+        if (new_signal)
         {
             push_fun(&search_signal.signal[0], arr_size, new_signal);
+            new_signal = 0;
+        }
+        else
+            return;
+
+        if (search_signal.signal_point_amt >= arr_amt)
+        {
 
             uint32_t main = filter((uint16_t *)&main_signal.signal[0], arr_amt);
             uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
@@ -67,7 +66,10 @@ void search_function()
                 if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1)
                     TIM4->CCR4 = 0;
             }
+
+            return;
         }
+        search_signal.signal_point_amt++;
     }
 }
 
