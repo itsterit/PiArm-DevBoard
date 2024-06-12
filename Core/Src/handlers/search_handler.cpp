@@ -8,7 +8,7 @@
 #define MIN_FREQ 1000
 
 // Вспомогательные функции
-int median_filter(uint16_t a, uint16_t b, uint16_t c);
+uint32_t filter(uint16_t *array, uint8_t size_amt);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 
 // Вспомогательные переменные
@@ -44,8 +44,9 @@ void search_function()
         {
             push_fun(&search_signal.signal[0], arr_size, search_signal.signal[3]);
 
-            int main = median_filter(main_signal.signal[0], main_signal.signal[1], main_signal.signal[2]);
-            int search = median_filter(search_signal.signal[0], search_signal.signal[1], search_signal.signal[2]);
+            uint32_t main = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+            uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
+
             int signal_val = ABS_DIFF(main, search);
             usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
@@ -77,13 +78,11 @@ void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val)
     memcpy(arr_ptr, &add_arr[0], arr_size);
 }
 
-int median_filter(uint16_t a, uint16_t b, uint16_t c)
+uint32_t filter(uint16_t *array, uint8_t size_amt)
 {
-    int middle = 0;
+    uint64_t sum = 0;
+    for (uint8_t i = 0; i < size_amt; i++)
+        sum += array[i];
 
-    if ((MAX(a, b) == MAX(b, c)))
-        middle = MAX(a, c);
-    else
-        middle = MAX(b, MIN(a, c));
-    return middle;
+    return (sum / size_amt);
 }
