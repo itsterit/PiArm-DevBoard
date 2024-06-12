@@ -1,8 +1,8 @@
 #include <main.h>
 #include "ModBus/mbcrc/mbcrc.h"
-#define COIL_CURRENT_FAULT_DELAY    (1000)
-#define CHECK_SYSTEM_TIMEOUT        (100)
-#define UPDATE_TIMEOUT              (2000)
+#define COIL_CURRENT_FAULT_DELAY (1000)
+#define CHECK_SYSTEM_TIMEOUT (100)
+#define UPDATE_TIMEOUT (2000)
 // Параметры
 #define ALPHA_SMOOTH_VALUE (0.07)
 #define COIL_CURRENT_SMOOTH_VALUE (0.2)
@@ -50,7 +50,7 @@ extern "C" void SysTick_Handler(void)
     if (check_system_timeout++ >= CHECK_SYSTEM_TIMEOUT)
     {
         check_system_timeout = 0;
-        ADC_INJ_START(ADC2);
+        ADC_INJ_START(ADC1);
     }
 
     if (update_signal_timeout++ >= UPDATE_TIMEOUT)
@@ -130,23 +130,19 @@ extern "C" void ADC1_2_IRQHandler(void)
 
 void system_monitor()
 {
-  if (ADC_END_INJ_CONVERSION(ADC2))
-  {
-    ADC_CLEAR_STATUS(ADC2);
-    // Мониторинг напряжений
-    usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR1), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
-    usInputRegisters[INPUT_REG_DC_VOLTAGE] =
-        smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR2), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
-    // Ток катушки
-    usInputRegisters[INPUT_REG_COIL_CURRENT] =
-        smooth_value(COIL_CURRENT_SMOOTH_VALUE,
-                     (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], act_coil_current) / COIL_CURRENT_RES),
-                     usInputRegisters[INPUT_REG_COIL_CURRENT]);
+    if (ADC_END_INJ_CONVERSION(ADC1))
+    {
+        ADC_CLEAR_STATUS(ADC1);
+        usInputRegisters[INPUT_REG_REF_VOLTAGE] =
+            smooth_value(ALPHA_SMOOTH_VALUE, get_adc_ref_voltage(ADC1->JDR1), usInputRegisters[INPUT_REG_REF_VOLTAGE]);
+        usInputRegisters[INPUT_REG_BAT_VOLTAGE] =
+            smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
+        usInputRegisters[INPUT_REG_DC_VOLTAGE] =
+            smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
 
-    if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
-      NVIC_SystemReset();
-  }
+        // if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
+            // NVIC_SystemReset();
+    }
 }
 
 #ifndef __GNUC__

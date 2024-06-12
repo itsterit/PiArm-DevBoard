@@ -44,12 +44,12 @@ extern uint16_t new_signal;
 // Громкость динамика
 #define HOLDING_VOLUME              3
 #define VOLUME__MAX                 70
-#define BASE_VOLUME                 10
+#define BASE_VOLUME                 5
 #define VOLUME__MIN                 1
 // Чувствительность
 #define HOLDING_SENSITIVITY         4
 #define SENSITIVITY__MAX            100
-#define BASE_SENSITIVITY            10
+#define BASE_SENSITIVITY            15
 #define SENSITIVITY__MIN            5
 
 // регистры

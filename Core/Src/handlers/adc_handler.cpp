@@ -53,33 +53,28 @@ bool get_core_voltage(uint16_t *ret_data)
 bool adc_start_system_monitor(uint16_t rev_mv)
 {
     // включить тактирование
-    if (adc::enable(ADC2))
+    if (adc::enable(ADC1))
     {
         // конфигурация
-        adc::set_cr1_config(ADC2, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
+        adc::set_cr1_config(ADC1, AWDEN__REGULAR_CHANNELS_ANALOG_WATCHDOG_ENABLED, JAWDEN__INJECTED_CHANNELS_ANALOG_WATCHDOG_DISABLED,
                             DUALMOD__INDEPENDENT_MODE, 0, JDISCEN__INJECTED_CHANNELS_DISCONTINUOUS_MODE_DISABLED,
                             DISCEN__REGULAR_CHANNELS_DISCONTINUOUS_MODE_DISABLED, JAUTO__AUTOMATIC_INJECTED_CONVERSION_DISABLED,
                             AWDSGL__ANALOG_WATCHDOG_ON_SINGLE_CHANNEL, SCAN__SCAN_MODE_ENABLED,
                             JEOCIE__JEOC_INTERRUPT_DISABLED, AWDIE__ANALOG_WATCHDOG_INTERRUPT_ENABLED, EOCIE__EOC_INTERRUPT_DISABLED, 2);
 
-        adc::set_cr2_config(ADC2, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_DISABLED,
+        adc::set_cr2_config(ADC1, TSVREFE__TEMPERATURE_SENSOR_VREFINT_CHANNEL_ENABLED,
                             EXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, EXTSEL__SWSTART,
                             JEXTTRIG__CONVERSION_ON_EXTERNAL_EVENT_ENABLED, JEXTSEL__JSWSTART,
                             ALIGN__RIGHT_ALIGNMENT, DMA__DMA_MODE_DISABLED, RSTCAL__CALIBRATION_REGISTER_INITIALIZED,
                             CONT__CONTINUOUS_CONVERSION_MODE, ADON__ENABLE_ADC);
 
         // установка времени и порядка сэмплирования и настройка watchdog`а по току катушки
-        if (adc::set_sampling(ADC2, COIL_CURRENT_ADC_CHANNEL, SMP_7_5_cycles) &&        // Ток катушки      - 2й канал, по watchdog`у без инжектируемого преобразования
-            adc::set_sampling(ADC2, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_239_5_cycles) && // Преобразователь  - 3й канал
-            adc::set_sampling(ADC2, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles))     // Акб              - 4й канал
+        if (adc::set_sampling(ADC1, VOLTAGE_CONVERTER_ADC_CHANNEL, SMP_239_5_cycles) && // Преобразователь  - 3й канал
+            adc::set_sampling(ADC1, BATTERY_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles) &&   // Акб              - 4й канал
+            adc::set_sampling(ADC1, REFERENCE_VOLTAGE_ADC_CHANNEL, SMP_239_5_cycles))   // Опора            - 17й канал
         {
-            if (get_adc_code(rev_mv, 400))
-            {
-                adc::set_injected_sequence(ADC2, 1, VOLTAGE_CONVERTER_ADC_CHANNEL, BATTERY_VOLTAGE_ADC_CHANNEL, 0, 0);
-                adc::set_analog_watchdog_threshold(ADC2, get_adc_code(rev_mv, 400), 0);
-                adc::set_regular_sequence(ADC2, 0, 1, COIL_CURRENT_ADC_CHANNEL);
-                return 1;
-            }
+            adc::set_injected_sequence(ADC1, 2, VOLTAGE_CONVERTER_ADC_CHANNEL, BATTERY_VOLTAGE_ADC_CHANNEL, REFERENCE_VOLTAGE_ADC_CHANNEL, 0);
+            return 1;
         }
     }
     return 0;

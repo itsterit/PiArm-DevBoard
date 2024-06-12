@@ -76,7 +76,7 @@ int main(void)
    *          процессора минимально
    */
   {
-    dc_startup = 3000;
+    dc_startup = 2000;
     dc_enable.set();
     uint16_t core_voltage;
     if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
@@ -86,14 +86,14 @@ int main(void)
 
       while (dc_startup)
       {
-        if (ADC_END_INJ_CONVERSION(ADC2))
+        if (ADC1->SR & ADC_SR_JEOS_Msk)
         {
-          ADC_CLEAR_STATUS(ADC2);
-          usInputRegisters[INPUT_REG_REF_VOLTAGE] = core_voltage;
-          usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR1), 10000, 5100);
-          usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC2->JDR2), 1000, 100);
+          ADC_CLEAR_STATUS(ADC1);
+          usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
+          usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100);
+          usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100);
         }
-        ADC_INJ_START(ADC2);
+        ADC_INJ_START(ADC1);
       }
     }
     else
@@ -179,22 +179,16 @@ start_system:
   NVIC_SetPriority(EXTI15_10_IRQn, 0);
   NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  Logger.LogI((char *)"Starting!\n\r");
-  uint16_t core_voltage;
-  if (get_core_voltage(&core_voltage) && adc_start_system_monitor(core_voltage))
+  if (adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]))
   {
-    usInputRegisters[INPUT_REG_REF_VOLTAGE] = core_voltage;
     NVIC_EnableIRQ(ADC1_2_IRQn);
-    ADC_START(ADC2);
+
     SysTick_Config(main_frq / 1000);
     NVIC_EnableIRQ(SysTick_IRQn);
 
-    if (adc::enable(ADC1))
-    {
-      set_timer_config();
-      NVIC_EnableIRQ(TIM3_IRQn);
-      goto monitoring_system_started;
-    }
+    set_timer_config();
+    NVIC_EnableIRQ(TIM3_IRQn);
+    goto monitoring_system_started;
   }
   NVIC_SystemReset();
 

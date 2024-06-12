@@ -16,6 +16,7 @@ signal main_signal, search_signal;
 uint16_t new_signal = 0;
 uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
 uint8_t arr_size = (sizeof(main_signal.signal));
+uint32_t main_va;
 
 void search_function()
 {
@@ -28,7 +29,8 @@ void search_function()
 
             main_signal.signal_point_amt++;
             search_signal.signal_point_amt++;
-
+            main_va = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+            
             new_signal = 0;
             return;
         }
@@ -42,10 +44,10 @@ void search_function()
             new_signal = 0;
         }
 
-        uint32_t main = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+        // uint32_t main_va = filter((uint16_t *)&main_signal.signal[0], arr_amt);
         uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
 
-        int signal_val = ABS_DIFF(main, search);
+        int signal_val = ABS_DIFF(main_va, search);
         usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
         if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
@@ -61,7 +63,7 @@ void search_function()
         }
         else
         {
-            if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 2)
+            if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1)
             {
                 TIM4->CCR4 = 0;
             }
