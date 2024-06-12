@@ -1,7 +1,7 @@
 #include <main.h>
 #include "ModBus/mbcrc/mbcrc.h"
 #define COIL_CURRENT_FAULT_DELAY (1000)
-#define CHECK_SYSTEM_TIMEOUT (100)
+#define CHECK_SYSTEM_TIMEOUT (10)
 #define UPDATE_TIMEOUT (2000)
 // Параметры
 #define ALPHA_SMOOTH_VALUE (0.07)
@@ -139,9 +139,13 @@ void system_monitor()
             smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100), usInputRegisters[INPUT_REG_BAT_VOLTAGE]);
         usInputRegisters[INPUT_REG_DC_VOLTAGE] =
             smooth_value(ALPHA_SMOOTH_VALUE, get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100), usInputRegisters[INPUT_REG_DC_VOLTAGE]);
+        usInputRegisters[INPUT_REG_COIL_CURRENT] =
+            smooth_value(COIL_CURRENT_SMOOTH_VALUE,
+                         (get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], act_coil_current) / COIL_CURRENT_RES),
+                         usInputRegisters[INPUT_REG_COIL_CURRENT]);
 
-        // if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
-            // NVIC_SystemReset();
+        if (system_monitor_handler(usInputRegisters[INPUT_REG_REF_VOLTAGE], usInputRegisters[INPUT_REG_BAT_VOLTAGE], usInputRegisters[INPUT_REG_DC_VOLTAGE]) != SYSTEM_OK)
+            NVIC_SystemReset();
     }
 }
 

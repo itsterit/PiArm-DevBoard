@@ -88,7 +88,6 @@ int main(void)
       {
         if (ADC1->SR & ADC_SR_JEOS_Msk)
         {
-          ADC_CLEAR_STATUS(ADC1);
           usInputRegisters[INPUT_REG_REF_VOLTAGE] = get_adc_ref_voltage(ADC1->JDR1);
           usInputRegisters[INPUT_REG_BAT_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR2), 10000, 5100);
           usInputRegisters[INPUT_REG_DC_VOLTAGE] = get_voltage_divider_uin(get_adc_voltage(usInputRegisters[INPUT_REG_REF_VOLTAGE], ADC1->JDR3), 1000, 100);
@@ -182,6 +181,7 @@ start_system:
   if (adc_start_system_monitor(usInputRegisters[INPUT_REG_REF_VOLTAGE]))
   {
     NVIC_EnableIRQ(ADC1_2_IRQn);
+    ADC_START(ADC2);
 
     SysTick_Config(main_frq / 1000);
     NVIC_EnableIRQ(SysTick_IRQn);
