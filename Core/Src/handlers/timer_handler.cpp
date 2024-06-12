@@ -79,7 +79,7 @@ extern "C" void TIM3_IRQHandler(void)
         {
             /* Конец ответа катушки */
             if (TIM2->SR & TIM_SR_CC1IF_Msk)
-                search_signal.signal[3] = TIM2->CCR1;
+                new_signal = TIM2->CCR1;
             TIM2->CR1 &= ~TIM_CR1_CEN_Msk;
             TIM2->SR = ~TIM2->SR;
             TIM2->CNT = 0;

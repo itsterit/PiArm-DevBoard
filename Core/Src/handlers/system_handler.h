@@ -13,6 +13,7 @@ struct signal
     uint16_t signal[4];
 };
 extern signal main_signal, search_signal;
+extern uint16_t new_signal;
 
 #if INVERT_GENERATOR_SIGNAL
 #define STOP_GENERATION                     \

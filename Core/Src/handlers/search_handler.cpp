@@ -13,6 +13,7 @@ void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 
 // Вспомогательные переменные
 signal main_signal, search_signal;
+uint16_t new_signal = 0;
 
 void search_function()
 {
@@ -21,11 +22,11 @@ void search_function()
 
     if (main_signal.signal_point_amt < (arr_amt * 4))
     {
-        if (search_signal.signal[3])
+        if (new_signal)
         {
-            push_fun(&main_signal.signal[0], arr_size, search_signal.signal[3]);
+            push_fun(&main_signal.signal[0], arr_size, new_signal);
             main_signal.signal_point_amt++;
-            search_signal.signal[3] = 0;
+            new_signal = 0;
             return;
         }
         TIM4->CCR4 = 0;
@@ -34,15 +35,15 @@ void search_function()
     {
         if (search_signal.signal_point_amt < arr_amt)
         {
-            if (search_signal.signal[3])
+            if (new_signal)
             {
-                search_signal.signal[search_signal.signal_point_amt++] = search_signal.signal[3];
-                search_signal.signal[3] = 0;
+                search_signal.signal[search_signal.signal_point_amt++] = new_signal;
+                new_signal = 0;
             }
         }
         else
         {
-            push_fun(&search_signal.signal[0], arr_size, search_signal.signal[3]);
+            push_fun(&search_signal.signal[0], arr_size, new_signal);
 
             uint32_t main = filter((uint16_t *)&main_signal.signal[0], arr_amt);
             uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
