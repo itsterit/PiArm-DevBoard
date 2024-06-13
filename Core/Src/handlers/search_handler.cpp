@@ -16,12 +16,15 @@ signal main_signal, search_signal;
 uint16_t new_signal = 0;
 uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
 uint8_t arr_size = (sizeof(main_signal.signal));
-uint32_t main_va;
+uint32_t main_val;
+uint32_t search_val;
+int signal_val;
 
 void search_function()
 {
-    if (main_signal.signal_point_amt < (arr_amt * 4))
+    if (main_signal.signal_point_amt < (arr_amt * 16))
     {
+        TIM4->CCR4 = 0;
         if (new_signal)
         {
             push_fun(&main_signal.signal[0], arr_size, new_signal);
@@ -29,12 +32,11 @@ void search_function()
 
             main_signal.signal_point_amt++;
             search_signal.signal_point_amt++;
-            main_va = filter((uint16_t *)&main_signal.signal[0], arr_amt);
-            
+            main_val = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+
             new_signal = 0;
             return;
         }
-        TIM4->CCR4 = 0;
     }
     else
     {
@@ -44,10 +46,9 @@ void search_function()
             new_signal = 0;
         }
 
-        // uint32_t main_va = filter((uint16_t *)&main_signal.signal[0], arr_amt);
-        uint32_t search = filter((uint16_t *)&search_signal.signal[0], arr_amt);
-
-        int signal_val = ABS_DIFF(main_va, search);
+        main_val = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+        search_val = filter((uint16_t *)&search_signal.signal[0], arr_amt);
+        signal_val = ABS_DIFF(main_val, search_val);
         usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
         if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY])
@@ -60,6 +61,8 @@ void search_function()
             uint32_t timer_arr = TIMER_FREQ / freq;
             TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
             TIM4->ARR = timer_arr;
+
+            TIM1->CR1 |= TIM_CR1_CEN_Msk;
         }
         else
         {
@@ -69,6 +72,12 @@ void search_function()
             }
         }
     }
+}
+
+extern "C" void TIM1_UP_IRQHandler(void)
+{
+    TIM1->SR = ~TIM1->SR;
+    memcpy(&main_signal.signal[0], &search_signal.signal[0], arr_size);
 }
 
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val)

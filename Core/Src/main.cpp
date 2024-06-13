@@ -188,6 +188,7 @@ start_system:
 
     set_timer_config();
     NVIC_EnableIRQ(TIM3_IRQn);
+    NVIC_EnableIRQ(TIM1_UP_IRQn);
     goto monitoring_system_started;
   }
   NVIC_SystemReset();
