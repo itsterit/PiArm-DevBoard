@@ -50,7 +50,12 @@ extern uint16_t new_signal;
 #define HOLDING_SENSITIVITY         4
 #define SENSITIVITY__MAX            100
 #define BASE_SENSITIVITY            15
-#define SENSITIVITY__MIN            5
+#define SENSITIVITY__MIN            3
+// Режим работы
+#define HOLDING_PIN_POINT_MODE      5
+#define PIN_POINT_MODE__MAX         1
+#define BASE_PIN_POINT_MODE         0
+#define PIN_POINT_MODE__MIN         0
 
 // регистры
 #define INPUT_REG_REF_VOLTAGE       0

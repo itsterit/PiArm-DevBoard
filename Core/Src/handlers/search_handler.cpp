@@ -62,7 +62,8 @@ void search_function()
             TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
             TIM4->ARR = timer_arr;
 
-            TIM1->CR1 |= TIM_CR1_CEN_Msk;
+            if(!usHoldingRegisters[HOLDING_PIN_POINT_MODE])
+                TIM1->CR1 |= TIM_CR1_CEN_Msk;
         }
         else
         {

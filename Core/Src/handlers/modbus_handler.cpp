@@ -74,12 +74,19 @@ void check_system_parameters()
         {
             usHoldingRegisters[HOLDING_SENSITIVITY] = BASE_SENSITIVITY;
         }
+        // Режим работы
+        if (usHoldingRegisters[HOLDING_PIN_POINT_MODE] > PIN_POINT_MODE__MAX ||
+            usHoldingRegisters[HOLDING_PIN_POINT_MODE] < PIN_POINT_MODE__MIN)
+        {
+            usHoldingRegisters[HOLDING_PIN_POINT_MODE] = BASE_PIN_POINT_MODE;
+        }
         return;
     }
     usHoldingRegisters[HOLDING_COIL_FREQUENCY] = BASE_COIL_FREQUENCY;
     usHoldingRegisters[HOLDING_COIL_DUTY]      = BASE_COIL_DUTY;
     usHoldingRegisters[HOLDING_VOLUME]         = BASE_VOLUME;
     usHoldingRegisters[HOLDING_SENSITIVITY]    = BASE_SENSITIVITY;
+    usHoldingRegisters[HOLDING_PIN_POINT_MODE] = BASE_PIN_POINT_MODE;
 }
 
 /**
