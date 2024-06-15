@@ -57,7 +57,7 @@ void search_function()
         signal_val = ABS_DIFF(main_val, search_val);
         usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
-        if (1)
+        if (timings.timer_compare_flag == 0)
         {
             if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
             {
@@ -72,6 +72,7 @@ void search_function()
 
                 if (!usHoldingRegisters[HOLDING_PIN_POINT_MODE])
                 {
+                    timings.timer_compare_flag = 1;
                     timings.timer_update_flag = 1;
                     TIM1->CR1 |= TIM_CR1_CEN_Msk;
                 }
@@ -85,6 +86,13 @@ void search_function()
             }
         }
     }
+}
+
+extern "C" void TIM1_CC_IRQHandler(void)
+{
+    TIM1->SR = ~TIM1->SR;
+    timings.timer_compare_flag = 0;
+    led_pin.reset();
 }
 
 extern "C" void TIM1_UP_IRQHandler(void)
