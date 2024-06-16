@@ -57,32 +57,29 @@ void search_function()
         signal_val = ABS_DIFF(main_val, search_val);
         usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
-        if (timings.timer_compare_flag == 0)
+        if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
         {
-            if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
+            uint32_t signal = signal_val * 2;
+            uint32_t freq = (BASE_FREQ > signal)
+                                ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
+                                : (MIN_FREQ);
+
+            uint32_t timer_arr = TIMER_FREQ / freq;
+            TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
+            TIM4->ARR = timer_arr;
+
+            if (!usHoldingRegisters[HOLDING_PIN_POINT_MODE])
             {
-                uint32_t signal = signal_val * 2;
-                uint32_t freq = (BASE_FREQ > signal)
-                                    ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
-                                    : (MIN_FREQ);
-
-                uint32_t timer_arr = TIMER_FREQ / freq;
-                TIM4->CCR4 = (timer_arr / 100) * usHoldingRegisters[HOLDING_VOLUME];
-                TIM4->ARR = timer_arr;
-
-                if (!usHoldingRegisters[HOLDING_PIN_POINT_MODE])
-                {
-                    timings.timer_compare_flag = 1;
-                    timings.timer_update_flag = 1;
-                    TIM1->CR1 |= TIM_CR1_CEN_Msk;
-                }
+                timings.timer_compare_flag = 1;
+                timings.timer_update_flag = 1;
+                TIM1->CR1 |= TIM_CR1_CEN_Msk;
             }
-            else
+        }
+        else
+        {
+            if ((signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1) && (timings.timer_compare_flag == 0))
             {
-                if (signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1)
-                {
-                    TIM4->CCR4 = 0;
-                }
+                TIM4->CCR4 = 0;
             }
         }
     }
@@ -92,7 +89,6 @@ extern "C" void TIM1_CC_IRQHandler(void)
 {
     TIM1->SR = ~TIM1->SR;
     timings.timer_compare_flag = 0;
-    led_pin.reset();
 }
 
 extern "C" void TIM1_UP_IRQHandler(void)
