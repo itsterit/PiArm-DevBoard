@@ -48,10 +48,15 @@ void search_function()
     }
     else
     {
+        uint32_t signal = 0;
+
         if (new_signal)
         {
             push_fun(&search_signal.signal[0], arr_size, new_signal);
             search_val = filter((uint16_t *)&search_signal.signal[0], arr_amt);
+
+            signal = (ABS_DIFF(buzz_signal.signal[0], new_signal)) * 50;
+
             new_signal = 0;
         }
         main_val = filter((uint16_t *)&main_signal.signal[0], arr_amt);
@@ -60,8 +65,6 @@ void search_function()
 
         if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
         {
-            uint32_t buzz_val = filter((uint16_t *)&buzz_signal.signal[0], arr_amt);
-            uint32_t signal = (ABS_DIFF(buzz_val, search_val)) * 2;
 
             uint32_t freq = (BASE_FREQ > signal)
                                 ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
@@ -80,7 +83,7 @@ void search_function()
         }
         else
         {
-            if ((signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1))
+            if ((signal_val < (usHoldingRegisters[HOLDING_SENSITIVITY] - 2)))
             {
                 TIM4->CCR4 = 0;
             }

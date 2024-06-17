@@ -42,7 +42,7 @@ void set_timer_config()
     // таймер установки баланса грунта
     {
         set_balance_timer.set_dma_interrupt_config(TRIGGER_DMA_REQUEST_DISABLE, UPDATE_DMA_REQUEST_DISABLE, TRIGGER_INTERRUPT_DISABLE, UPDATE_INTERRUPT_ENABLE, 0, TIM_DIER_CC1IE);
-        set_balance_timer.set_timer_config(100, 0, 0, 0, 120, ((main_frq / 1000) - 1), 0);
+        set_balance_timer.set_timer_config(70, 0, 0, 0, 100, ((main_frq / 1000) - 1), 0);
         set_balance_timer.set_counter_config(ARR_REGISTER_BUFFERED, COUNTER_UPCOUNTER, ONE_PULSE_ENABLE, COUNTER_DISABLE);
     }
 
