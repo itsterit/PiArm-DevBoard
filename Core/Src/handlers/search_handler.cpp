@@ -15,9 +15,7 @@ void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 uint16_t new_signal = 0;
 uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
 uint8_t arr_size = (sizeof(main_signal.signal));
-uint32_t main_val;
-uint32_t search_val;
-int signal_val;
+int search_val;
 
 signal main_signal, search_signal, buzz_signal;
 struct timer_flag
@@ -48,26 +46,20 @@ void search_function()
     }
     else
     {
-        uint32_t signal = 0;
-
         if (new_signal)
         {
             push_fun(&search_signal.signal[0], arr_size, new_signal);
             search_val = filter((uint16_t *)&search_signal.signal[0], arr_amt);
-
-            signal = (ABS_DIFF(buzz_signal.signal[0], new_signal)) * 50;
-
             new_signal = 0;
         }
-        main_val = filter((uint16_t *)&main_signal.signal[0], arr_amt);
-        signal_val = ABS_DIFF(main_val, search_val);
+        int main_val = filter((uint16_t *)&main_signal.signal[0], arr_amt);
+        int signal_val = ABS_DIFF(main_val, search_val);
         usInputRegisters[INPUT_SEARCH_VALUE] = signal_val;
 
         if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
         {
-
-            uint32_t freq = (BASE_FREQ > signal)
-                                ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
+            uint32_t freq = (BASE_FREQ > signal_val)
+                                ? (((BASE_FREQ - signal_val) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal_val))
                                 : (MIN_FREQ);
 
             uint32_t timer_arr = TIMER_FREQ / freq;
@@ -87,7 +79,7 @@ void search_function()
             {
                 TIM4->CCR4 = 0;
             }
-            else if (timings.timer_compare_flag == 0)
+            else if ((timings.timer_compare_flag == 0) && !usHoldingRegisters[HOLDING_PIN_POINT_MODE])
             {
                 TIM4->CCR4 = 0;
             }
