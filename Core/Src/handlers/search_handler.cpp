@@ -12,7 +12,6 @@ uint32_t filter(uint16_t *array, uint8_t size_amt);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
 
 // Вспомогательные переменные
-signal main_signal, search_signal;
 uint16_t new_signal = 0;
 uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
 uint8_t arr_size = (sizeof(main_signal.signal));
@@ -20,6 +19,7 @@ uint32_t main_val;
 uint32_t search_val;
 int signal_val;
 
+signal main_signal, search_signal, buzz_signal;
 struct timer_flag
 {
     bool timer_update_flag;
@@ -36,13 +36,14 @@ void search_function()
             // Заполнить массивы
             push_fun(&main_signal.signal[0], arr_size, new_signal);
             push_fun(&search_signal.signal[0], arr_size, new_signal);
+            push_fun(&buzz_signal.signal[0], arr_size, new_signal);
             main_signal.signal_point_amt++;
             search_signal.signal_point_amt++;
+            buzz_signal.signal_point_amt++;
             // Обнулить переменные
             new_signal = 0;
             timings.timer_compare_flag = 0;
             timings.timer_update_flag = 0;
-            return;
         }
     }
     else
@@ -59,7 +60,9 @@ void search_function()
 
         if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
         {
-            uint32_t signal = signal_val * 2;
+            uint32_t buzz_val = filter((uint16_t *)&buzz_signal.signal[0], arr_amt);
+            uint32_t signal = (ABS_DIFF(buzz_val, search_val)) * 2;
+
             uint32_t freq = (BASE_FREQ > signal)
                                 ? (((BASE_FREQ - signal) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal))
                                 : (MIN_FREQ);
@@ -77,7 +80,11 @@ void search_function()
         }
         else
         {
-            if ((signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1) && (timings.timer_compare_flag == 0))
+            if ((signal_val < usHoldingRegisters[HOLDING_SENSITIVITY] - 1))
+            {
+                TIM4->CCR4 = 0;
+            }
+            else if (timings.timer_compare_flag == 0)
             {
                 TIM4->CCR4 = 0;
             }
