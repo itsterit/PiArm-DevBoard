@@ -77,10 +77,10 @@ void search_function()
         {
             if ((signal_val < (usHoldingRegisters[HOLDING_SENSITIVITY] - 2)))
             {
-                TIM4->CCR4 = 0;
-            }
-            else if ((timings.timer_compare_flag == 0) && !usHoldingRegisters[HOLDING_PIN_POINT_MODE])
-            {
+                if ((timings.timer_compare_flag != 0) && !usHoldingRegisters[HOLDING_PIN_POINT_MODE])
+                {
+                    return;
+                }
                 TIM4->CCR4 = 0;
             }
         }
