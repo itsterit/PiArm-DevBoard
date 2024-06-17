@@ -7,6 +7,7 @@
 #define BASE_FREQ 2000
 #define MIN_FREQ 1000
 
+#define FREQUENCY_SHIFT 5
 #define SIGNAL_VALUE_HYSTERESIS 2
 #define AUTO_BALANCE_HYSTERESIS 5
 #define SYNCHRONIZATION_CYCLES_NUMBER 50
@@ -19,6 +20,7 @@ uint16_t new_signal = 0;
 uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
 uint8_t arr_size = (sizeof(main_signal.signal));
 int search_val;
+int base_val;
 int auto_balance_search_val;
 // Поисковые сигналы
 signal main_signal, search_signal, buzz_signal;
@@ -38,11 +40,9 @@ void search_function()
             // Заполнить массивы
             push_fun(&main_signal.signal[0], arr_size, new_signal);
             push_fun(&search_signal.signal[0], arr_size, new_signal);
-            push_fun(&buzz_signal.signal[0], arr_size, new_signal);
             main_signal.signal_point_amt++;
-            search_signal.signal_point_amt++;
-            buzz_signal.signal_point_amt++;
-            // Обнулить переменные
+            // Установить переменные
+            base_val = filter((uint16_t *)&main_signal.signal[0], arr_amt);
             new_signal = 0;
             timings.timer_compare_flag = 0;
             timings.timer_update_flag = 0;
@@ -62,8 +62,9 @@ void search_function()
 
         if (signal_val > usHoldingRegisters[HOLDING_SENSITIVITY] && timings.timer_update_flag == 0)
         {
-            uint32_t freq = (BASE_FREQ > signal_val)
-                                ? (((BASE_FREQ - signal_val) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - signal_val))
+            uint32_t freq_shift = ABS_DIFF(base_val, search_val) * FREQUENCY_SHIFT;
+            uint32_t freq = ((BASE_FREQ > freq_shift) && (usHoldingRegisters[HOLDING_PIN_POINT_MODE]))
+                                ? (((BASE_FREQ - freq_shift) < MIN_FREQ) ? MIN_FREQ : (BASE_FREQ - freq_shift))
                                 : (MIN_FREQ);
 
             uint32_t timer_arr = TIMER_FREQ / freq;
