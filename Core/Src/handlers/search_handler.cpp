@@ -7,16 +7,19 @@
 #define BASE_FREQ 2000
 #define MIN_FREQ 1000
 
+#define SIGNAL_VALUE_HYSTERESIS 2
+#define AUTO_BALANCE_HYSTERESIS 5
+
 // Вспомогательные функции
 uint32_t filter(uint16_t *array, uint8_t size_amt);
 void push_fun(uint16_t *arr_ptr, uint16_t arr_size, uint16_t new_val);
-
 // Вспомогательные переменные
 uint16_t new_signal = 0;
 uint8_t arr_amt = (sizeof(main_signal.signal) / sizeof(main_signal.signal[0]));
 uint8_t arr_size = (sizeof(main_signal.signal));
 int search_val;
-
+int auto_balance_search_val;
+// Поисковые сигналы
 signal main_signal, search_signal, buzz_signal;
 struct timer_flag
 {
@@ -68,6 +71,7 @@ void search_function()
 
             if (!usHoldingRegisters[HOLDING_PIN_POINT_MODE])
             {
+                auto_balance_search_val = signal_val;
                 timings.timer_compare_flag = 1;
                 timings.timer_update_flag = 1;
                 TIM1->CR1 |= TIM_CR1_CEN_Msk;
@@ -75,9 +79,11 @@ void search_function()
         }
         else
         {
-            if ((signal_val < (usHoldingRegisters[HOLDING_SENSITIVITY] - 2)))
+            if ((signal_val < (usHoldingRegisters[HOLDING_SENSITIVITY] - SIGNAL_VALUE_HYSTERESIS)))
             {
-                if ((timings.timer_compare_flag != 0) && !usHoldingRegisters[HOLDING_PIN_POINT_MODE])
+                if ((timings.timer_compare_flag != 0) &&
+                    (!usHoldingRegisters[HOLDING_PIN_POINT_MODE]) &&
+                    (auto_balance_search_val < (usHoldingRegisters[HOLDING_SENSITIVITY] + AUTO_BALANCE_HYSTERESIS)))
                 {
                     return;
                 }
