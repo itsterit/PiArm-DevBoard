@@ -9,6 +9,7 @@
 
 #define SIGNAL_VALUE_HYSTERESIS 2
 #define AUTO_BALANCE_HYSTERESIS 5
+#define SYNCHRONIZATION_CYCLES_NUMBER 50
 
 // Вспомогательные функции
 uint32_t filter(uint16_t *array, uint8_t size_amt);
@@ -29,7 +30,7 @@ struct timer_flag
 
 void search_function()
 {
-    if (main_signal.signal_point_amt < (arr_amt * 16))
+    if (main_signal.signal_point_amt < (arr_amt * SYNCHRONIZATION_CYCLES_NUMBER))
     {
         TIM4->CCR4 = 0;
         if (new_signal)
